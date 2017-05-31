@@ -1,19 +1,10 @@
 import time
-from distutils.dir_util import copy_tree
-import os
-import json
 import random
 import numpy as np
 from keras.models import Sequential, load_model
-from keras.initializations import normal
-from keras import optimizers
-from keras.optimizers import RMSprop
 from keras.layers import Convolution2D, Flatten, ZeroPadding2D
 from keras.layers.core import Dense, Dropout, Activation
-from keras.layers.normalization import BatchNormalization
-from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.pooling import MaxPooling2D
-from keras.regularizers import l2
 from keras.optimizers import SGD , Adam
 import tensorflow as tf
 import keras.backend.tensorflow_backend as KTF
@@ -72,10 +63,8 @@ class DeepQ:
         model.add(Convolution2D(16, 3, 3,border_mode='same', input_shape = input_shape))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        #model.add(ZeroPadding2D((1, 1)))
         model.add(Convolution2D(32, 3, 3, border_mode='same'))
         model.add(Activation('relu'))
-        #model.add(ZeroPadding2D((1, 1)))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.25))
 
@@ -88,15 +77,12 @@ class DeepQ:
 
 
         model.add(Dense(256))
-        #model.add(Dense(256))
         model.add(Activation('relu'))
         model.add(Dropout(0.25))
         model.add(Dense(256))
         model.add(Activation('relu'))
         model.add(Dropout(0.25))
         model.add(Dense(self.output_size,activation='linear'))
-        #adam = Adam(lr=self.learningRate)
-        #model.compile(loss='mse',optimizer=adam)
         model.compile(Adam(lr=self.learningRate), 'MSE')
         model.summary()
 
@@ -127,10 +113,8 @@ class DeepQ:
             predicted = self.model.predict(state)
         return predicted[0]
 
-
     def getMaxIndex(self, qValues):
         return np.argmax(qValues)
-
 
     # select the action with the highest Q value
     def selectAction(self, qValues, explorationRate):
@@ -144,9 +128,6 @@ class DeepQ:
     def addMemory(self, state, action, reward, newState, isFinal):
         self.memory.addMemory(state, action, reward, newState, isFinal)
 
-    def saveMemory(self,state,  action, reward, newState, isFinal ):
-        with open('/home/UAV/dqn_data/memory.npy', 'a') as f:
-            np.save(f, state)
 
     def getMemorySize(self):
         return self.memory.getCurrentSize()
