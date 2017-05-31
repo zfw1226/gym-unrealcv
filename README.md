@@ -2,7 +2,8 @@ Integrate UnrealCV with Openai Gym for Reinforcement Learning(RL)
 ===
 In this tutorial, we show how to get started with installing environment, adding new envirnnment for specific RL tasks and train a DQN model for visual navigation in a realistic room.
 
-![search1](https://i.imgur.com/esXQ0tI.gif)![search2](https://i.imgur.com/fPVfRVt.gif)
+![search1](https://i.imgur.com/esXQ0tI.gif)
+![search2](https://i.imgur.com/fPVfRVt.gif)
 
 Installation
 ===
@@ -193,6 +194,7 @@ cd example/dqn
 python run.py
 ```
 You will see a window like this:
+
 ![show](https://i.imgur.com/HyOVKD4.png)
 While the ```Collision``` button turning red, a collision is detected.
 While the ```Trigger``` button turning red, the agent is taking an aciton to ask the environment if it is seeing the target in a right place. 
