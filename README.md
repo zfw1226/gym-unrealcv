@@ -196,6 +196,7 @@ python run.py
 You will see a window like this:
 
 ![show](https://i.imgur.com/HyOVKD4.png)
+
 While the ```Collision``` button turning red, a collision is detected.
 While the ```Trigger``` button turning red, the agent is taking an aciton to ask the environment if it is seeing the target in a right place. 
 You can change some parameteters in [```example/dqn/constant.py```]()
