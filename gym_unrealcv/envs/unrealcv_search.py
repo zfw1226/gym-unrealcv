@@ -45,7 +45,6 @@ class UnrealCvSearch(gym.Env):
 
 
      self.reward_th = 0.2
-     self.z_init = 40
      self.trigger_th = 0.9
 
      self.origin = [
