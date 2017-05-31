@@ -70,18 +70,17 @@ class UnrealCv:
     def read_image(self,cam_id , viewmode, show=False):
             # cam_id:0 1 2 ...
             # viewmode:lit,  =normal, depth, object_mask
-            cmd = 'vget /camera/{cam_id}/{viewmode}'
+            cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}.png'
 
             if self.docker:
                 img_dirs_docker = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
                 img_dirs = self.envdir + img_dirs_docker[7:]
             else :
                 img_dirs = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
-
             image = cv2.imread(img_dirs)
             if show is True:
                 self.show_img(image)
-            os.remove(img_dirs)
+
             return image
 
 
