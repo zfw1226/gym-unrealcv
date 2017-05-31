@@ -185,11 +185,6 @@ class DeepQ:
             self.updateTargetNetwork()
 
 
-
-
-
-
-
     def saveModel(self, path):
         if self.useTargetNetwork:
             self.targetModel.save(path)
@@ -200,6 +195,13 @@ class DeepQ:
         self.model.set_weights(load_model(path).get_weights())
         if self.useTargetNetwork:
             self.targetModel.set_weights(load_model(path).get_weights())
+
+
+    def feedforward(self,observation,action,explorationRate):
+        qValues = self.getQValues(observation)
+        action = self.selectAction(qValues, explorationRate)
+        return action
+
 
 
 

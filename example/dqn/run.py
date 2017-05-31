@@ -44,7 +44,7 @@ if __name__ == '__main__':
         current_epoch = 0
         stepCounter = 0
         loadsim_seconds = 0
-        deepQ = dqn.DeepQ(ACTION_SIZE, MEMORY_SIZE, GAMMA, LEARNING_RATE,
+        Agent = dqn.DeepQ(ACTION_SIZE, MEMORY_SIZE, GAMMA, LEARNING_RATE,
                           INPUT_SIZE, INPUT_SIZE,INPUT_CHANNELS,USE_TARGET_NETWORK)
         env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,force=True)
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
             current_epoch = d.get('current_epoch')
             stepCounter = d.get('stepCounter')
             loadsim_seconds = d.get('loadsim_seconds')
-            deepQ = dqn.DeepQ(
+            Agent = dqn.DeepQ(
                 ACTION_SIZE,
                 MEMORY_SIZE,
                 GAMMA,
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                 INPUT_CHANNELS,
                 USE_TARGET_NETWORK
             )
-            deepQ.loadWeights(weights_path)
+            Agent.loadWeights(weights_path)
             io_util.clear_monitor_files(MONITOR_DIR + 'tmp')
             copy_tree(monitor_path, MONITOR_DIR + 'tmp')
             env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,resume=True)
@@ -92,18 +92,17 @@ if __name__ == '__main__':
                 start_req = time.time()
 
                 if EXPLORE is True: #explore
-                    qValues = deepQ.getQValues(observation)
-                    action = deepQ.selectAction(qValues, explorationRate)
+                    action = Agent.feedforward(observation, explorationRate)
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
-                    deepQ.addMemory(observation, action, reward, newObservation, done)
+                    Agent.addMemory(observation, action, reward, newObservation, done)
                     observation = newObservation
                     if stepCounter == LEARN_START_STEP:
                         print("Starting learning")
 
-                    if deepQ.getMemorySize() >= LEARN_START_STEP:
-                        deepQ.learnOnMiniBatch(BATCH_SIZE)
+                    if Agent.getMemorySize() >= LEARN_START_STEP:
+                        Agent.learnOnMiniBatch(BATCH_SIZE)
 
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
@@ -111,11 +110,9 @@ if __name__ == '__main__':
                             explorationRate = 0.99
                             print 'Reset Exploration Rate'
 
-
                 #test
                 else:
-                    qValues = deepQ.getQValues(observation)
-                    action = deepQ.selectAction(qValues, 0)
+                    action = Agent.feedforward(observation,0)
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
@@ -138,7 +135,7 @@ if __name__ == '__main__':
                     if (epoch) % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
                         # save model weights and monitoring data
                         print 'Save model'
-                        deepQ.saveModel(MODEL_DIR + '/dqn_ep' + str(epoch) + '.h5')
+                        Agent.saveModel(MODEL_DIR + '/dqn_ep' + str(epoch) + '.h5')
 
                         #backup monitor file
                         copy_tree(MONITOR_DIR+ 'tmp', MONITOR_DIR + str(epoch))
