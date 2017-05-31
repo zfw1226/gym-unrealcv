@@ -35,7 +35,7 @@ class RunDocker():
                 sys.exit()
 
 
-        docker_cmd = 'nvidia-docker run   -it  --env="DISPLAY=:0.0"     --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"     --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw"    {IMAGE} '
+        docker_cmd = 'nvidia-docker run  -d -it  --env="DISPLAY=:0.0"     --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"     --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw"    {IMAGE} '
         run_cmd = 'bash -c "chown unrealcv {ENV_DIR_DOCKER} -R && su unrealcv -c {ENV_DIR_DOCKER}{ENV_DIR_BIN}"'
         cmd = docker_cmd.format(ENV_DIR_HOST=HOST_DIR, ENV_DIR_DOCKER=ENV_DIR_DOCKER, IMAGE=self.image) + run_cmd.format(
             ENV_DIR_DOCKER=ENV_DIR_DOCKER, ENV_DIR_BIN=ENV[ENV_NAME])
@@ -81,10 +81,10 @@ class RunDocker():
 
 
 
-docker = RunDocker()
+#docker = RunDocker()
 
-ip,pwd = docker.start('RealisticRendering')
-print ip
+#ip,pwd = docker.start('RealisticRendering')
+#print ip
 #time.sleep(50)
 #docker.close()
 
