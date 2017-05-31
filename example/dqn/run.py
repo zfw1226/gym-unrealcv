@@ -1,5 +1,5 @@
 import gym
-import gym_unreal
+import gym_unrealcv
 import time
 from distutils.dir_util import copy_tree
 import os
