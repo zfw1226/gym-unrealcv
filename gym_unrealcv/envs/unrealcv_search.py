@@ -25,7 +25,7 @@ class UnrealCvSearch(gym.Env):
    def __init__(self,
                 TARGETS = ['SM_Plant_7','SM_Plant_8'],
                 DOCKER = True,
-                ENV_DIR_BIN = '/RealisticRendering/RealisticRendering/Binaries/Linux/RealisticRendering',
+                ENV_NAME='RealisticRendering',
                 cam_id = 0,
                 MAX_STEPS = 100):
      self.cam_id = cam_id
@@ -33,10 +33,11 @@ class UnrealCvSearch(gym.Env):
 
      if DOCKER:
          self.docker = run_docker.RunDocker()
-         env_ip, env_dir = self.docker.start(ENV_NAME = ENV_DIR_BIN)
+         env_ip, env_dir = self.docker.start(ENV_NAME = ENV_NAME)
          self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list, env=env_dir)
      else:
          self.docker = False
+         #you need run the environment previously
          env_ip = '127.0.0.1'
          self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list)
 
