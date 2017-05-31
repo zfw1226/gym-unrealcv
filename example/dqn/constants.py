@@ -23,12 +23,12 @@ MAX_EXPLORE_STEPS = 10000
 TEST_INTERVAL_EPOCHS = 100
 SAVE_INTERVAL_EPOCHS = 200
 
-MONITOR_DIR = 'log_multi1/monitor/' #the path to save monitor file
-MODEL_DIR = 'log_multi1/model' # the path to save deep model
-PARAM_DIR = 'log_multi1/param' # the path to save the parameters
-TRA_DIR = 'log_multi1/trajectory.csv' # the path to save trajectory
+MONITOR_DIR = 'log/monitor/' #the path to save monitor file
+MODEL_DIR = 'log/model' # the path to save deep model
+PARAM_DIR = 'log/param' # the path to save the parameters
+TRA_DIR = 'log/trajectory.csv' # the path to save trajectory
 
 #the path to reload weights, monitor and params
-weights_path = 'log_multi/model/dqn_ep' + str(RESTART_EP)+ '.h5'
-monitor_path = 'log_multi/monitor/'+ str(RESTART_EP)
-params_json = 'log_multi/param/dqn_ep' + str(RESTART_EP) + '.json'
+weights_path = 'log/model/dqn_ep' + str(RESTART_EP)+ '.h5'
+monitor_path = 'log/monitor/'+ str(RESTART_EP)
+params_json = 'log/param/dqn_ep' + str(RESTART_EP) + '.json'
