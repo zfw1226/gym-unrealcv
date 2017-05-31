@@ -197,7 +197,7 @@ class DeepQ:
             self.targetModel.set_weights(load_model(path).get_weights())
 
 
-    def feedforward(self,observation,action,explorationRate):
+    def feedforward(self,observation,explorationRate):
         qValues = self.getQValues(observation)
         action = self.selectAction(qValues, explorationRate)
         return action
