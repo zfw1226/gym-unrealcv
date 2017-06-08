@@ -4,11 +4,11 @@ import time
 import sys
 
 ENV = dict(
-    RealisticRendering = '/RealisticRendering-Linux-0.3.7/LinuxNoEditor/RealisticRendering/Binaries/Linux/RealisticRendering',
-    ArchinteriorsVol2Sceen1 = '/ArchinteriorsVol2Sceen1/Binaries/Linux/ArchinteriorsVol2Sceen1',
+    #RealisticRendering = '/RealisticRendering-Linux-0.3.6/LinuxNoEditor/RealisticRendering/Binaries/Linux/RealisticRendering',
+    RealisticRendering = '/RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering',
+    ArchinteriorsVol2Sceen1 = '/ArchinteriorsVol2Scene1/ArchinteriorsVol2Scene1/Binaries/Linux/ArchinteriorsVol2Scene1',
     UrbanCity = '/UrbanCity/Binaries/Linux/UrbanCity'
 )
-
 
 class RunDocker():
     def __init__(self, IMAGE = 'zfw1226/unreal-gpu:v0.1',):
@@ -34,14 +34,13 @@ class RunDocker():
                 print 'Did not find unreal environment, Please move your binary file to env/UnrealEnv'
                 sys.exit()
 
-
         docker_cmd = 'nvidia-docker run  -d -it  --env="DISPLAY=:0.0"     --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"     --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw"    {IMAGE} '
         run_cmd = 'bash -c "chown unrealcv {ENV_DIR_DOCKER} -R && su unrealcv -c {ENV_DIR_DOCKER}{ENV_DIR_BIN}"'
         cmd = docker_cmd.format(ENV_DIR_HOST=HOST_DIR, ENV_DIR_DOCKER=ENV_DIR_DOCKER, IMAGE=self.image) + run_cmd.format(
             ENV_DIR_DOCKER=ENV_DIR_DOCKER, ENV_DIR_BIN=ENV[ENV_NAME])
         print cmd
         os.system(cmd)
-        time.sleep(5)
+        time.sleep(10)
         self.container = self.docker_client.containers.list()
         return self.get_ip(),HOST_DIR
 
@@ -83,7 +82,7 @@ class RunDocker():
 
 #docker = RunDocker()
 
-#ip,pwd = docker.start('RealisticRendering')
+#ip,pwd = docker.start('ArchinteriorsVol2Sceen1')
 #print ip
 #time.sleep(50)
 #docker.close()
