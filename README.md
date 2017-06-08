@@ -71,7 +71,7 @@ Add a new UnrealCV Environment
 ===
 In this section, we will show you how to add a new unrealcv environment in openai gym for your RL tasks, step by step.
 1. Copy your new Unreal Environment to ```/gym-unrealcv/gym_unrealcv/envs/UnrealEnv```
-2. Create a new python file in ```/gym-unrealcv/gym_unrealcv/envs```, Write your environment in this file. A simple environment in [unrealcv_simple.py]() is avliable for you.The details of the code are shown as below:
+2. Create a new python file in ```/gym-unrealcv/gym_unrealcv/envs```, Write your environment in this file. A simple environment in [unrealcv_simple.py](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_simple.py) is avliable for you.The details of the code are shown as below:
 ```python =
 import gym # openai gym
 from unrealcv_cmd import  UnrealCv # a lib for using unrealcv client command
@@ -174,7 +174,7 @@ You will see your agent take some actions randomly and get reward as you defined
 
 Run a reinforcement learning example
 ===
-Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0]() environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
+Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 ### Dependences
 To run this example, you should make sure that you have installed all the dependences. We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 - Keras(Tested with v1.2)
@@ -201,8 +201,8 @@ You will see a window like this:
 
 While the ```Collision``` button turning red, a collision is detected.
 While the ```Trigger``` button turning red, the agent is taking an aciton to ask the environment if it is seeing the target in a right place. 
-You can change some parameteters in [```example/dqn/constant.py```]()
-You can change the architure of DQN in [```example/dqn/dqn.py```]() 
+You can change some parameteters in [```example/dqn/constant.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/constants.py)
+You can change the architure of DQN in [```example/dqn/dqn.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/dqn.py) 
 
 Visualization
 ===
