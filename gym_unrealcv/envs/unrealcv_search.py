@@ -9,7 +9,6 @@ import run_docker
 from gym import spaces
 
 '''
-
 State : raw color image (640x480)
 Action:  (linear velocity ,angle velocity , trigger) /continuous space
 Done : Collision or get target place
@@ -23,7 +22,7 @@ Recommend object list
 
 class UnrealCvSearch(gym.Env):
    def __init__(self,
-                TARGETS = ['SM_Plant_7','SM_Plant_8'],
+                TARGETS = ['SM_Plant_8','SM_Plant_7'],
                 DOCKER = True,
                 ENV_NAME='RealisticRendering',
                 cam_id = 0,
@@ -44,17 +43,17 @@ class UnrealCvSearch(gym.Env):
      print env_ip
 
 
-     self.reward_th = 0.2
+     self.reward_th = 0.2 # plant 0.2
      self.trigger_th = 0.9
-
+     height = 40
      self.origin = [
-         (-106.195,  437.424,   40),
-         (  27.897, -162.437,   40),
-         ( -66.601,   -4.503,   40),
-         (  10.832,  135.126,   40),
-         (  67.903,   26.995,   40),
-         ( -23.558, -187.354,   40),
-         ( -80.312,  254.579,   40),
+         (-106.195,  437.424,   height),
+         (  27.897, -162.437,   height),
+         ( -66.601,   -4.503,   height),
+         (  10.832,  135.126,   height),
+         (  67.903,   26.995,   height),
+         ( -23.558, -187.354,   height),
+         ( -80.312,  254.579,   height),
      ]
 
      self.count_steps = 0
@@ -96,6 +95,7 @@ class UnrealCvSearch(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
+            #self.unrealcv.set_rotation(self.cam_id, self.unrealcv.cam['rotation'][0], self.unrealcv.cam['rotation'][1],20)
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
@@ -153,6 +153,7 @@ class UnrealCvSearch(gym.Env):
 
 
    def reward_bbox(self):
+
        object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
        #mask, box = self.unrealcv.get_bbox(object_mask, self.target_list[0])
        boxes = self.unrealcv.get_bboxes(object_mask,self.target_list)
