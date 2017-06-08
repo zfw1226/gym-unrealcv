@@ -40,7 +40,7 @@ class DeepQ:
         self.useTargetNetwork = useTargetNetwork
         self.count_steps = 0
         if K.backend() == 'tensorflow':
-            with KTF.tf.device('/gpu:1'):
+            with KTF.tf.device('/gpu:0'):
                 config = tf.ConfigProto()
                 config.gpu_options.allow_growth = True
                 KTF.set_session(tf.Session(config=config))
