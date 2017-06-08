@@ -30,6 +30,7 @@ nvidia-docker run --rm nvidia/cuda nvidia-smi
 ```
 You should be able to get the same result as you run ```nvidia-smi``` in your host.
 
+
 ## Openai Gym
 Install openai gym
 ```
@@ -49,21 +50,22 @@ cd gym-unrealcv
 pip install -e . 
 ```
 
-
+## Unreal Environment
+To run the demo as below, you need prepare an unreal environment. You can do it by run the ```RealisiticRendering.sh``` script
+```
+cd gym-unreal/gym_unrealcv/envs/UnrealEnv
+sh RealisiticRendering.sh
+```
 
 Run a simple envirnment
 ===
-Before you run any examples, please run
-```
-xhost +
-```
 
 Once ```gym-unrealcv``` is installed sucessfully, you will see that your agent walking randomly in first-person view, after you run:
 ```
 cd example/random
 python random_agent.py
 ```
-It will take a few minutes for the image and realistic environment to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that your agent is moving around the realistic room randomly.
+It will take a few minutes for the image to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that your agent is moving around the realistic room randomly.
 
 Add a new UnrealCV Environment
 ===
@@ -71,11 +73,11 @@ In this section, we will show you how to add a new unrealcv environment in opena
 1. Copy your new Unreal Environment to ```/gym-unrealcv/gym_unrealcv/envs/UnrealEnv```
 2. Create a new python file in ```/gym-unrealcv/gym_unrealcv/envs```, Write your environment in this file. A simple environment in [unrealcv_simple.py]() is avliable for you.The details of the code are shown as below:
 ```python =
-import gym # openai gym interface
+import gym # openai gym
 from unrealcv_cmd import  UnrealCv # a lib for using unrealcv client command
-import run_docker # a lib for run env in a docker container
 import numpy as np
 import math
+import run_docker # a lib for run env in a docker container
 '''
 State :  color image
 Action:  (linear velocity ,angle velocity)
@@ -84,12 +86,12 @@ Done :   Collision detected or get a target place
 class UnrealCvSimple(gym.Env):
     # init the Unreal Gym Environment
    def __init__(self,
-                ENV_DIR_BIN = '/RealisticRendering/RealisticRendering/Binaries/Linux/RealisticRendering',
+                ENV_NAME = 'RealisticRendering'
    ):
      self.cam_id = 0
      # run virtual enrionment in docker container
      self.docker = run_docker.RunDocker()
-     env_ip, env_dir = self.docker.start(ENV_DIR_BIN=ENV_DIR_BIN)
+     env_ip, env_dir = self.docker.start(ENV_NAME=ENV_NAME)
      # connect unrealcv client to server
      self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, env=env_dir)
      self.startpose = self.unrealcv.get_pose()
@@ -122,7 +124,7 @@ class UnrealCvSimple(gym.Env):
             print 'Reach Max Steps'
 
         return state, reward, done, {}
-        
+
    # reset the environment
    def _reset(self, ):
        x,y,z,yaw = self.startpose
@@ -159,7 +161,7 @@ class UnrealCvSimple(gym.Env):
        return distance
 
 ```
-**You should modify ```ENV_DIR_BIN``` to the path of your Unreal Binary**. The same to other gym environments, ```step()```,```reset()``` is necessary.```close()```will help you to close the unreal environment while you closing the gym environment. Differently, you need design your reward function in ```reward()``` for your own task.
+**If you want to use your own environment, add or modify the path of your Unreal Binary  in ```run_docker.py``` ** is needed. You can add a new path in the dictionary of ENV. The same to other gym environments, ```step()```,```reset()``` is necessary.```close()```will help you to close the unreal environment while you closing the gym environment. Differently, you need design your reward function in ```reward()``` for your own task.
 
 3. Import your environment into the ```__init__.py``` file of the collection. This file will be located at ```/gym-unrealcv/gym_unrealcv/envs/__init__.py.``` Add ```from gym_unrealcv.envs.your_env import YourEnv``` to this file.
 4. Register your env in ```gym-unrealcv/gym_unrealcv/_init_.py```
