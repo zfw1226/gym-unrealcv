@@ -14,11 +14,11 @@ from gym import wrappers
 import csv
 
 ACTION_LIST = [
-    (20,  0, 0), # forward
+    (30,  0, 0), # forward
     (20, 15, 0),
     (20,-15, 0),
-    (20, 30, 0),
-    (20,-30, 0),
+    (10, 30, 0),
+    (10,-30, 0),
     (0 ,  0, 1),
 ]#velocity  angle trigger
 
