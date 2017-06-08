@@ -45,7 +45,7 @@ pip install gym
 
 Install gym-unrealcv
 ```
-git clone https://github.com/zfw1226/gym-unreal.git
+git clone https://github.com/zfw1226/gym-unrealcv.git
 cd gym-unrealcv
 pip install -e . 
 ```
