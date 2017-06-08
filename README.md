@@ -32,6 +32,7 @@ You should be able to get the same result as you run ```nvidia-smi``` in your ho
 
 
 ## Openai Gym
+We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 Install openai gym
 ```
 git clone https://github.com/openai/gym
@@ -176,7 +177,7 @@ Run a reinforcement learning example
 ===
 Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 ### Dependences
-To run this example, you should make sure that you have installed all the dependences. We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
+To run this example, you should make sure that you have installed all the dependences. 
 - Keras(Tested with v1.2)
 - Theano or thensorflow
 - Openai gym(>=v0.7)
