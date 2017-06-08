@@ -5,7 +5,7 @@ RESTART_EP = 3600 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
 USE_TARGET_NETWORK = True # use the target network
-SHOW = True # show the current state, reward and action
+SHOW = False # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
 MAX_EPOCHS = 10000 # max episode number
@@ -19,7 +19,7 @@ LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95
 INITIAL_EPSILON = 1  # starting value of epsilon
 FINAL_EPSILON = 0.1  # final value of epsilon
-MAX_EXPLORE_STEPS = 10000
+MAX_EXPLORE_STEPS = 20000
 TEST_INTERVAL_EPOCHS = 100
 SAVE_INTERVAL_EPOCHS = 200
 
