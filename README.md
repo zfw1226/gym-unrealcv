@@ -86,7 +86,7 @@ Done :   Collision detected or get a target place
 class UnrealCvSimple(gym.Env):
     # init the Unreal Gym Environment
    def __init__(self,
-                ENV_NAME = 'RealisticRendering'
+                ENV_NAME = 'RealisticRendering' # if use your own environment,please change it 
    ):
      self.cam_id = 0
      # run virtual enrionment in docker container
@@ -161,7 +161,7 @@ class UnrealCvSimple(gym.Env):
        return distance
 
 ```
-**If you want to use your own environment, add or modify the path of your Unreal Binary  in ```run_docker.py``` ** is needed. You can add a new path in the dictionary of ENV. The same to other gym environments, ```step()```,```reset()``` is necessary.```close()```will help you to close the unreal environment while you closing the gym environment. Differently, you need design your reward function in ```reward()``` for your own task.
+**If you want to run your own environment, please change the ```ENV_NAME``` and add the path of your Unreal Binary  in ```run_docker.py```**. You can add a new path in the dictionary of ENV. The same to other gym environments, ```step()```,```reset()``` is necessary.```close()```will help you to close the unreal environment while you closing the gym environment. Differently, you need design your reward function in ```reward()``` for your own task.
 
 3. Import your environment into the ```__init__.py``` file of the collection. This file will be located at ```/gym-unrealcv/gym_unrealcv/envs/__init__.py.``` Add ```from gym_unrealcv.envs.your_env import YourEnv``` to this file.
 4. Register your env in ```gym-unrealcv/gym_unrealcv/_init_.py```

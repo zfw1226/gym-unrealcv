@@ -11,7 +11,7 @@ Done :   Collision detected or get a target place
 class UnrealCvSimple(gym.Env):
     # init the Unreal Gym Environment
    def __init__(self,
-                ENV_NAME = 'RealisticRendering'
+                ENV_NAME = 'RealisticRendering' # if use your own environment,please change it
    ):
      self.cam_id = 0
      # run virtual enrionment in docker container
