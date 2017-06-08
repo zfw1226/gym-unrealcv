@@ -4,7 +4,7 @@ import time
 import sys
 
 ENV = dict(
-    RealisticRendering = '/RealisticRendering-Linux-0.3.7/LinuxNoEditor/RealisticRendering/Binaries/Linux/RealisticRendering',
+    RealisticRendering = '/RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering',
     ArchinteriorsVol2Sceen1 = '/ArchinteriorsVol2Sceen1/Binaries/Linux/ArchinteriorsVol2Sceen1',
     UrbanCity = '/UrbanCity/Binaries/Linux/UrbanCity'
 )
@@ -76,16 +76,3 @@ class RunDocker():
             self.docker_client.images.pull(target_images)
         else:
             print 'Found images'
-
-
-
-
-
-#docker = RunDocker()
-
-#ip,pwd = docker.start('RealisticRendering')
-#print ip
-#time.sleep(50)
-#docker.close()
-
-#print ip
