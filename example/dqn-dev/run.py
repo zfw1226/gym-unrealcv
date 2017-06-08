@@ -14,9 +14,9 @@ from gym import wrappers
 import csv
 
 ACTION_LIST = [
-    (30,  0, 0), # forward
-    (20, 15, 0),
-    (20,-15, 0),
+    (60,  0, 0), # forward
+    (30, 15, 0),
+    (30,-15, 0),
     (10, 30, 0),
     (10,-30, 0),
     (0 ,  0, 1),
@@ -73,7 +73,7 @@ if __name__ == '__main__':
             copy_tree(monitor_path, MONITOR_DIR + 'tmp')
             env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,resume=True)
 
-        io_util.create_csv_header(TRA_DIR)
+        #io_util.create_csv_header(TRA_DIR)
 
     #main loop
     try:
