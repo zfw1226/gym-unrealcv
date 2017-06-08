@@ -54,8 +54,8 @@ for ep in history:
          y = []
 
 epoch_max = len(X)
-plt.xlim((-550, 350))
-plt.ylim((-550, 350))
+#plt.xlim((-550, 350))
+#plt.ylim((-550, 350))
 plt.ylabel('y')
 plt.xlabel('x')
 for i in range(start, min(start + show_num,len(X)) ):
@@ -63,7 +63,7 @@ for i in range(start, min(start + show_num,len(X)) ):
       line_tpye = 'k'
       plt.scatter(X[i][-1], Y[i][-1], c='magenta', s=30, alpha=0.6, edgecolors='white')
    else :
-      size = max(float(reward[i]),0.1) *20
+      size = max(float(reward[i]),0.1) *10
       plt.scatter(X[i][-1], Y[i][-1], c='green', s=size , alpha=0.6, edgecolors='white')
       line_tpye = 'r'
 
