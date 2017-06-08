@@ -42,12 +42,11 @@ class UnrealCv:
 
 
 
-
-
     def init_unrealcv(self):
         client.connect()
         self.check_connection()
         client.request('vrun setres 320x240w')# this will set the resolution of object_mask
+        time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
         #(x, y, z) = self.get_position(self.cam_id)
