@@ -43,15 +43,16 @@ class UnrealCvDoor(gym.Env):
      print env_ip
 
 
-     self.reward_th = 0.1
+     self.reward_th = 0.4
      self.trigger_th = 0.9
      height = 45
      self.origin = [
          (1784,  -220,   height),
          (1000,  -220,   height),
          ( 700,  -320,   height),
-         (-104,   415,   height),
-         (  90,   510,   height),
+         ( 100,  -450,   height),
+         #(-104,   415,   height),
+         #(  90,   510,   height),
          ( 200,   320,   height),
      ]
 
@@ -169,11 +170,16 @@ class UnrealCvDoor(gym.Env):
        doorsize0, boxes0 = self.cal_door_size()
        reward = 0
        if doorsize0 > self.reward_th:
-           self.unrealcv.keyboard('RightMouseButton')
+           reward = 10
+           '''self.unrealcv.keyboard('RightMouseButton')
            time.sleep(0.5)
            doorsize1, boxes1 = self.cal_door_size()
            if doorsize1 / doorsize0 < 0.5:
                reward = 10 # opened the door successfully
+               time.sleep(1)
+               self.unrealcv.keyboard('RightMouseButton') # close the door'''
+       elif doorsize0 > 0:
+           reward = doorsize0 * 10
        else:
            reward = -1 #false trigger
 
