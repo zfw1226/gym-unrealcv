@@ -2,8 +2,8 @@ Integrate UnrealCV with OpenAI Gym for Reinforcement Learning(RL)
 ===
 In this tutorial, we will show how to get started with installing environment, adding new envirnnment for specific RL tasks and train a DQN model for visual navigation in a realistic room.
 
-![search1](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/search1.gif)
-![search2](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/search2.gif)
+![search1](./doc/search1.gif)
+![search2](./doc/search2.gif)
 
 Install Environment
 ===
@@ -201,14 +201,14 @@ While the env reset, the agent will select one of start positions in the list  `
 You can change some parameteters in [```example/dqn/constant.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/constants.py)
 if you set ```SHOW``` is ```True```, You will see a window like this to monitor the agent while training:
 
-![show](https://i.imgur.com/HyOVKD4.png)
+![show](./doc/show.PNG)
 
 While the ```Collision``` button turning red, a collision is detected.
 While the ```Trigger``` button turning red, the agent is taking an action to ask the environment if it is seeing the target in a right place. 
 
 if you set ```Map``` is ```True```, you will see a window showing the trajectory of the agent like this:
 
-![map](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/map.gif)
+![map](./doc/map.gif)
 
 - The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
 - The ```purple points``` represent where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
