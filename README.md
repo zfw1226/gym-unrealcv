@@ -1,6 +1,6 @@
 Integrate UnrealCV with OpenAI Gym for Reinforcement Learning(RL)
 ===
-**This tutorial will show you how to get started with installing environment, adding new environment for specific RL tasks and train a DQN model for visual navigation in a realistic room.**
+**This tutorial will show you how to get started with installing environment, running an agent in an environment, adding a new environment and running a reinforcement learning example for visual navigation.**
 
 <div align="center">
 
@@ -18,7 +18,7 @@ Integrate UnrealCV with OpenAI Gym for Reinforcement Learning(RL)
 - CV2
 - Matplotlib
 - Numpy
-
+ 
 We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 Considering performance, we use [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) to run the unreal environment. 
 For the reason that ```nvidia-docker``` supports ```Linux```  and ```Nvidia GPU```only , 
