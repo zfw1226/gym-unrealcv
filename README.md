@@ -176,7 +176,7 @@ class UnrealCvSimple(gym.Env):
 
 3. Import your environment into the ```__init__.py``` file of the collection. This file will be located at ```/gym-unrealcv/gym_unrealcv/envs/__init__.py.``` Add ```from gym_unrealcv.envs.your_env import YourEnv``` to this file.
 4. Register your env in ```gym-unrealcv/gym_unrealcv/_init_.py```
-5. You can test your environment by using a random agent
+5. You can test your environment by running a random agent
 ```
 cd example/random
 python random_agent.py -e YOUR_ENV_NAME
@@ -199,6 +199,7 @@ pip install keras==1.2
 Please see [this instruction](https://keras.io/backend/) to switch backend between ```Theano``` and ```Tensorflow```
 
 If you use  the ```Theano``` backend, please see [this instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
+
 If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [constant.py](./example/dqn/constants.py) to config gpu
 
 ### Training an agent
@@ -219,8 +220,8 @@ if you set ```SHOW``` is ```True```, You will see a window like this to monitor 
 
 </div>
 
-While the ```Collision``` button turning red, a collision is detected.
-While the ```Trigger``` button turning red, the agent is taking an action to ask the environment if it is seeing the target in a right place. 
+- While the ```Collision``` button turning red, a collision is detected.
+- While the ```Trigger``` button turning red, the agent is taking an action to ask the environment if it is seeing the target in a right place. 
 
 if you set ```Map``` is ```True```, you will see a window showing the trajectory of the agent like this:
 
