@@ -7,8 +7,8 @@ The framework of this project shows as below:
 
 ![framework](./doc/framework.JPG)
 
-```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-```OpenAI Gym``` is compatible with any numerical computation library, such as Tensorflow or Theano. 
+- ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
+- ```OpenAI Gym``` is a toolkit for developing RL, compatible with any numerical computation library, such as Tensorflow or Theano. 
  
 The tutorial will show you how to get started with **installing environment, running an agent in an environment, adding a new environment and running a reinforcement learning example for visual navigation.**
 
