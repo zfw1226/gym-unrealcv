@@ -228,8 +228,11 @@ if you set ```Map``` is ```True```, you will see a window showing the trajectory
 
 - The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
 - The ```purple points``` represent where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
+- The ```red points``` represent where the targets are.
+- The ```blue points``` represent where the agent start in a new episode.
 - The ```red lines```  represent the trajectories that the agents found taget object sucessfully in the end.
 - The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
+- The ```blue line``` represents the trajectory of agent in the current episode.
 
 You can change the architecture of DQN in [```example/dqn/dqn.py```](./example/dqn/dqn.py) 
 
