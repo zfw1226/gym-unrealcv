@@ -212,7 +212,11 @@ While the ```Trigger``` button turning red, the agent is taking an action to ask
 
 if you set ```Map``` is ```True```, you will see a window showing the trajectory of the agent like this:
 
+<div align="center">
+
 ![map](./doc/map.gif)
+
+</div>
 
 - The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
 - The ```purple points``` represent where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
@@ -229,8 +233,12 @@ You can display a graph showing the history episode rewards by running the follo
 cd example/utility
 python reward.py 
 ```
+
+<div align="center">
+
 ![reward](https://i.imgur.com/W039bbs.jpg)
 
+</div>
 
 
 You can display a graph showing the trajectory by running the following script:
@@ -238,7 +246,12 @@ You can display a graph showing the trajectory by running the following script:
 cd example/utility
 python trajectory.py
 ```
+
+<div align="center">
+
 ![trajectory](https://i.imgur.com/PKpKHNR.png)
+
+</div>
 
 The same meaning as live map plot.
 
