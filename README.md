@@ -239,7 +239,7 @@ if you set ```Map``` is ```True```, you will see a window showing the trajectory
 You can change the architecture of DQN in [```example/dqn/dqn.py```](./example/dqn/dqn.py) 
 
 
-#Visualization
+# Visualization
 
 You can display a graph showing the history episode rewards by running the following script:
 ```
