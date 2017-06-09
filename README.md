@@ -195,10 +195,8 @@ You can start the training process with default parameters by running the follow
 cd example/dqn
 python run.py
 ```
-
-You will see a window like this:
-
-
+The default target objects of [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) are two potted plant in this room. 
+While the env reset, the agent will select one of start positions in the list  ```self.origin``` and the yaw angle is purely random.
 
 You can change some parameteters in [```example/dqn/constant.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/constants.py)
 if you set ```SHOW``` is ```True```, You will see a window like this to monitor the agent while training:
