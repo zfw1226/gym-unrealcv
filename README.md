@@ -239,7 +239,7 @@ if you set ```Map``` is ```True```, you will see a window showing the trajectory
 - The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
 - The ```blue line``` represents the trajectory of agent in the current episode.
 
-You can change the architecture of DQN in [```example/dqn/dqn.py```](./example/dqn/dqn.py) 
+You can change the architecture of DQN in [dqn.py](./example/dqn/dqn.py) 
 
 
 ## Visualization
