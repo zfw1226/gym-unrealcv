@@ -201,7 +201,11 @@ While the env reset, the agent will select one of start positions in the list  `
 You can change some parameteters in [```example/dqn/constant.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/constants.py)
 if you set ```SHOW``` is ```True```, You will see a window like this to monitor the agent while training:
 
+<div align="center">
+
 ![show](./doc/show.PNG)
+
+</div>
 
 While the ```Collision``` button turning red, a collision is detected.
 While the ```Trigger``` button turning red, the agent is taking an action to ask the environment if it is seeing the target in a right place. 
