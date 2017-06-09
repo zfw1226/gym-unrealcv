@@ -61,7 +61,7 @@ While installing gym-unrealcv, dependencies including [OpenAI Gym](https://githu
 
 
 ## Prepare Unreal Environment
-You need prepare an unreal environment to run the demo as below. You can do it by running the script ```RealisiticRendering.sh``` 
+You need prepare an unreal environment to run the demo as below. You can do it by running the script [RealisiticRendering.sh](RealisticRendering.sh)
 ```
 sh RealisiticRendering.sh
 ```
@@ -200,7 +200,7 @@ Please see [this instruction](https://keras.io/backend/) to switch backend betwe
 
 If you use  the ```Theano``` backend, please see [this instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
 
-If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [constant.py](./example/dqn/constants.py) to config gpu
+If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [constants.py](./example/dqn/constants.py) to config gpu
 
 ### Training an agent
 You can start the training process with default parameters by running the following script:
@@ -209,9 +209,9 @@ cd example/dqn
 python run.py
 ```
 The default target objects of [Unrealcv-Search-v0](./gym_unrealcv/envs/unrealcv_search.py) are two potted plant in this room. 
-While the env reset, the agent will select one of start positions in the list  ```self.origin``` and the yaw angle is purely random.
+While the env reset, the agent restart from one of start positions in the list  ```self.origin``` with a random yaw angle.
 
-You can change some parameteters in [constant.py](./example/dqn/constants.py)
+You can change some parameteters in [constants.py](./example/dqn/constants.py)
 if you set ```SHOW``` is ```True```, You will see a window like this to monitor the agent while training:
 
 <div align="center">
