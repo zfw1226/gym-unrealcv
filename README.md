@@ -198,6 +198,7 @@ To switch backend, please see [the instruction](https://keras.io/backend/)
 If you use ```theano``` backend, please see [the instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
 If you use ```tensorflow```backend, please set ```DEVICE_TF``` in [```example/dqn/constant.py```](./example/dqn/constants.py)
 
+### Training an agent
 You can start the training process with default parameters by running the following script:
 ```
 cd example/dqn
