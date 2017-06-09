@@ -17,9 +17,10 @@ The tutorial will show you how to get started with **installing environment, run
 ![search1](./doc/search1.gif)
 ![search2](./doc/search2.gif)
 
+Snapshots of RL based visual navigation for object searching and obstacle avoidance.
+
 </div>
 
-Snapshots of RL based visual navigation for object searching and obstacle avoidance.
 
 # Install Environment
 ## Dependencies
