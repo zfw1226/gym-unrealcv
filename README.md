@@ -184,25 +184,29 @@ Run a reinforcement learning example
 ===
 Besides, we provide an example to train an agent for visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 
-### Dependence
-To run this example, some additional dependence should be installed for deep reinforcement learning. 
-- [Keras](https://keras.io/)(Tested with v1.2)
+### Dependencies
+To run this example, some additional dependencies should be installed for deep reinforcement learning. 
+- [Keras](https://keras.io/#switching-from-tensorflow-to-theano)(Tested with v1.2)
 - Theano or thensorflow
 
-To use Keras(v1.2), you should run
+To install Keras(v1.2), you should run
 ```
 pip install keras==1.2
 ```
- 
+To switch backend, please see [the instruction](https://keras.io/backend/)
+
+If you use ```theano``` backend, please see [the instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
+If you use ```tensorflow```backend, please set ```DEVICE_TF``` in [```example/dqn/constant.py```](./example/dqn/constants.py)
+
 You can start the training process with default parameters by running the following script:
 ```
 cd example/dqn
 python run.py
 ```
-The default target objects of [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) are two potted plant in this room. 
+The default target objects of [Unrealcv-Search-v0](./gym_unrealcv/envs/unrealcv_search.py) are two potted plant in this room. 
 While the env reset, the agent will select one of start positions in the list  ```self.origin``` and the yaw angle is purely random.
 
-You can change some parameteters in [```example/dqn/constant.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/constants.py)
+You can change some parameteters in [```example/dqn/constant.py```](./example/dqn/constants.py)
 if you set ```SHOW``` is ```True```, You will see a window like this to monitor the agent while training:
 
 <div align="center">
@@ -227,7 +231,7 @@ if you set ```Map``` is ```True```, you will see a window showing the trajectory
 - The ```red lines```  represent the trajectories that the agents found taget object sucessfully in the end.
 - The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
 
-You can change the architecture of DQN in [```example/dqn/dqn.py```](https://github.com/zfw1226/gym-unrealcv/blob/master/example/dqn/dqn.py) 
+You can change the architecture of DQN in [```example/dqn/dqn.py```](./example/dqn/dqn.py) 
 
 
 Visualization
