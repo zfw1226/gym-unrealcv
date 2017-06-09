@@ -9,13 +9,6 @@ In this tutorial, we will show how to get started with installing environment, a
 
 </div>
 
-Table of Contents
-===
-- [Install Environment](#Install Environment)
-    - [Dependencies](##Dependencies)
-    - [Docker](##Docker)
-    
-
 
 #Install Environment
 ## Dependencies
