@@ -23,7 +23,7 @@ Recommend object list
 
 class UnrealCvSearch(gym.Env):
    def __init__(self,
-                TARGETS = ['SM_Plant_7','SM_Plant_8'],
+                TARGETS = ['SM_Plant_7','SM_Plant_8'],# you can change it for other targets
                 DOCKER = True,
                 ENV_NAME='RealisticRendering',
                 cam_id = 0,
