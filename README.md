@@ -269,7 +269,10 @@ python trajectory.py
 
 </div>
 
-The same meaning as live map plot.
+- The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
+- The ```purple points``` represent where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
+- The ```red lines```  represent the trajectories that the agents found taget object sucessfully in the end.
+- The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
 
 
 
