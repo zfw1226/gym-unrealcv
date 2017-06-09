@@ -9,14 +9,22 @@ In this tutorial, we will show how to get started with installing environment, a
 
 </div>
 
-Install Environment
+Table of Contents
 ===
+- [Install Environment](#Install Environment)
+    - [Dependencies](##Dependencies)
+    - [Docker](##Docker)
+    
+
+
+#Install Environment
 ## Dependencies
 - Docker
 - Nvidia-Docker
 - Gym
 - CV2
 - Matplotlib
+- Numpy
 
 We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 Considering performance, we use [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) to run the unreal environment. 
@@ -65,8 +73,8 @@ You need prepare an unreal environment to run the demo as below. You can do it b
 sh RealisiticRendering.sh
 ```
 
-Run a random agent in an unreal environment
-===
+#Run a random agent in an unreal environment
+
 
 Once ```gym-unrealcv``` is installed successfully, you can test it by running:
 ```
@@ -75,8 +83,8 @@ python random_agent.py
 ```
 It will take a few minutes for the image to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that an agent is moving around the realistic room randomly in first-person view.
 
-Add a new unreal environment
-===
+#Add a new unreal environment
+
 In this section, we will show you how to add a new unreal environment in openai gym for your RL tasks, step by step.
 1. Move your new Unreal Environment to ```/gym-unrealcv/gym_unrealcv/envs/UnrealEnv```
 2. Create a new python file in ```/gym-unrealcv/gym_unrealcv/envs```, Write your environment in this file. A simple environment in [unrealcv_simple.py](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_simple.py) is available for you.The details of the code are shown as below:
@@ -180,11 +188,11 @@ python random_agent.py -e YOUR_ENV_NAME
 ```
 You will see your agent take some actions randomly and get reward as you defined in the new environment.
 
-Run a reinforcement learning example
-===
+#Run a reinforcement learning example
+
 Besides, we provide an example to train an agent for visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0](https://github.com/zfw1226/gym-unrealcv/blob/master/gym_unrealcv/envs/unrealcv_search.py) environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 
-### Dependencies
+## Dependencies
 To run this example, some additional dependencies should be installed for deep reinforcement learning. 
 - [Keras](https://keras.io/#switching-from-tensorflow-to-theano)(Tested with v1.2)
 - Theano or thensorflow
@@ -198,7 +206,7 @@ Please see [this instruction](https://keras.io/backend/) to switch backend betwe
 If you use  the ```Theano``` backend, please see [this instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
 If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [```example/dqn/constant.py```](./example/dqn/constants.py) to config gpu
 
-### Training an agent
+## Training an agent
 You can start the training process with default parameters by running the following script:
 ```
 cd example/dqn
@@ -238,8 +246,8 @@ if you set ```Map``` is ```True```, you will see a window showing the trajectory
 You can change the architecture of DQN in [```example/dqn/dqn.py```](./example/dqn/dqn.py) 
 
 
-Visualization
-===
+#Visualization
+
 You can display a graph showing the history episode rewards by running the following script:
 ```
 cd example/utility
