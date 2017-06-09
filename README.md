@@ -51,7 +51,7 @@ You should be able to get the same result as you run ```nvidia-smi``` in your ho
 
 ## Gym-UnrealCV
 
-It is easy to install gym-unrealcv,just 
+It is easy to install gym-unrealcv, just run
 ```
 git clone https://github.com/zfw1226/gym-unrealcv.git
 cd gym-unrealcv
