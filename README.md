@@ -3,7 +3,7 @@ Integrate UnrealCV with OpenAI Gym for Reinforcement Learning(RL)
 In this tutorial, we will show how to get started with installing environment, adding new envirnnment for specific RL tasks and train a DQN model for visual navigation in a realistic room.
 
 ![search1](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/search1.gif)
-
+![search2](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/search2.gif)
 
 Install Environment
 ===
