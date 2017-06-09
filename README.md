@@ -193,10 +193,10 @@ To install Keras(v1.2), you should run
 ```
 pip install keras==1.2
 ```
-To switch backend, please see [the instruction](https://keras.io/backend/)
+Please see [this instruction](https://keras.io/backend/) to switch backend between ```Theano``` and ```Tensorflow```
 
-If you use ```theano``` backend, please see [the instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
-If you use ```tensorflow```backend, please set ```DEVICE_TF``` in [```example/dqn/constant.py```](./example/dqn/constants.py)
+If you use  the ```Theano``` backend, please see [this instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
+If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [```example/dqn/constant.py```](./example/dqn/constants.py) to config gpu
 
 ### Training an agent
 You can start the training process with default parameters by running the following script:
