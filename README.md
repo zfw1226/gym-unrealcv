@@ -1,8 +1,8 @@
-Integrate UnrealCV with Openai Gym for Reinforcement Learning(RL)
+Integrate UnrealCV with OpenAI Gym for Reinforcement Learning(RL)
 ===
 In this tutorial, we will show how to get started with installing environment, adding new envirnnment for specific RL tasks and train a DQN model for visual navigation in a realistic room.
 
-![search1](https://i.imgur.com/esXQ0tI.gif)
+![search1](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/search1.gif)
 
 
 Install Environment
@@ -210,7 +210,7 @@ While the ```Trigger``` button turning red, the agent is taking an action to ask
 
 if you set ```Map``` is ```True```, you will see a window showing the trajectory of the agent like this:
 
-![show](https://i.imgur.com/PKpKHNR.png)
+![map](https://github.com/zfw1226/gym-unrealcv/blob/master/doc/map.gif)
 
 - The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
 - The ```purple points``` represent where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
