@@ -8,8 +8,8 @@ USE_TARGET_NETWORK = True # use the target network
 SHOW = False # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
+DEVICE_TF = '/gpu:0'
 MAX_EPOCHS = 10000 # max episode number
-
 MEMORY_SIZE = 20000
 LEARN_START_STEP = 5000
 INPUT_SIZE = 150

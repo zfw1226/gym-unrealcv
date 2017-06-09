@@ -10,6 +10,8 @@ import tensorflow as tf
 import keras.backend.tensorflow_backend as KTF
 import memory
 import keras.backend as K
+from constants import *
+
 class DeepQ:
     """
     DQN abstraction.
@@ -40,7 +42,7 @@ class DeepQ:
         self.useTargetNetwork = useTargetNetwork
         self.count_steps = 0
         if K.backend() == 'tensorflow':
-            with KTF.tf.device('/gpu:0'):
+            with KTF.tf.device(DEVICE_TF):
                 config = tf.ConfigProto()
                 config.gpu_options.allow_growth = True
                 KTF.set_session(tf.Session(config=config))
