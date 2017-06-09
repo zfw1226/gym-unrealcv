@@ -44,15 +44,15 @@ nvidia-docker run --rm nvidia/cuda nvidia-smi
 You should be able to get the same result as you run ```nvidia-smi``` in your host.
 
 
-## Gym-Unrealcv
+## Gym-UnrealCV
 
-Install gym-unrealcv
+It is easy to install gym-unrealcv,just 
 ```
 git clone https://github.com/zfw1226/gym-unrealcv.git
 cd gym-unrealcv
 pip install -e . 
 ```
-While installing gym-unrealcv, [OpenAI Gym](https://github.com/openai/gym),[docker-py](https://github.com/docker/docker-py),cv2 and matplotlib are installed.
+While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), [docker-py](https://github.com/docker/docker-py), cv2 and matplotlib are installed.
 
 
 ## Prepare Unreal Environment
@@ -64,12 +64,12 @@ sh RealisiticRendering.sh
 Run a random agent in an unreal environment
 ===
 
-Once ```gym-unrealcv``` is installed successfully, you will see that your agent walking randomly in first-person view, after you run:
+Once ```gym-unrealcv``` is installed successfully, you can test it by running:
 ```
 cd example/random
 python random_agent.py
 ```
-It will take a few minutes for the image to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that your agent is moving around the realistic room randomly.
+It will take a few minutes for the image to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that an agent is moving around the realistic room randomly in first-person view.
 
 Add a new unreal environment
 ===
