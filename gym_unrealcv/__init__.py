@@ -10,4 +10,10 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch'
 )
 
+# adding reward by distance
+register(
+    id='Unrealcv-Search-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_v1'
+)
+
 
