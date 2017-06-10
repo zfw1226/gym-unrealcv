@@ -1,5 +1,5 @@
 import gym
-import gym_unreal
+import gym_unrealcv
 import time
 from distutils.dir_util import copy_tree
 import os
@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
 
-    ACTION_SIZE = env.get_action_size()
+    ACTION_SIZE = len(env.action)
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -78,8 +78,8 @@ if __name__ == '__main__':
                               (action[1]-0.5) * ANGLE_MAX,
                               action[2])
                     #print action_env
-                    newObservation, reward, done, info = env.step(action_env)
-                    newObservation = io_util.preprocess_img(newObservation)
+                    obs_new, reward, done, info = env.step(action_env)
+                    newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
                     #print action.shape
                     Agent.addMemory(observation, action, reward, newObservation, done)
@@ -95,8 +95,8 @@ if __name__ == '__main__':
                 #test
                 else:
                     action = Agent.actor.model.predict(observation)
-                    newObservation, reward, done, info = env.step(action)
-                    newObservation = io_util.preprocess_img(newObservation)
+                    obs_new, reward, done, info = env.step(action)
+                    newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
 
                 #print 'step time:' + str(time.time() - start_req)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
                         # save model weights and monitoring data
                         print 'Save model'
                         Agent.saveModel( MODEL_DIR + '/ep' +str(epoch))
-                        env.monitor.flush()
+
                         copy_tree(MONITOR_DIR + 'tmp', MONITOR_DIR + str(epoch))
                         # save simulation parameters.
                         parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds']
@@ -131,6 +131,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print("Shutting down")
-        #cv2.destroyAllWindows()
-        env.monitor.close()  # not needed in latest gym update
         env.close()

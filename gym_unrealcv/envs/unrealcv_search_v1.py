@@ -71,6 +71,10 @@ class UnrealCvSearch_v1(gym.Env):
 
      self.trigger_count  = 0
 
+     self.distance_last, self.target_last = self.select_target_by_distance(self.targets_pos)
+
+
+
 
    def _step(self, action = (0,0,0), show = False):
         info = dict(
@@ -84,7 +88,7 @@ class UnrealCvSearch_v1(gym.Env):
             Pose = [],
             Trajectory = [],
             Steps = self.count_steps,
-            Target = self.targets_pos[0]
+            Target = self.targets_pos[self.target_last]
         )
 
         (velocity, angle, info['Trigger']) = action
@@ -95,7 +99,7 @@ class UnrealCvSearch_v1(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
-            #self.unrealcv.set_rotation(self.cam_id, self.unrealcv.cam['rotation'][0], self.unrealcv.cam['rotation'][1],20)
+            print info['Trigger']
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
@@ -187,13 +191,25 @@ class UnrealCvSearch_v1(gym.Env):
        error = abs(np.array(target) - np.array(current))[:2]# only x and y
        distance = math.sqrt(sum(error * error))
        return distance
-
+   def select_target_by_distance(self,targets):
+       current_pos = self.unrealcv.get_pos()
+       distances = []
+       for target_pos in targets:
+           distances.append(self.cauculate_distance(target_pos, current_pos))
+       distances = np.array(distances)
+       distance_now = distances.min()
+       target_id = distances.argmin()
+       return distance_now,target_id
 
    def reward_distance(self):
 
-       current_pos = self.unrealcv.get_pos()
-       distance_now = self.cauculate_distance(self.target_pos, current_pos)
+       distance_now,target_id = self.select_target_by_distance(self.targets_pos)
 
-       reward = (self.distance_last - distance_now) / 100.0
+
+       if target_id == self.target_last:
+           reward = (self.distance_last - distance_now) / 100.0
+       else:
+           reward = 0
        self.distance_last = distance_now
+       self.target_last = target_id
        return reward
