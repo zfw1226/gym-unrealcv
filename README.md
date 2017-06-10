@@ -2,15 +2,15 @@ Integrate Unreal Engine with OpenAI Gym for Reinforcement Learning based on Unre
 ===
 # Introduction
 **This project integrates Unreal Engine with OpenAI Gym for visual reinforcement learning based on [UnrealCV](http://unrealcv.org/).**
-In this project, you can run your RL algorithms in a realistic UE4 environment easily without any knowledge of Unreal Engine and UnrealCV.
-The framework of this project shows as below:
+In this project, you can run your RL algorithms in various realistic UE4 environments easily without any knowledge of Unreal Engine and UnrealCV.
+The framework of this project is shown as below:
 
 ![framework](./doc/framework.JPG)
 
 - ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-- ```OpenAI Gym``` is a toolkit for developing RL, compatible with any numerical computation library, such as Tensorflow or Theano. 
+- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with any numerical computation library, such as Tensorflow or Theano. 
  
-The tutorial will show you how to get started with **installing environment, running an agent in an environment, adding a new environment and running a reinforcement learning example for visual navigation.**
+The tutorial will show you how to get started with **installing environment, running an agent in an environment, adding a new environment and training a reinforcement learning agent for visual navigation.**
 
 <div align="center">
 
