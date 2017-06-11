@@ -16,4 +16,9 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_v1'
 )
 
+# target driven and reward by distance
+register(
+    id='Unrealcv-Search-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_v2'
+)
 
