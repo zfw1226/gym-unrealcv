@@ -26,6 +26,7 @@ Snapshots of RL based visual navigation for object searching and obstacle avoida
 ## Dependencies
 - Docker
 - Nvidia-Docker
+- UnrealCV
 - Gym
 - CV2
 - Matplotlib
