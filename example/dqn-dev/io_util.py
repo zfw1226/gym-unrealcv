@@ -5,6 +5,7 @@ import cv2
 import keras.backend as K
 from constants import *
 import matplotlib.pyplot as plt
+import numpy as np
 
 def detect_monitor_files(training_dir):
     return [os.path.join(training_dir, f) for f in os.listdir(training_dir) if f.startswith('openaigym')]
@@ -21,6 +22,7 @@ def show_info( info, cv_img):
     cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'],3)), (200, 450), font, 0.5, (255, 255, 255), 2)
     cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
     cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
+    cv2.putText(cv_img, 'AnglePre:' + str(info['Angle']), (200, 430), font, 0.5, (255, 255, 255), 2)
 
     if info['Trigger']:
         cv2.putText(cv_img, 'Trigger', (400, 450), font, 0.5, (0, 0, 255), 2)
@@ -113,3 +115,8 @@ def live_plot(info):
             line[-1].set_color('b')
 
         plt.pause(0.01)
+
+def onehot(num,len):
+    onehot = np.zeros(len)
+    onehot[num] = 1
+    return onehot

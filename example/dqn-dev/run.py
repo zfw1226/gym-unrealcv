@@ -14,7 +14,7 @@ from gym import wrappers
 import csv
 
 ACTION_LIST = [
-    (60,  0, 0), # forward
+    (30,  0, 0), # forward
     (30, 15, 0),
     (30,-15, 0),
     (10, 30, 0),
@@ -48,7 +48,7 @@ if __name__ == '__main__':
                           INPUT_SIZE, INPUT_SIZE,INPUT_CHANNELS,USE_TARGET_NETWORK)
         env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,force=True)
 
-        io_util.create_csv_header(TRA_DIR)
+        #io_util.create_csv_header(TRA_DIR)
 
     else:
         #Load weights, monitor info and parameter info.
@@ -74,7 +74,8 @@ if __name__ == '__main__':
             env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,resume=True)
 
         #io_util.create_csv_header(TRA_DIR)
-
+    if not os.path.exists(TRA_DIR):
+        io_util.create_csv_header(TRA_DIR)
     #main loop
     try:
         start_time = time.time()
@@ -82,6 +83,8 @@ if __name__ == '__main__':
             obs = env.reset()
             observation = io_util.preprocess_img(obs)
             cumulated_reward = 0
+            angle_right = 0
+            angle_id = 0
             if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
                 EXPLORE = True
             else:
@@ -92,11 +95,17 @@ if __name__ == '__main__':
                 start_req = time.time()
 
                 if EXPLORE is True: #explore
-                    action = Agent.feedforward(observation, explorationRate)
+                    [action,angleid_pre] = Agent.feedforward(observation, explorationRate)
+                    if angleid_pre == angle_id:
+                        angle_right += 1.0
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
-                    Agent.addMemory(observation, action, reward, newObservation, done)
+
+                    angle_id = int((info['Angle']/45.0 + 0.5)%8)
+                    #print angle_id
+                    angle_onehot = io_util.onehot(angle_id,8)
+                    Agent.addMemory_new(observation, action, reward, newObservation, done, angle_onehot)
                     observation = newObservation
                     if stepCounter == LEARN_START_STEP:
                         print("Starting learning")
@@ -112,7 +121,7 @@ if __name__ == '__main__':
 
                 #test
                 else:
-                    action = Agent.feedforward(observation,0)
+                    [action, angle] = Agent.feedforward(observation,0)
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
@@ -130,7 +139,7 @@ if __name__ == '__main__':
                     h, m = divmod(m, 60)
 
                     print ("EP " + str(epoch) +" Csteps= " + str(stepCounter) + " - {} steps".format(t + 1) + " - CReward: " + str(
-                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) )
+                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) + " Angle Acc: " + str(angle_right/t) )
                         # SAVE SIMULATION DATA
                     if (epoch) % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
                         # save model weights and monitoring data

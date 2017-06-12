@@ -1,8 +1,8 @@
 import time
 import random
 import numpy as np
-from keras.models import Sequential, load_model
-from keras.layers import Convolution2D, Flatten, ZeroPadding2D
+from keras.models import Sequential, load_model, Model
+from keras.layers import Convolution2D, Flatten, ZeroPadding2D, Input
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import SGD , Adam
@@ -53,9 +53,9 @@ class DeepQ:
 
     def initNetworks(self):
 
-        self.model = self.createModel()
+        self.model = self.createModel_subtask()
         if self.useTargetNetwork:
-            self.targetModel = self.createModel()
+            self.targetModel = self.createModel_subtask()
 
     def createModel(self):
         input_shape = (self.img_channels, self.img_rows, self.img_cols)
@@ -90,8 +90,37 @@ class DeepQ:
         model.summary()
 
 
+
         return model
 
+    def createModel_subtask(self):
+        input_shape = (self.img_channels, self.img_rows, self.img_cols)
+        if K.image_dim_ordering() == 'tf':
+            input_shape = ( self.img_rows, self.img_cols, self.img_channels)
+
+        S = Input(shape= input_shape)
+        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
+        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
+        c3 = MaxPooling2D(pool_size=(2, 2))(c2)
+
+        c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
+        c5 = Convolution2D(32, 3, 3, activation='relu')(c4)
+        c6 = MaxPooling2D(pool_size=(2, 2))(c5)
+        c7 = Flatten()(c6)
+
+        h1 = Dense(512, activation='relu')(c7)
+        h2 = Dense(256, activation='relu')(h1)
+        Value = Dense(self.output_size,activation='linear',name='Value')(h2)
+
+        h3 = Dense(512, activation='relu')(c7)
+        h4 = Dense(256, activation='relu')(h3)
+        Angle = Dense(8, activation= 'softmax',name='Angle')(h4)
+
+        model = Model(input=[S], output=[Value,Angle])
+        model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1.,0.2])
+        model.summary()
+
+        return model
 
     def backupNetwork(self, model, backup):
         weightMatrix = []
@@ -111,10 +140,10 @@ class DeepQ:
     # predict Q values for all the actions
     def getQValues(self, state):
         if self.useTargetNetwork:
-            predicted = self.targetModel.predict(state)
+            predicted,angle = self.targetModel.predict(state)
         else:
-            predicted = self.model.predict(state)
-        return predicted[0]
+            predicted,angle = self.model.predict(state)
+        return predicted[0],angle
 
     def getMaxIndex(self, qValues):
         return np.argmax(qValues)
@@ -136,6 +165,9 @@ class DeepQ:
         else:
             self.normalMemory.addMemory(state, action, reward, newState, isFinal)
 
+    def addMemory_new(self, state, action, reward, newState, isFinal, angle):
+
+            self.normalMemory.addMemory(state, action, reward, newState, isFinal, angle)
 
     def getMemorySize(self):
         goodSize = self.goodMemory.getCurrentSize()
@@ -144,13 +176,13 @@ class DeepQ:
         return goodSize + badSize + normalSize
 
     def getMemory(self,miniBatchSize):
-        goodSize = min(self.goodMemory.getCurrentSize(),miniBatchSize/8)
+        '''goodSize = min(self.goodMemory.getCurrentSize(),miniBatchSize/8)
         badSize = min(self.badMemory.getCurrentSize(),miniBatchSize/4)
-        normalSize = miniBatchSize - goodSize - badSize
+        normalSize = miniBatchSize - goodSize - badSize'''
 
-        state_batch_normal,action_batch_normal,reward_batch_normal,newState_batch_normal,isFinal_batch_normal\
-        = self.normalMemory.getMiniBatch(normalSize)
-        if goodSize > 0:
+        state_batch_normal,action_batch_normal,reward_batch_normal,newState_batch_normal,isFinal_batch_normal, angle_batch_normal\
+        = self.normalMemory.getMiniBatch(miniBatchSize)
+        '''if goodSize > 0:
             state_batch_good,action_batch_good,reward_batch_good,newState_batch_good,isFinal_batch_good\
             = self.goodMemory.getMiniBatch(goodSize)
             #merge memory
@@ -167,18 +199,20 @@ class DeepQ:
             action_batch_normal.extend(action_batch_bad)
             reward_batch_normal.extend(reward_batch_bad)
             newState_batch_normal.extend(newState_batch_bad)
-            isFinal_batch_normal.extend(isFinal_batch_bad)
-        return state_batch_normal,action_batch_normal,reward_batch_normal,newState_batch_normal,isFinal_batch_normal
+            isFinal_batch_normal.extend(isFinal_batch_bad)'''
+        return state_batch_normal,action_batch_normal,reward_batch_normal,newState_batch_normal,isFinal_batch_normal,angle_batch_normal
 
 
     def learnOnMiniBatch(self, miniBatchSize,):
 
         self.count_steps += 1
 
-        state_batch,action_batch,reward_batch,newState_batch,isFinal_batch\
-        = self.getMemory(miniBatchSize)
+        '''state_batch,action_batch,reward_batch,newState_batch,isFinal_batch\
+        = self.getMemory(miniBatchSize)'''
 
-        qValues_batch = self.model.predict(np.array(state_batch),batch_size=miniBatchSize)
+        state_batch, action_batch, reward_batch, newState_batch, isFinal_batch, angle_batch\
+        =self.normalMemory.getMiniBatch(miniBatchSize)
+        [qValues_batch, angle_pre_batch] = self.model.predict(np.array(state_batch),batch_size=miniBatchSize)
 
         isFinal_batch = np.array(isFinal_batch) + 0
 
@@ -188,7 +222,7 @@ class DeepQ:
         if self.useTargetNetwork:
             qValuesNewState_batch = self.targetModel.predict_on_batch(np.array(newState_batch))
         else :
-            qValuesNewState_batch = self.model.predict_on_batch(np.array(newState_batch))
+            [qValuesNewState_batch,angle_pre_batch] = self.model.predict_on_batch(np.array(newState_batch))
 
         Y_sample_batch = reward_batch + (1 - isFinal_batch) * self.discountFactor * np.max(qValuesNewState_batch, axis=1)
 
@@ -198,7 +232,7 @@ class DeepQ:
         for i,action in enumerate(action_batch):
             Y_batch[i][action] = Y_sample_batch[i]
 
-        self.model.fit(X_batch, Y_batch, validation_split=0.0, batch_size = miniBatchSize, nb_epoch=1, verbose = 0)
+        self.model.fit(X_batch, [Y_batch, np.array(angle_batch)], validation_split=0.0, batch_size = miniBatchSize, nb_epoch=1, verbose = 0)
 
         if self.useTargetNetwork and self.count_steps % 1000 == 0:
             self.updateTargetNetwork()
@@ -217,9 +251,10 @@ class DeepQ:
 
 
     def feedforward(self,observation,explorationRate):
-        qValues = self.getQValues(observation)
+        [qValues,angle] = self.getQValues(observation)
         action = self.selectAction(qValues, explorationRate)
-        return action
+        angleid = angle[0].argmax()
+        return action,angleid
 
 
 
