@@ -76,6 +76,10 @@ if __name__ == '__main__':
         #io_util.create_csv_header(TRA_DIR)
     if not os.path.exists(TRA_DIR):
         io_util.create_csv_header(TRA_DIR)
+
+    angle_right = 0
+    angle_num = 0
+    angle_acc = 0
     #main loop
     try:
         start_time = time.time()
@@ -83,7 +87,7 @@ if __name__ == '__main__':
             obs = env.reset()
             observation = io_util.preprocess_img(obs)
             cumulated_reward = 0
-            angle_right = 0
+
             angle_id = 0
             if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
                 EXPLORE = True
@@ -96,8 +100,15 @@ if __name__ == '__main__':
 
                 if EXPLORE is True: #explore
                     [action,angleid_pre] = Agent.feedforward(observation, explorationRate)
+
+                    angle_num += 1
                     if angleid_pre == angle_id:
                         angle_right += 1.0
+                    angle_acc = angle_right / angle_num
+                    if angle_num > 100:
+                        angle_num = 0
+                        angle_right = 0
+
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
@@ -139,7 +150,7 @@ if __name__ == '__main__':
                     h, m = divmod(m, 60)
 
                     print ("EP " + str(epoch) +" Csteps= " + str(stepCounter) + " - {} steps".format(t + 1) + " - CReward: " + str(
-                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) + " Angle Acc: " + str(angle_right/t) )
+                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) + " Angle Acc: " + str(angle_acc) )
                         # SAVE SIMULATION DATA
                     if (epoch) % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
                         # save model weights and monitoring data
