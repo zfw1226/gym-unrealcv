@@ -1,7 +1,7 @@
-ENV_NAME = 'Unrealcv-Search-v1'
+ENV_NAME = 'Unrealcv-Search-v2'
 
 CONTINUE = False
-RESTART_EP = 4000
+RESTART_EP = 8000
 TRAIN = True
 SHOW = True
 MAP = False
@@ -14,7 +14,7 @@ INPUT_SIZE = 100
 INPUT_CHANNELS = 3
 BATCH_SIZE = 64
 VELOCITY_MAX = 100
-ANGLE_MAX = 60
+ANGLE_MAX = 60 # +-30
 
 LEARNINGRATE_CRITIC  = 0.001
 LEARNINGRATE_ACTOR = 0.0001
@@ -35,7 +35,7 @@ PARAM_DIR = 'log/param' # the path to save the parameters
 TRA_DIR = 'log/trajectory.csv' # the path to save trajectory
 
 #the path to reload weights, monitor and params
-critic_weights_path = 'log/model/ep' + str(RESTART_EP) + '/actormodel.h5'
-actor_weights_path = 'log/model/ep' + str(RESTART_EP) + '/criticmodel.h5'
-monitor_path = 'log/monitor/'+ str(RESTART_EP)
-params_json = 'log/param/' + str(RESTART_EP) + '.json'
+critic_weights_path = 'log6.11/model/ep' + str(RESTART_EP) + 'Critic_model.h5'
+actor_weights_path = 'log6.11/model/ep' + str(RESTART_EP) + 'Actor_model.h5'
+monitor_path = 'log6.11/monitor/'+ str(RESTART_EP)
+params_json = 'log6.11/param/' + str(RESTART_EP) + '.json'

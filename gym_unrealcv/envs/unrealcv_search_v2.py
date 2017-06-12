@@ -22,7 +22,7 @@ Recommend object list
 
 class UnrealCvSearch_v2(gym.Env):
    def __init__(self,
-                TARGETS = ['SM_Plant_8','SM_Plant_7','SM_Door_37', 'SM_Door_39', 'SM_Door_41','Couch_13','SM_CoffeeTable_14','SM_Couch_1seat_5'],
+                TARGETS = ['SM_Plant_8','SM_Plant_7'],
                 DOCKER = True,
                 ENV_NAME='RealisticRendering',
                 cam_id = 0,
@@ -72,7 +72,6 @@ class UnrealCvSearch_v2(gym.Env):
      self.trigger_count  = 0
 
      self.target_id = random.randint(0, len(self.target_list) - 1)
-     self.target_id = self.onehot(self.target_id, len(self.target_list))
 
      current_pos = self.unrealcv.get_pos()
      self.distance_last = self.cauculate_distance(self.targets_pos[self.target_id], current_pos)
@@ -92,7 +91,8 @@ class UnrealCvSearch_v2(gym.Env):
             Pose = [],
             Trajectory = [],
             Steps = self.count_steps,
-            Target = self.targets_pos[self.target_id]
+            TargetPos = self.targets_pos[self.target_id],
+            Target = self.target_list[self.target_id]
         )
 
         (velocity, angle, info['Trigger']) = action
@@ -151,8 +151,9 @@ class UnrealCvSearch_v2(gym.Env):
        self.trigger_count = 0
 
        self.target_id = random.randint(0,len(self.target_list)-1)
+       self.distance_last = self.cauculate_distance(self.targets_pos[self.target_id], current_pos)
 
-       return state
+       return [state, self.target_id]
 
    def _close(self):
        if self.docker:
@@ -161,7 +162,8 @@ class UnrealCvSearch_v2(gym.Env):
    def _get_action_size(self):
        return len(self.action)
 
-
+   def _get_targetID(self):
+       return self.target_id
 
    def reward_bbox(self):
 

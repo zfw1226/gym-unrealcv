@@ -14,7 +14,7 @@ from CriticNetwork import CriticNetwork
 class DDPG:
     def __init__(self, outputs, memorySize, discountFactor,
                  learningRate_Critic, learningRate_Actor, target_update_rate,
-                 img_rows, img_cols, img_channels):
+                 img_rows, img_cols, img_channels, target_size):
         """
         Parameters:
             - outputs: output size
@@ -32,6 +32,7 @@ class DDPG:
         self.img_cols = img_cols
         self.img_channels = img_channels
         self.target_update_rate = target_update_rate
+        self.target_size = target_size
 
         self.img_shape = (self.img_channels, self.img_rows, self.img_cols)
         if K.image_dim_ordering() == 'tf':
@@ -46,9 +47,9 @@ class DDPG:
 
         print 'tf config!'
 
-        self.actor = ActorNetwork(self.sess, self.img_shape, self.action_size,  self.target_update_rate, self.learningRateActor)
+        self.actor = ActorNetwork(self.sess, self.img_shape, self.action_size,  self.target_update_rate, self.learningRateActor, self.target_size)
         print 'actor'
-        self.critic = CriticNetwork(self.sess, self.img_shape, self.action_size,  self.target_update_rate, self.learningRateCritic)
+        self.critic = CriticNetwork(self.sess, self.img_shape, self.action_size,  self.target_update_rate, self.learningRateCritic, self.target_size)
         print 'critic'
 
 
@@ -83,50 +84,51 @@ class DDPG:
 
         return action[0]
 
-    def addMemory(self, state, action, reward, newState, isFinal):
-        self.memory.addMemory(state, action, reward, newState, isFinal)
+    def addMemory(self, state, action, reward, newState, isFinal, targetID):
+        self.memory.addMemory(state, action, reward, newState, isFinal, targetID)
 
-    def saveMemory(self,state,  action, reward, newState, isFinal ):
-        with open('/home/UAV/dqn_data/memory.npy', 'a') as f:
-            #f.writelines(str(state)+'\n')
-            np.save(f, state)
 
     def getMemorySize(self):
         return self.memory.getCurrentSize()
 
 
     def learnOnMiniBatch(self, miniBatchSize):
-        state_batch, action_batch, reward_batch, newState_batch, isFinal_batch \
+        # sample experience memory
+        state_batch, action_batch, reward_batch, newState_batch, isFinal_batch, targetID_batch \
             = self.memory.getMiniBatch(miniBatchSize)
 
         isFinal_batch = np.array(isFinal_batch) + 0
+        targetID_batch = np.array(targetID_batch)
+        action_batch = np.array(action_batch)
+        state_batch = np.array(state_batch)
 
-        actor_output = self.actor.target_model.predict_on_batch(np.array(newState_batch))
+        # feed forward actor
+        actor_input = [np.array(newState_batch),targetID_batch]
+        actor_output = self.actor.target_model.predict_on_batch(actor_input)
 
-        critic_input = [np.array(newState_batch),np.array(actor_output)]
+        # feed forward critic
+        critic_input = [np.array(newState_batch),np.array(actor_output),targetID_batch]
         qValuesNewState_batch = self.critic.target_model.predict_on_batch(critic_input)
 
+        # update Value
         Y_value = np.zeros([miniBatchSize, self.action_size])
         for k in range(miniBatchSize):
             Y_value[k] = reward_batch[k] + (1 - isFinal_batch[k]) * self.discountFactor * qValuesNewState_batch[k]
 
-
-        action_batch = np.array(action_batch)
         #print action_batch
         #print Y_value.shape
-        state_batch = np.array(state_batch)
-        X_input = [state_batch, action_batch]
+
+        X_input = [state_batch, action_batch,targetID_batch]
         self.critic.model.train_on_batch(X_input, Y_value)
 
-        a_for_grad = self.actor.model.predict(state_batch)
-        grads = self.critic.gradients(state_batch, a_for_grad)
+        a_for_grad = self.actor.model.predict([state_batch,targetID_batch])
+        grads = self.critic.gradients(state_batch, a_for_grad, targetID_batch)
 
-        self.actor.train(state_batch, grads)
+        self.actor.train(state_batch, grads,targetID_batch)
 
         self.actor.target_train()
         self.critic.target_train()
-        #self.updateTargetNetwork(self.critic.model, self.critic.target_model, self.target_update_rate)
-        #self.updateTargetNetwork(self.actor.model, self.actor.target_model, self.target_update_rate)
+
 
     def saveModel(self, path):
         self.critic.model.save_weights(path+'Critic_model.h5')

@@ -11,7 +11,7 @@ import keras.backend as K
 
 
 class ActorNetwork(object):
-    def __init__(self, sess, state_shape, action_size, TAU, LEARNING_RATE):
+    def __init__(self, sess, state_shape, action_size, TAU, LEARNING_RATE, target_size):
         self.sess = sess
         self.TAU = TAU
         self.LEARNING_RATE = LEARNING_RATE
@@ -19,18 +19,23 @@ class ActorNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        self.model , self.weights, self.state = self.create_actor_network(state_shape, action_size)
-        self.target_model, self.target_weights, self.target_state = self.create_actor_network(state_shape, action_size)
+        #self.model , self.weights, self.state = self.create_actor_network(state_shape, action_size)
+        #self.target_model, self.target_weights, self.target_state = self.create_actor_network(state_shape, action_size)
+
+        self.model , self.weights, self.state, self.targetID = self.create_actor_network_new(state_shape, action_size, target_size)
+        self.target_model, self.target_weights, self.target_state, self.target_targetID = self.create_actor_network_new(state_shape, action_size, target_size)
+
         self.action_gradient = tf.placeholder(tf.float32,[None, action_size])
         self.params_grad = tf.gradients(self.model.output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
         self.optimize = tf.train.AdamOptimizer(LEARNING_RATE).apply_gradients(grads)
         self.sess.run(tf.global_variables_initializer())
 
-    def train(self, states, action_grads):
+    def train(self, states, action_grads, targets):
         self.sess.run(self.optimize, feed_dict={
             self.state: states,
-            self.action_gradient: action_grads
+            self.action_gradient: action_grads,
+            self.targetID: targets
         })
 
     def target_train(self):
@@ -60,4 +65,29 @@ class ActorNetwork(object):
         model.summary()
 
         return model, model.trainable_weights, S
+
+
+    def create_actor_network_new(self, state_shape,action_size,target_size):
+        print("Now we build the model")
+
+        S = Input(shape= state_shape)
+        T = Input(shape=[target_size],name='target')# one hot
+        t1 = Dense(512, activation='linear')(T)
+
+        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
+        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
+        c3 = MaxPooling2D(pool_size=(2, 2))(c2)
+
+        c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
+        c5 = Convolution2D(32, 3, 3, activation='relu')(c4)
+        c6 = MaxPooling2D(pool_size=(2, 2))(c5)
+        c7 = Flatten()(c6)
+        c8 = Dense(512, activation='relu')(c7)
+        h2 = merge([c8, t1], mode='sum')
+        c9 = Dense(256, activation='relu')(h2)
+        output = Dense(action_size, activation = 'sigmoid')(c9)
+        model = Model(input=[S,T], output=output)
+        model.summary()
+
+        return model, model.trainable_weights, S, T
 

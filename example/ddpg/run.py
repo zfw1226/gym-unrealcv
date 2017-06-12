@@ -20,6 +20,7 @@ if __name__ == '__main__':
     env = gym.make(ENV_NAME)
 
     ACTION_SIZE = len(env.action)
+    TARGET_SIZE = len(env.target_list)
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -29,7 +30,7 @@ if __name__ == '__main__':
 
     Agent = DDPG(ACTION_SIZE, MEMORY_SIZE, GAMMA,
                  LEARNINGRATE_CRITIC, LEARNINGRATE_ACTOR, TARGET_UPDATE_RATE,
-                 INPUT_SIZE, INPUT_SIZE, INPUT_CHANNELS)
+                 INPUT_SIZE, INPUT_SIZE, INPUT_CHANNELS, TARGET_SIZE)
     #load init param
     if not CONTINUE:
         explorationRate = INITIAL_EPSILON
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     try:
         start_time = time.time()
         for epoch in xrange(current_epoch + 1, MAX_EPOCHS + 1, 1):
-            obs = env.reset()
+            [obs,target_id] = env.reset()
+            target_id = io_util.onehot(target_id,TARGET_SIZE)
             observation = io_util.preprocess_img(obs)
             cumulated_reward = 0
             #if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
@@ -72,7 +74,7 @@ if __name__ == '__main__':
 
                 if EXPLORE is True: #explore
 
-                    action_pred = Agent.actor.model.predict(observation)
+                    action_pred = Agent.actor.model.predict([observation,target_id.reshape(1,TARGET_SIZE)])
                     action = Agent.Action_Noise(action_pred, explorationRate)
                     action_env = ( action[0] * VELOCITY_MAX,
                               (action[1]-0.5) * ANGLE_MAX,
@@ -81,8 +83,7 @@ if __name__ == '__main__':
                     obs_new, reward, done, info = env.step(action_env)
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
-                    #print action.shape
-                    Agent.addMemory(observation, action, reward, newObservation, done)
+                    Agent.addMemory(observation, action, reward, newObservation, done, target_id)
                     observation = newObservation
                     if stepCounter == LEARN_START_STEP:
                         print("Starting learning")
@@ -90,11 +91,15 @@ if __name__ == '__main__':
 
                     if Agent.getMemorySize() >= LEARN_START_STEP:
                         Agent.learnOnMiniBatch(BATCH_SIZE)
+
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
+                        elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
+                            explorationRate = 0.99
+                            print 'Reset Exploration Rate'
                 #test
                 else:
-                    action = Agent.actor.model.predict(observation)
+                    action = Agent.actor.model.predict([observation,target_id])
                     obs_new, reward, done, info = env.step(action)
                     newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
