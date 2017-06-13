@@ -120,3 +120,17 @@ def onehot(num,len):
     onehot = np.zeros(len)
     onehot[num] = 1
     return onehot
+
+def onehot_angle(angle,len):
+    onehot = np.zeros(len)
+    if angle > 90 and angle < 270: # back
+        angle_id = 0
+    elif (angle+30)%360 < 60: # forward
+        angle_id = 1
+    elif angle < 90: # right
+        angle_id = 2
+    elif angle > 270: # left
+        angle_id = 3
+
+    onehot[angle_id] = 1
+    return onehot

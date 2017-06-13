@@ -30,6 +30,7 @@ if __name__ == '__main__':
     env = gym.make(ENV_NAME)
 
     ACTION_SIZE = len(ACTION_LIST)
+    ANGLE_SIZE = 4
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -45,7 +46,7 @@ if __name__ == '__main__':
         stepCounter = 0
         loadsim_seconds = 0
         Agent = dqn.DeepQ(ACTION_SIZE, MEMORY_SIZE, GAMMA, LEARNING_RATE,
-                          INPUT_SIZE, INPUT_SIZE,INPUT_CHANNELS,USE_TARGET_NETWORK)
+                          INPUT_SIZE, INPUT_SIZE,INPUT_CHANNELS,USE_TARGET_NETWORK,ANGLE_SIZE)
         env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,force=True)
 
         #io_util.create_csv_header(TRA_DIR)
@@ -66,7 +67,8 @@ if __name__ == '__main__':
                 INPUT_SIZE,
                 INPUT_SIZE,
                 INPUT_CHANNELS,
-                USE_TARGET_NETWORK
+                USE_TARGET_NETWORK,
+                ANGLE_SIZE
             )
             Agent.loadWeights(weights_path)
             io_util.clear_monitor_files(MONITOR_DIR + 'tmp')
@@ -77,7 +79,7 @@ if __name__ == '__main__':
     if not os.path.exists(TRA_DIR):
         io_util.create_csv_header(TRA_DIR)
 
-    angle_right = 0
+    angle_right = []
     angle_num = 0
     angle_acc = 0
     #main loop
@@ -103,19 +105,20 @@ if __name__ == '__main__':
 
                     angle_num += 1
                     if angleid_pre == angle_id:
-                        angle_right += 1.0
-                    angle_acc = angle_right / angle_num
-                    if angle_num > 100:
-                        angle_num = 0
-                        angle_right = 0
+                        angle_right.append(1.0)
+                    else:
+                        angle_right.append(0.0)
+
+                    angle_acc = np.array(angle_right[-min(100,len(angle_right)):]).mean()
+
 
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
 
-                    angle_id = int((info['Angle']/45.0 + 0.5)%8)
-                    #print angle_id
-                    angle_onehot = io_util.onehot(angle_id,8)
+                    #angle_id = int((info['Angle']/45.0 + 0.5)%8)
+                    #angle_onehot = io_util.onehot(angle_id,8)
+                    angle_onehot = io_util.onehot_angle(info['Angle'],ANGLE_SIZE)
                     Agent.addMemory_new(observation, action, reward, newObservation, done, angle_onehot)
                     observation = newObservation
                     if stepCounter == LEARN_START_STEP:

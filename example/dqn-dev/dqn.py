@@ -21,7 +21,7 @@ class DeepQ:
             target = reward(s,a) + gamma * max(Q(s')
 
     """
-    def __init__(self, outputs, memorySize, discountFactor, learningRate, img_rows, img_cols, img_channels ,useTargetNetwork):
+    def __init__(self, outputs, memorySize, discountFactor, learningRate, img_rows, img_cols, img_channels ,useTargetNetwork, angle_size):
         """
         Parameters:
             - outputs: output size
@@ -41,6 +41,7 @@ class DeepQ:
         self.img_cols = img_cols
         self.img_channels = img_channels
         self.useTargetNetwork = useTargetNetwork
+        self.angle_size = angle_size
         self.count_steps = 0
         if K.backend() == 'tensorflow':
             with KTF.tf.device('/gpu:1'):
@@ -114,7 +115,7 @@ class DeepQ:
 
         h3 = Dense(512, activation='relu')(c7)
         h4 = Dense(256, activation='relu')(h3)
-        Angle = Dense(8, activation= 'softmax',name='Angle')(h4)
+        Angle = Dense(self.angle_size, activation= 'softmax',name='Angle')(h4)
 
         model = Model(input=[S], output=[Value,Angle])
         model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1.,0.2])
