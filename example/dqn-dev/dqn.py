@@ -94,35 +94,58 @@ class DeepQ:
 
         return model
 
-    def createModel_subtask(self):
+    def createModel_subtask(self, learnMain = True, learnSub = False):
         input_shape = (self.img_channels, self.img_rows, self.img_cols)
         if K.image_dim_ordering() == 'tf':
             input_shape = ( self.img_rows, self.img_cols, self.img_channels)
 
         S = Input(shape= input_shape)
-        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
-        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
+        c1 = Convolution2D(16, 3, 3, activation='relu',trainable=learnMain)(S)
+        c2 = Convolution2D(16, 3, 3, activation='relu',trainable=learnMain)(c1)
         c3 = MaxPooling2D(pool_size=(2, 2))(c2)
 
-        c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
-        c5 = Convolution2D(32, 3, 3, activation='relu')(c4)
+        c4 = Convolution2D(32, 3, 3, activation='relu',trainable=learnMain)(c3)
+        c5 = Convolution2D(32, 3, 3, activation='relu',trainable=learnMain)(c4)
         c6 = MaxPooling2D(pool_size=(2, 2))(c5)
         c7 = Flatten()(c6)
 
-        h1 = Dense(512, activation='relu')(c7)
-        h2 = Dense(256, activation='relu')(h1)
-        Value = Dense(self.output_size,activation='linear',name='Value')(h2)
+        h1 = Dense(512, activation='relu',trainable=learnMain)(c7)
+        h2 = Dense(256, activation='relu',trainable=learnMain)(h1)
+        Value = Dense(self.output_size,activation='linear',name='Value',trainable=learnMain)(h2)
 
-        h3 = Dense(512, activation='relu')(c7)
-        h4 = Dense(256, activation='relu')(h3)
-        Angle = Dense(self.angle_size, activation= 'softmax',name='Angle')(h4)
+        h3 = Dense(512, activation='relu',trainable=learnSub)(c7)
+        h4 = Dense(256, activation='relu',trainable=learnSub)(h3)
+        Angle = Dense(self.angle_size, activation= 'softmax',name='Angle',trainable=learnSub)(h4)
 
         model = Model(input=[S], output=[Value,Angle])
-        model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1.,0.2])
+
+        model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1,0.])
         model.summary()
 
         return model
 
+
+    def perception(self,input_tensor,trainable = True):
+        input_shape = (self.img_channels, self.img_rows, self.img_cols)
+        if K.image_dim_ordering() == 'tf':
+            input_shape = (self.img_rows, self.img_cols, self.img_channels)
+
+        S = Input(shape= input_shape)
+        x = Convolution2D(16, 3, 3, activation='relu',trainable=trainable)(S)
+        x = Convolution2D(16, 3, 3, activation='relu',trainable=trainable)(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        x = Convolution2D(32, 3, 3, activation='relu',trainable=trainable)(x)
+        x = Convolution2D(32, 3, 3, activation='relu',trainable=trainable)(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        x = Flatten()(x)
+        return x
+
+    def Q_Net(self,input_tensor,trainable = True):
+        h = Dense(512, activation='relu',trainable=trainable)(input_tensor)
+        h = Dense(256, activation='relu',trainable=trainable)(h)
+        Value = Dense(self.output_size,activation='linear',name='Value',trainable=trainable)(h)
+        return Value
     def backupNetwork(self, model, backup):
         weightMatrix = []
         for layer in model.layers:
