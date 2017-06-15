@@ -94,7 +94,7 @@ class DeepQ:
 
         return model
 
-    def createModel_subtask(self, learnMain = True, learnSub = False):
+    def createModel_subtask(self, learnMain = True, learnSub = True):
         input_shape = (self.img_channels, self.img_rows, self.img_cols)
         if K.image_dim_ordering() == 'tf':
             input_shape = ( self.img_rows, self.img_cols, self.img_channels)
@@ -113,13 +113,13 @@ class DeepQ:
         h2 = Dense(256, activation='relu',trainable=learnMain)(h1)
         Value = Dense(self.output_size,activation='linear',name='Value',trainable=learnMain)(h2)
 
-        h3 = Dense(512, activation='relu',trainable=learnSub)(c7)
-        h4 = Dense(256, activation='relu',trainable=learnSub)(h3)
+        h3 = Dense(256, activation='relu',trainable=learnSub)(h2)
+        h4 = Dense(128, activation='relu',trainable=learnSub)(h3)
         Angle = Dense(self.angle_size, activation= 'softmax',name='Angle',trainable=learnSub)(h4)
 
         model = Model(input=[S], output=[Value,Angle])
 
-        model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1,0.])
+        model.compile(Adam(lr=self.learningRate), loss={'Value':'MSE', 'Angle': 'categorical_crossentropy'}, loss_weights=[1,0.5])
         model.summary()
 
         return model
