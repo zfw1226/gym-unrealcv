@@ -60,9 +60,9 @@ class UnrealCvSearch_v4(gym.Env):
      state = self.unrealcv.read_image(self.cam_id, 'lit')
      self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
-
      self.trigger_count  = 0
 
+     self.distance_last, self.target_last = self.select_target_by_distance(self.unrealcv.get_pose(), self.targets_pos)
 
    def _step(self, action = (0,0,0), show = False):
         info = dict(
@@ -76,7 +76,8 @@ class UnrealCvSearch_v4(gym.Env):
             Pose = [],
             Trajectory = [],
             Steps = self.count_steps,
-            Target = self.targets_pos[0]
+            Target = [],
+            Direction = self.distance_last
         )
 
         (velocity, angle, info['Trigger']) = action
@@ -87,8 +88,9 @@ class UnrealCvSearch_v4(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
-            #self.unrealcv.set_rotation(self.cam_id, self.unrealcv.cam['rotation'][0], self.unrealcv.cam['rotation'][1],20)
+
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
+            info['Pose'] = self.unrealcv.get_pose()
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
             if info['Reward'] > 0 or self.trigger_count > 3:
@@ -99,7 +101,17 @@ class UnrealCvSearch_v4(gym.Env):
         else :
             info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
-            info['Reward'] = 0
+
+            info['Pose'] = self.unrealcv.get_pose()
+            distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
+            info['Target'] = self.targets_pos[self.target_id]
+            if self.use_reward_distance:
+                info['Reward'] = self.reward_distance(distance, self.target_id)
+            else:
+                info['Reward'] = 0
+
+            info['Direction'] = self.get_direction(info['Pose'],self.targets_pos[self.target_id])
+
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
@@ -112,7 +124,6 @@ class UnrealCvSearch_v4(gym.Env):
            print 'Reach Max Steps'
 
         # save the trajectory
-        info['Pose'] = self.unrealcv.get_pose()
         self.trajectory.append(info['Pose'])
         info['Trajectory'] = self.trajectory
 
@@ -133,6 +144,8 @@ class UnrealCvSearch_v4(gym.Env):
        self.trajectory = []
        self.trajectory.append(current_pos)
        self.trigger_count = 0
+
+       self.distance_last, self.target_last = self.select_target_by_distance(self.unrealcv.get_pose(), self.targets_pos)
 
        return state
 
@@ -175,6 +188,48 @@ class UnrealCvSearch_v4(gym.Env):
        reward = discount * boxsize
        return reward
 
+
+   def cauculate_distance(self,target,current):
+
+       error = abs(np.array(target)[:2] - np.array(current)[:2])# only x and y
+       distance = math.sqrt(sum(error * error))
+       return distance
+
+   def select_target_by_distance(self,current_pos, targets_pos):
+       # find the nearest target, return distance and targetid
+       distances = []
+       for target_pos in targets_pos:
+           distances.append(self.cauculate_distance(target_pos, current_pos))
+       distances = np.array(distances)
+       distance_now = distances.min()
+       target_id = distances.argmin()
+
+       return distance_now,target_id
+
+   def get_direction(self,current_pose,target_pose):
+       y_delt = target_pose[1] - current_pose[1]
+       x_delt = target_pose[0] - current_pose[0]
+
+       angle_now = np.arctan(y_delt / x_delt) / 3.1415926 * 180 - current_pose[-1]
+
+       if x_delt < 0:
+           angle_now += 180
+       if angle_now < 0:
+           angle_now += 360
+       if angle_now > 360:
+           angle_now -= 360
+
+       return angle_now
+   def reward_distance(self,distance_now,target_id):
+
+       if target_id == self.target_last:
+           reward = (self.distance_last - distance_now) / 100.0
+       else:
+           reward = 0
+       self.distance_last = distance_now
+       self.target_last = target_id
+       return reward
+
    def load_env_setting(self,filename):
        f = open(self.get_abspath(filename))
        setting = yaml.load(f)
@@ -186,6 +241,8 @@ class UnrealCvSearch_v4(gym.Env):
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
        self.start_xy = setting['start_xy']
+       self.use_reward_distance = setting['use_reward_distance']
+
        return setting
 
    def get_abspath(self, filename):
