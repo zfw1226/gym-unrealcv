@@ -209,6 +209,8 @@ class UnrealCvSearch_v4(gym.Env):
    def get_direction(self,current_pose,target_pose):
        y_delt = target_pose[1] - current_pose[1]
        x_delt = target_pose[0] - current_pose[0]
+       if x_delt == 0:
+           x_delt = 0.00001
 
        angle_now = np.arctan(y_delt / x_delt) / 3.1415926 * 180 - current_pose[-1]
 
