@@ -2,7 +2,7 @@ env_name: 'ArchinteriorsVol2Sceen1'
 docker: True
 use_reward_distance: False
 cam_id: 0
-height: 50
+height: 60
 maxsteps: 100
 trigger_th: 0.9
 reward_th: 0.3
