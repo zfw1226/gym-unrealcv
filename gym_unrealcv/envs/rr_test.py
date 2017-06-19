@@ -5,8 +5,8 @@ import yaml
 # a toolkit for sampling groundtruth bounding box in environment
 
 
-TARGETS = [ 'SM_CoffeeTable_14', 'Couch_13','SM_Couch_1seat_5','Statue_48','SM_TV_5', 'SM_DeskLamp_5',
- 'SM_Plant_7', 'SM_Plant_8', 'SM_Door_37', 'SM_Door_39', 'SM_Door_41']
+'''TARGETS = [ 'SM_CoffeeTable_14', 'Couch_13','SM_Couch_1seat_5','Statue_48','SM_TV_5', 'SM_DeskLamp_5',
+ 'SM_Plant_7', 'SM_Plant_8', 'SM_Door_37', 'SM_Door_39', 'SM_Door_41']'''
 ENV_NAME = 'RealisticRendering'
 cam_id = 0
 
@@ -17,7 +17,9 @@ env_ip, env_dir = docker.start(ENV_NAME=ENV_NAME)
 print env_ip
 print env_dir
 #connect unrealcv
-unrealcv = UnrealCv(cam_id, ip=env_ip, targets=TARGETS, env=env_dir)
+unrealcv = UnrealCv(cam_id, ip=env_ip, targets='all', env=env_dir)
+
+TARGETS = unrealcv.targets
 
 setting = dict()
 #TARGETS = unrealcv.get_objects()
@@ -47,7 +49,7 @@ for i in range(setting['num']):
     time.sleep(10)
 
 print setting
-f = open('rr_bbox.yaml','w')
+f = open('rr_bbox_all.yaml','w')
 f.write(yaml.dump(setting))
 f.close()
 
