@@ -2,11 +2,14 @@ from unrealcv_cmd import  UnrealCv
 import time
 import run_docker
 import yaml
-# a toolkit for sampling groundtruth bounding box in environment
-
+'''
+A toolkit for sampling  bounding box ground truth in environment
+sample image every 10s, boxes(percent) are saved in yaml format.
+'''
 
 '''TARGETS = [ 'SM_CoffeeTable_14', 'Couch_13','SM_Couch_1seat_5','Statue_48','SM_TV_5', 'SM_DeskLamp_5',
  'SM_Plant_7', 'SM_Plant_8', 'SM_Door_37', 'SM_Door_39', 'SM_Door_41']'''
+
 ENV_NAME = 'RealisticRendering'
 cam_id = 0
 
