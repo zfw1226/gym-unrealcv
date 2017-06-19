@@ -22,10 +22,9 @@ def IOU(boxA, boxB):
     return iou
 
 
-f = open('rr_bbox.yaml')
+f = open('rr_bbox_all.yaml')
 setting = yaml.load(f)
 ENV_NAME = setting['env_name']
-
 TARGETS = setting['targets']
 cam_id = setting['cam_id']
 
@@ -39,6 +38,8 @@ unrealcv = UnrealCv(cam_id, ip=env_ip, targets=TARGETS, env=env_dir)
 
 num = setting['num']
 print 'num:' + str(num)
+count_match = 0
+count_mismatch = 0
 for i in range(int(num)):
     info = setting[i]
     x,y,z = info['position']
@@ -57,10 +58,15 @@ for i in range(int(num)):
             if info.has_key(obj) :
                 if IOU(box['bbox'],info[obj]['bbox']) > 0.9:
                     match = True
-            if match > 11:
-                print 'Match'
+            if match:
+                count_match += 1
             else:
-                print 'Mismatch'
+                count_mismatch += 1
+
+print str(count_match) + 'objects matched!'
+print str(count_mismatch) + 'objects mismatched!'
+
+docker.close()
 
 
 
