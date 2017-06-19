@@ -20,6 +20,7 @@ class UnrealCv:
         client = unrealcv.Client((ip, 9000))
         self.cam_id = cam_id
         self.envdir = env
+        self.ip = ip
 
         self.cam =dict(
                  id = cam_id,
@@ -35,8 +36,13 @@ class UnrealCv:
         self.init_unrealcv()
         self.pitch = 0 #-30
         self.color_dict = dict()
-        if targets:
-            self.color_dict = self.target_color_dic(targets)
+        self.targets = []
+        if targets == 'all':
+            self.targets = self.get_objects()
+            self.color_dict = self.target_color_dic(self.targets)
+        elif targets is not None:
+            self.targets = targets
+            self.color_dict = self.target_color_dic(self.targets)
 
 
 
@@ -45,7 +51,7 @@ class UnrealCv:
     def init_unrealcv(self):
         client.connect()
         self.check_connection()
-        client.request('vrun setres 320x240w')# this will set the resolution of object_mask
+        client.request('vrun setres 640x480w')# this will set the resolution of object_mask
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
@@ -64,18 +70,19 @@ class UnrealCv:
 
     def get_objects(self):
         objects = client.request('vget /objects')
+        objects = objects.split()
         return objects
 
     def read_image(self,cam_id , viewmode, show=False):
             # cam_id:0 1 2 ...
             # viewmode:lit,  =normal, depth, object_mask
-            cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}.png'
+            cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}{ip}.png'
 
             if self.docker:
-                img_dirs_docker = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
+                img_dirs_docker = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 img_dirs = self.envdir + img_dirs_docker[7:]
             else :
-                img_dirs = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
+                img_dirs = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
             image = cv2.imread(img_dirs)
             if show is True:
                 self.show_img(image)
@@ -106,7 +113,7 @@ class UnrealCv:
         cmd = 'vget /camera/{cam_id}/rotation'
         ori = client.request(cmd.format(cam_id=cam_id))
         pitch,yaw,roll = ori.split()
-        self.cam['rotation'] = (float(roll), float(yaw), float(pitch))
+        self.cam['rotation'] = [float(roll), float(yaw), float(pitch)]
         return self.cam['rotation']
 
     def moveto(self,cam_id, x, y, z):
@@ -160,8 +167,8 @@ class UnrealCv:
 
     def get_mask(self,object_mask,object):
         r,g,b = self.color_dict[object]
-        lower_range = np.array([b-5,g-5,r-5])
-        upper_range = np.array([b+5,g+5,r+5])
+        lower_range = np.array([b-3,g-3,r-3])
+        upper_range = np.array([b+3,g+3,r+3])
         mask = cv2.inRange(object_mask, lower_range, upper_range)
         return mask
 
@@ -197,6 +204,13 @@ class UnrealCv:
         for obj in objects:
             mask,box = self.get_bbox(object_mask, obj)
             boxes.append(box)
+        return  boxes
+
+    def get_bboxes_obj(self,object_mask,objects):
+        boxes = dict()
+        for obj in objects:
+            mask,box = self.get_bbox(object_mask, obj)
+            boxes[obj] = box
         return  boxes
 
     def target_color_dic(self,objects):
