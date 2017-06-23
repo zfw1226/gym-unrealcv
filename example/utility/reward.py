@@ -29,7 +29,7 @@ class LivePlot(object):
         #styling options
         matplotlib.rcParams['toolbar'] = 'None'
         plt.style.use('ggplot')
-        plt.xlabel("episodes")
+        plt.xlabel("steps")
         plt.ylabel("cumulated episode rewards")
         fig = plt.gcf().canvas.set_window_title('averaged_simulation_graph')
         matplotlib.rcParams.update({'font.size': 15})
@@ -39,21 +39,33 @@ class LivePlot(object):
         results = monitoring.load_results(self.outdir)
 
         data =  results[self.data_key]
+        steps = results['episode_lengths']
+        #print steps
+        count_steps = 0
+        for i in range(len(steps)):
+            count_steps += steps[i]
+            steps[i] = count_steps
+
         avg_data = []
 
         if full:
-            plt.plot(data, color='blue')
+            plt.plot(steps,data, color='blue')
         if dots:
-            plt.plot(data, '.', color='black')
+            plt.plot(steps,data, '.', color='black')
         if average > 0:
             average = int(average)
             for i, val in enumerate(data):
-                if i%average==0:
+                '''if i%average==0:
                     if (i+average) < len(data)+average:
                         avg =  sum(data[i:i+average])/average
-                        avg_data.append(avg)
-            new_data = expand(avg_data,average)
-            plt.plot(new_data, color='red', linewidth=2.5) 
+                        avg_data.append(avg)'''
+                if i < average:
+                    avg = np.array(data[:average]).mean()
+                else:
+                    avg = np.array(data[(i-average):i]).mean()
+                avg_data.append(avg)
+            #new_data = expand(avg_data,average)
+            plt.plot(steps,avg_data, color='red', linewidth=2.5)
         if interpolated > 0:
             avg_data = []
             avg_data_points = []
@@ -97,7 +109,7 @@ if __name__ == '__main__':
     parser.add_argument("-p","--path", type=str, default='../dqn/log_multi/monitor/tmp', help="the path of monitor file")
     parser.add_argument("-f", "--full", action='store_true', help="print the full data plot with lines")
     parser.add_argument("-d", "--dots", action='store_true', help="print the full data plot with dots")
-    parser.add_argument("-a", "--average", type=int, nargs='?', const=50, metavar="N", help="plot an averaged graph using N as average size delimiter. Default = 50")
+    parser.add_argument("-a", "--average", type=int, nargs='?', const=100, metavar="N", help="plot an averaged graph using N as average size delimiter. Default = 50")
     parser.add_argument("-i", "--interpolated", type=int, nargs='?', const=50, metavar="M", help="plot an interpolated graph using M as interpolation amount. Default = 50")
     args = parser.parse_args()
 
