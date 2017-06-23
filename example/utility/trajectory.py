@@ -59,7 +59,7 @@ epoch_max = len(X)
 plt.ylabel('y')
 plt.xlabel('x')
 for i in range(start, min(start + show_num,len(X)) ):
-   if collision[i] == 'True' :
+   if collision[i] == 'True' or float(reward[i]) <=0 :
       line_tpye = 'k'
       plt.scatter(X[i][-1], Y[i][-1], c='magenta', s=30, alpha=0.6, edgecolors='white')
    else :
