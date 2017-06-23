@@ -4,7 +4,7 @@ use_reward_distance: False
 cam_id: 0
 height: 40
 maxsteps: 100
-trigger_th: 0.9
+trigger_th: 0.6
 reward_th: 0.2
 targets: ['SM_Plant_8','SM_Plant_7']
 start_xy:
