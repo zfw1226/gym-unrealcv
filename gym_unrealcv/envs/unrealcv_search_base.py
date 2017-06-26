@@ -31,7 +31,7 @@ Recommend object list in Arch1
 'BP_door_001_C_0','BP_door_002_C_0'
 '''
 
-class UnrealCvSearch_v4(gym.Env):
+class UnrealCvSearch_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.yaml'
                 ):
@@ -253,3 +253,8 @@ class UnrealCvSearch_v4(gym.Env):
            if p[-20:].find('gym-unrealcv') > 0:
                gympath = p
        return os.path.join(gympath, 'gym_unrealcv/envs/setting', filename)
+
+   def open_door(self):
+       self.unrealcv.keyboard('RightMouseButton')
+       time.sleep(2)
+       self.unrealcv.keyboard('RightMouseButton') # close the door
