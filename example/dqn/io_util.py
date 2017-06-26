@@ -10,6 +10,8 @@ def detect_monitor_files(training_dir):
     return [os.path.join(training_dir, f) for f in os.listdir(training_dir) if f.startswith('openaigym')]
 
 def clear_monitor_files(training_dir):
+    if not os.path.exists(training_dir):
+        os.makedirs(training_dir)
     files = detect_monitor_files(training_dir)
     if len(files) == 0:
         return
