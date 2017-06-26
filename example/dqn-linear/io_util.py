@@ -48,15 +48,15 @@ def show_info( info, cv_img, direction):
     action_x = 350
     action_y = 440
     color = [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
-    if info['Action'][0] == 30:
+    if info['Action'] == ACTION_LIST[0]:
         color[0] = (0, 0, 255)
-    elif info['Action'][0] == 20 and info['Action'][1] == 15:
+    elif info['Action'] == ACTION_LIST[1]:
         color[1] = (0, 0, 255)
-    elif info['Action'][0] == 20 and info['Action'][1] == -15:
+    elif info['Action'] == ACTION_LIST[2]:
         color[2] = (0, 0, 255)
-    elif info['Action'][0] == 10 and info['Action'][1] == 30:
+    elif info['Action'] == ACTION_LIST[3]:
         color[3] = (0, 0, 255)
-    elif info['Action'][0] == 10 and info['Action'][1] == -30:
+    elif info['Action'] == ACTION_LIST[4]:
         color[4] = (0, 0, 255)
 
     cv2.circle(cv_img, (action_x, action_y - 50), 8, color[0], -1) #forward
