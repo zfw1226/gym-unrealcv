@@ -24,7 +24,7 @@ def show_info( info, cv_img):
     cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'],3)), (200, 450), font, 0.5, (255, 255, 255), 2)
     cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
     cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, str(info['Target']), (200, 430), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, str(info['Target']), (200, 430), font, 0.5, (255, 255, 255), 2)
 
     if info['Trigger'] > 0.9:
         cv2.putText(cv_img, 'Trigger', (400, 450), font, 0.5, (0, 0, 255), 2)
@@ -71,11 +71,14 @@ def create_csv_header(DIR):
         f_csv.writeheader()
 
 def preprocess_img(image):
+
     cv_image = cv2.resize(image, (INPUT_SIZE, INPUT_SIZE))
     img_processed = cv_image.reshape(1, INPUT_CHANNELS, INPUT_SIZE, INPUT_SIZE)
     img_processed = img_processed / 255.0
     if K.image_dim_ordering() == 'tf':
         img_processed = img_processed.transpose(0, 2, 3, 1)
+
+    #print img_processed.shape
     return img_processed
 
 def live_plot(info):
@@ -87,7 +90,7 @@ def live_plot(info):
     plt.ylim((-550, 350))
     plt.ylabel('y')
     plt.xlabel('x')
-    plt.scatter(info['TargetPos'][0], -info['TargetPos'][1], c='red', s=150,  alpha=0.6, edgecolors='white',label='target object')
+    #plt.scatter(info['TargetPos'][0], -info['TargetPos'][1], c='red', s=150,  alpha=0.6, edgecolors='white',label='target object')
     #print info['Trajectory']
     if len(info['Trajectory']) > 0:
         for pos in info['Trajectory']:
