@@ -43,8 +43,8 @@ class CriticNetwork(object):
         S = Input(shape= state_shape)
         A = Input(shape=[action_size],name='action')
         a1 = Dense(512, activation='linear')(A)
-        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
-        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
+        c1 = Convolution2D(32, 3, 3, activation='relu')(S)
+        c2 = Convolution2D(32, 3, 3, activation='relu')(c1)
         c3 = MaxPooling2D(pool_size=(2, 2))(c2)
 
         c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
@@ -56,7 +56,7 @@ class CriticNetwork(object):
         h3 = Dense(256, activation='relu')(h2)
         V = Dense(self.action_size,activation='linear',name = 'Value')(h3)
         h4 = Dense(256, activation='relu')(h1)
-        M = Dense(2,activation='linear', name = 'Movement')(h4) # linear angle
+        M = Dense(2,activation='sigmoid', name = 'Movement')(h4) # linear angle
 
         model = Model(input=[S,A],output=[V,M])
         adam = Adam(lr=self.LEARNING_RATE)
