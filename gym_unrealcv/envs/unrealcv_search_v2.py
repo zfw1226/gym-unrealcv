@@ -9,7 +9,9 @@ import run_docker
 from gym import spaces
 
 '''
-State : raw color image (640x480)
+
+Reward: distance and trigger, 
+State : raw color image (640x480), target_id
 Action:  (linear velocity ,angle velocity , trigger) /continuous space
 Done : Collision or get target place
 Task: Learn to avoid obstacle and search for a target object in a room, 
@@ -103,7 +105,7 @@ class UnrealCvSearch_v2(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
-            print info['Trigger']
+            #print info['Trigger']
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
