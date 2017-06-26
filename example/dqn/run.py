@@ -13,16 +13,6 @@ import io_util
 from gym import wrappers
 import csv
 
-ACTION_LIST = [
-    (20,  0, 0), # forward
-    (20, 15, 0),
-    (20,-15, 0),
-    (20, 30, 0),
-    (20,-30, 0),
-    (0 ,  0, 1),
-]#velocity  angle trigger
-
-
 
 if __name__ == '__main__':
 
@@ -106,9 +96,9 @@ if __name__ == '__main__':
 
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
+                        '''elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
                             explorationRate = 0.99
-                            print 'Reset Exploration Rate'
+                            print 'Reset Exploration Rate'''
 
                 #test
                 else:
