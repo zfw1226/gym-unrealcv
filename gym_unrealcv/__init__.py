@@ -13,33 +13,42 @@ register(
 
 # single target, reward by trigger
 register(
-    id='Unrealcv-Search-v1',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_v4',
+    id='Search-RrPlant-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant7.yaml'}
 )
 
 register(
-    id='Unrealcv-Search-v2',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_v4',
+    id='Search-RrPlant-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant8.yaml'}
 )
 
 register(
-    id='Unrealcv-Search-v3',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_v4',
+    id='Search-RrDoor-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_door41.yaml'}
 )
 
-# multi targets, reward by trigger
 register(
-    id='Unrealcv-Search-v4',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_v4',
+    id='Search-Arch1Door-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door1.yaml'}
+)
+
+# multi targets
+register(
+    id='Search-RrMultiPlants-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.yaml'},
 )
 
 register(
-    id='Unrealcv-Search-v5',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_v4',
+    id='Search-Arch1MultiDoors-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door12.yaml'}
 )
+
+
+
 
