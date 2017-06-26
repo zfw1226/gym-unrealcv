@@ -1,6 +1,6 @@
-ENV_NAME = 'Unrealcv-Search-v6'
+ENV_NAME = 'Search-RrPlant-v0'
 
-CONTINUE = False #load a pre-trained model
+CONTINUE = True #load a pre-trained model
 RESTART_EP = 2400 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
@@ -19,7 +19,7 @@ LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95
 INITIAL_EPSILON = 1  # starting value of epsilon
 FINAL_EPSILON = 0.1  # final value of epsilon
-MAX_EXPLORE_STEPS = 15000
+MAX_EXPLORE_STEPS = 5000
 TEST_INTERVAL_EPOCHS = 100000
 SAVE_INTERVAL_EPOCHS = 200
 
@@ -32,15 +32,17 @@ ACTION_LIST = [
     (0 ,  0, 1),
 ]#velocity  angle trigger
 
-LOG_NAME_SAVE = 'log-angle-v5.1'
+LOG_NAME_SAVE = 'log-angle-v3.4'
 MONITOR_DIR = LOG_NAME_SAVE + '/monitor/' #the path to save monitor file
 MODEL_DIR = LOG_NAME_SAVE + '/model' # the path to save deep model
 PARAM_DIR = LOG_NAME_SAVE + '/param' # the path to save the parameters
 TRA_DIR = LOG_NAME_SAVE + '/trajectory.csv' # the path to save trajectory
+LOSS_DIR = LOG_NAME_SAVE + '/loss.csv'
 
 
-LOG_NAME_READ = 'log-angle-v4.0'
+LOG_NAME_READ = 'log-angle-v3.3'
 #the path to reload weights, monitor and params
 weights_path = LOG_NAME_READ + '/model/dqn_ep' + str(RESTART_EP)+ '.h5'
 monitor_path = LOG_NAME_READ + '/monitor/'+ str(RESTART_EP)
 params_json = LOG_NAME_READ + '/param/dqn_ep' + str(RESTART_EP) + '.json'
+
