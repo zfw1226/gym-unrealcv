@@ -10,6 +10,8 @@ import tensorflow as tf
 import keras.backend.tensorflow_backend as KTF
 import memory
 import keras.backend as K
+from keras.callbacks import CSVLogger
+
 class DeepQ:
     """
     DQN abstraction.
@@ -21,7 +23,7 @@ class DeepQ:
             target = reward(s,a) + gamma * max(Q(s')
 
     """
-    def __init__(self, outputs, memorySize, discountFactor, learningRate, img_rows, img_cols, img_channels ,useTargetNetwork, angle_size):
+    def __init__(self, outputs, memorySize, discountFactor, learningRate, img_rows, img_cols, img_channels ,useTargetNetwork, angle_size,logdir):
         """
         Parameters:
             - outputs: output size
@@ -42,6 +44,7 @@ class DeepQ:
         self.img_channels = img_channels
         self.useTargetNetwork = useTargetNetwork
         self.angle_size = angle_size
+
         self.count_steps = 0
         if K.backend() == 'tensorflow':
             with KTF.tf.device('/gpu:1'):
@@ -51,6 +54,8 @@ class DeepQ:
                 self.initNetworks()
         else :
             self.initNetworks()
+
+        self.csv_logger = CSVLogger(logdir, append=True)
 
     def initNetworks(self):
 
@@ -256,7 +261,8 @@ class DeepQ:
         for i,action in enumerate(action_batch):
             Y_batch[i][action] = Y_sample_batch[i]
 
-        self.model.fit(X_batch, [Y_batch, np.array(direction_batch)], validation_split=0.0, batch_size = miniBatchSize, nb_epoch=1, verbose = 0)
+        self.model.fit(X_batch, [Y_batch, np.array(direction_batch)],
+                       validation_split=0.0, batch_size = miniBatchSize, nb_epoch=1, verbose = 0, callbacks=[self.csv_logger])
 
         if self.useTargetNetwork and self.count_steps % 1000 == 0:
             self.updateTargetNetwork()
