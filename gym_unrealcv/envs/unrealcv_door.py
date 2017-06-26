@@ -21,8 +21,7 @@ Recommend object list
 
 class UnrealCvDoor(gym.Env):
    def __init__(self,
-                TARGETS = ['BP_door_001_C_0', 'BP_door_002_C_0',
-                           'BP_door_005_C_0'],
+                TARGETS = ['BP_door_001_C_0','BP_door_002_C_0'],
                 DOCKER = True,
                 ENV_NAME='ArchinteriorsVol2Sceen1',
                 cam_id = 0,
@@ -45,15 +44,10 @@ class UnrealCvDoor(gym.Env):
 
      self.reward_th = 0.4
      self.trigger_th = 0.9
-     height = 45
+     height = 50
      self.origin = [
-         (1784,  -220,   height),
-         (1000,  -220,   height),
-         ( 700,  -320,   height),
-         ( 100,  -450,   height),
-         #(-104,   415,   height),
-         #(  90,   510,   height),
-         ( 200,   320,   height),
+         (-530,  -425,   height),
+         (1480,  -570,   height),
      ]
 
      self.count_steps = 0
@@ -171,13 +165,13 @@ class UnrealCvDoor(gym.Env):
        reward = 0
        if doorsize0 > self.reward_th:
            reward = 10
-           '''self.unrealcv.keyboard('RightMouseButton')
+           self.unrealcv.keyboard('RightMouseButton')
            time.sleep(0.5)
            doorsize1, boxes1 = self.cal_door_size()
-           if doorsize1 / doorsize0 < 0.5:
+           if doorsize1 / doorsize0 < 0.9 or doorsize1 / doorsize0 > 1.1 :
                reward = 10 # opened the door successfully
                time.sleep(1)
-               self.unrealcv.keyboard('RightMouseButton') # close the door'''
+               self.unrealcv.keyboard('RightMouseButton') # close the door
        elif doorsize0 > 0:
            reward = doorsize0 * 10
        else:
