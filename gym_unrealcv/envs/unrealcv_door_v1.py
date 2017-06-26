@@ -102,7 +102,8 @@ class UnrealCvDoor_v1(gym.Env):
             noreward, info['Angle'] = self.reward_distance()
 
             info['Reward'],info['Bbox'] = self.reward_bbox()
-
+            #info['Reward'] = 10
+            #self.open_door()
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
                 print 'Trigger Terminal!'
@@ -227,3 +228,9 @@ class UnrealCvDoor_v1(gym.Env):
        self.distance_last = distance_now
        self.target_last = target_id
        return reward,angle_now
+
+   def open_door(self):
+
+       self.unrealcv.keyboard('RightMouseButton')
+       time.sleep(2)
+       self.unrealcv.keyboard('RightMouseButton') # close the door
