@@ -9,6 +9,7 @@ import run_docker
 from gym import spaces
 
 '''
+Reward: distance and trigger, for subtask angle
 State : raw color image (640x480)
 Action:  (linear velocity ,angle velocity , trigger) /continuous space
 Done : Collision or get target place
