@@ -11,7 +11,7 @@ import keras.backend as K
 import tensorflow as tf
 
 class CriticNetwork(object):
-    def __init__(self, sess, state_shape, action_size, TAU, LEARNING_RATE ,target_size):
+    def __init__(self, sess, state_shape, action_size, TAU, LEARNING_RATE):
         self.sess = sess
         self.TAU = TAU
         self.LEARNING_RATE = LEARNING_RATE
@@ -20,19 +20,15 @@ class CriticNetwork(object):
         K.set_session(sess)
 
         #Now create the model
-        #self.model, self.action, self.state = self.create_critic_network(state_shape, action_size)
-        #self.target_model, self.target_action, self.target_state = self.create_critic_network(state_shape, action_size)
-        self.model, self.action, self.state, self.targetID = self.create_critic_network_new(state_shape, action_size, target_size)
-        self.target_model, self.target_action, self.target_state, self.target_targetID = self.create_critic_network_new(state_shape, action_size,target_size)
-
+        self.model, self.action, self.state = self.create_critic_network(state_shape, action_size)
+        self.target_model, self.target_action, self.target_state = self.create_critic_network(state_shape, action_size)
         self.action_grads = tf.gradients(self.model.output, self.action)  #GRADIENTS for policy update
         self.sess.run(tf.global_variables_initializer())
 
-    def gradients(self, states, actions, targets):
+    def gradients(self, states, actions):
         return self.sess.run(self.action_grads, feed_dict={
             self.state: states,
-            self.action: actions,
-            self.targetID: targets
+            self.action: actions
         })[0]
 
     def target_train(self):
@@ -47,8 +43,8 @@ class CriticNetwork(object):
         S = Input(shape= state_shape)
         A = Input(shape=[action_size],name='action')
         a1 = Dense(512, activation='linear')(A)
-        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
-        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
+        c1 = Convolution2D(32, 3, 3, activation='relu')(S)
+        c2 = Convolution2D(32, 3, 3, activation='relu')(c1)
         c3 = MaxPooling2D(pool_size=(2, 2))(c2)
 
         c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
@@ -65,27 +61,3 @@ class CriticNetwork(object):
         model.summary()
         return model, A, S
 
-    def create_critic_network_new(self, state_shape,action_size, target_size):
-        print("Now we build the model")
-        S = Input(shape= state_shape)
-        A = Input(shape=[action_size],name='action')
-        T = Input(shape=[target_size],name='target')# one hot
-        a1 = Dense(512, activation='linear')(A)
-        t1 = Dense(512, activation='linear')(T)
-        c1 = Convolution2D(16, 3, 3, activation='relu')(S)
-        c2 = Convolution2D(16, 3, 3, activation='relu')(c1)
-        c3 = MaxPooling2D(pool_size=(2, 2))(c2)
-
-        c4 = Convolution2D(32, 3, 3, activation='relu')(c3)
-        c5 = Convolution2D(32, 3, 3, activation='relu')(c4)
-        c6 = MaxPooling2D(pool_size=(2, 2))(c5)
-        c7 = Flatten()(c6)
-        c8 = Dense(512, activation='relu')(c7)
-        h2 = merge([c8,a1,t1],mode='sum')
-        h3 = Dense(256, activation='relu')(h2)
-        V = Dense(self.action_size,activation='linear')(h3)
-        model = Model(input=[S,A,T],output=V)
-        adam = Adam(lr=self.LEARNING_RATE)
-        model.compile(loss='mse', optimizer=adam)
-        model.summary()
-        return model, A, S, T
