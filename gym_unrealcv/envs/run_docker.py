@@ -82,7 +82,7 @@ class RunDocker():
 
 #docker = RunDocker()
 
-#ip,pwd = docker.start('ArchinteriorsVol2Sceen1')
+#ip,pwd = docker.start('RealisticRendering')
 #print ip
 #time.sleep(50)
 #docker.close()
