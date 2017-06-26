@@ -16,16 +16,15 @@ class Memory:
         self.rewards = []
         self.newStates = []
         self.finals = []
-        self.targetIDs = []
 
 
     def getCurrentSize(self) :
         return len(self.states)
 
     def getMemory(self, index): 
-        return {'state': self.states[index],'action': self.actions[index], 'reward': self.rewards[index], 'newState': self.newStates[index], 'isFinal': self.finals[index], 'targetID': self.targetIDS[index]}
+        return {'state': self.states[index],'action': self.actions[index], 'reward': self.rewards[index], 'newState': self.newStates[index], 'isFinal': self.finals[index]}
 
-    def addMemory(self, state, action, reward, newState, isFinal,target) :
+    def addMemory(self, state, action, reward, newState, isFinal) :
         if (self.currentPosition >= self.size - 1) :
             self.currentPosition = 0
         if (len(self.states) > self.size) :
@@ -34,14 +33,12 @@ class Memory:
             self.rewards[self.currentPosition] = reward
             self.newStates[self.currentPosition] = newState
             self.finals[self.currentPosition] = isFinal
-            self.targetIDs[self.currentPosition] = target
         else :
             self.states.append(state)
             self.actions.append(action)
             self.rewards.append(reward)
             self.newStates.append(newState)
             self.finals.append(isFinal)
-            self.targetIDs.append(target)
         
         self.currentPosition += 1
 
@@ -51,7 +48,6 @@ class Memory:
         reward_batch = []
         newState_batch = []
         isFinal_batch = []
-        targetID_batch = []
         indices = random.sample(np.arange(len(self.states)), min(size,len(self.states)) )
         for index in indices:
             state_batch.append(self.states[index][0])
@@ -59,6 +55,5 @@ class Memory:
             reward_batch.append(self.rewards[index])
             newState_batch.append(self.newStates[index][0])
             isFinal_batch.append(self.finals[index])
-            targetID_batch.append(self.targetIDs[index])
 
-        return state_batch, action_batch, reward_batch, newState_batch, isFinal_batch,targetID_batch
+        return state_batch, action_batch, reward_batch, newState_batch, isFinal_batch
