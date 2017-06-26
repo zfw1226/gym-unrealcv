@@ -25,13 +25,13 @@ unrealcv = UnrealCv(cam_id, ip=env_ip, targets='all', env=env_dir)
 TARGETS = unrealcv.targets
 
 setting = dict()
-#TARGETS = unrealcv.get_objects()
 setting['targets'] = TARGETS
 setting['env_name'] = ENV_NAME
 setting['cam_id'] = cam_id
 setting['num'] = 5
 for i in range(setting['num']):
     info =dict()
+    count_objects = 0
     info['position'] = unrealcv.get_position(cam_id)
     info['rotation'] = unrealcv.get_rotation(cam_id)
     object_mask = unrealcv.read_image(cam_id, 'object_mask')
@@ -46,19 +46,16 @@ for i in range(setting['num']):
             box['bbox'] = [float(xmin),float(ymin),float(xmax),float(ymax)]
             box['area'] = float(boxarea)
             info[obj] = box
-    print info
+            count_objects += 1
+    info['objects_num'] = count_objects
     setting[i] = info
+    print str(count_objects) + 'objects detected in this image!'
     lit = unrealcv.read_image(cam_id, 'lit')
     time.sleep(10)
 
-print setting
+# save settings
 f = open('rr_bbox_all.yaml','w')
 f.write(yaml.dump(setting))
 f.close()
-
+# close environment
 docker.close()
-
-def save_setting(dict,filename):
-    f = open(filename,'w')
-    f.write(yaml.dump(dict))
-    f.close()
