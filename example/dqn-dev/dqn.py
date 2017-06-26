@@ -113,7 +113,7 @@ class DeepQ:
         h2 = Dense(256, activation='relu',trainable=learnMain)(h1)
         Value = Dense(self.output_size,activation='linear',name='Value',trainable=learnMain)(h2)
 
-        h3 = Dense(256, activation='relu',trainable=learnSub)(h2)
+        h3 = Dense(256, activation='relu',trainable=learnSub)(c7)
         h4 = Dense(128, activation='relu',trainable=learnSub)(h3)
         Angle = Dense(self.angle_size, activation= 'softmax',name='Angle',trainable=learnSub)(h4)
 

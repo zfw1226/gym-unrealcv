@@ -11,25 +11,67 @@ def detect_monitor_files(training_dir):
     return [os.path.join(training_dir, f) for f in os.listdir(training_dir) if f.startswith('openaigym')]
 
 def clear_monitor_files(training_dir):
+    if not os.path.exists(training_dir):
+        os.makedirs(training_dir)
     files = detect_monitor_files(training_dir)
     if len(files) == 0:
         return
     for file in files:
         os.unlink(file)
 
-def show_info( info, cv_img):
+def show_info( info, cv_img, angle):
     font = cv2.FONT_HERSHEY_SIMPLEX
-    cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'],3)), (200, 450), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, 'AnglePre:' + str(info['Angle']), (200, 430), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'],3)), (230, 450), font, 0.5, (255, 255, 255), 2)
+    cv2.putText(cv_img, 'Direction', (220, 450), font, 0.5, (255, 255, 255), 2)
+    cv2.putText(cv_img, 'Action', (330, 450), font, 0.5, (255, 255, 255), 2)
+    cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'], 3)), (500, 450), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Angle:' + str(info['Angle']), (200, 430), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Ang_pre:' + str(angle) , (200, 430), font, 0.5, (255, 255, 255), 2)
+
+
+    # 0  back
+    # 1 forward -30 ~30
+    # 2 right 30 ~90
+    # 3 left  -30 ~ -90
+    color = [(255,255,255),(255,255,255),(255,255,255),(255,255,255),(255,255,255)]
+    color[angle] = (0, 255, 0)
+    center = 250
+    cv2.circle(cv_img, (center, 400), 8, color[1], -1) #forward
+    cv2.circle(cv_img, (center+20, 420), 8, color[2], -1) #right
+    cv2.circle(cv_img, (center-20, 420), 8, color[3], -1) #left
+    cv2.circle(cv_img, (center, 430), 8, color[0], -1) #back
+
+
+    #action
+    action_x = 350
+    action_y = 440
+    color = [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
+    if info['Action'][0] == 30:
+        color[0] = (0, 0, 255)
+    elif info['Action'][0] == 20 and info['Action'][1] == 15:
+        color[1] = (0, 0, 255)
+    elif info['Action'][0] == 20 and info['Action'][1] == -15:
+        color[2] = (0, 0, 255)
+    elif info['Action'][0] == 10 and info['Action'][1] == 30:
+        color[3] = (0, 0, 255)
+    elif info['Action'][0] == 10 and info['Action'][1] == -30:
+        color[4] = (0, 0, 255)
+
+    cv2.circle(cv_img, (action_x, action_y - 50), 8, color[0], -1) #forward
+    cv2.circle(cv_img, (action_x+10, action_y - 30), 8, color[1], -1) #right
+    cv2.circle(cv_img, (action_x-10, action_y - 30), 8, color[2], -1) #left
+    cv2.circle(cv_img, (action_x+20, action_y - 10), 8, color[3], -1)  # right
+    cv2.circle(cv_img, (action_x-20, action_y - 10), 8, color[4], -1)  # left
+
 
     if info['Trigger']:
-        cv2.putText(cv_img, 'Trigger', (400, 450), font, 0.5, (0, 0, 255), 2)
-        cv2.circle(cv_img, (420, 420), 15, (0, 0, 255), -1)
+        cv2.putText(cv_img, 'Trigger', (420, 450), font, 0.5, (0, 0, 255), 2)
+        cv2.circle(cv_img, (440, 420), 15, (0, 0, 255), -1)
     else:
-        cv2.putText(cv_img, 'Trigger', (400, 450), font, 0.5, (255, 255, 255), 2)
-        cv2.circle(cv_img, (420, 420), 15, (255, 255, 255), -1)
+        cv2.putText(cv_img, 'Trigger', (420, 450), font, 0.5, (255, 255, 255), 2)
+        cv2.circle(cv_img, (440, 420), 15, (255, 255, 255), -1)
 
     if info['Collision']:
         cv2.circle(cv_img, (120, 420), 15, (0, 0, 255), -1)
@@ -51,7 +93,7 @@ def show_info( info, cv_img):
 def save_trajectory(info,filedir,epoch):#save when every step finished
     trajec = dict()
     with open(filedir, 'a') as f:
-        header = ['epoch', 'step', 'x', 'y', 'z', 'yaw','reward','collision','done']
+        header = ['epoch', 'step', 'x', 'y', 'z', 'yaw','reward','collision','done',]
         f_csv = csv.DictWriter(f, header)
     # list to dic and append dic to list
         trajec['x'],trajec['y'],trajec['z'],trajec['yaw'] = info['Trajectory'][-1]
@@ -125,12 +167,12 @@ def onehot_angle(angle,len):
     onehot = np.zeros(len)
     if angle > 90 and angle < 270: # back
         angle_id = 0
-    elif (angle+30)%360 < 60: # forward
+    elif (angle+30)%360 < 60: # forward -30 ~30
         angle_id = 1
-    elif angle < 90: # right
+    elif angle < 90: # right 30 ~90
         angle_id = 2
-    elif angle > 270: # left
+    elif angle > 270: # left  -30 ~ -90
         angle_id = 3
 
     onehot[angle_id] = 1
-    return onehot
+    return onehot,angle_id

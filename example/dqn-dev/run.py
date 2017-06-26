@@ -15,8 +15,8 @@ import csv
 
 ACTION_LIST = [
     (30,  0, 0), # forward
-    (30, 15, 0),
-    (30,-15, 0),
+    (20, 15, 0),
+    (20,-15, 0),
     (10, 30, 0),
     (10,-30, 0),
     (0 ,  0, 1),
@@ -80,8 +80,8 @@ if __name__ == '__main__':
         io_util.create_csv_header(TRA_DIR)
 
     angle_right = []
-    angle_num = 0
     angle_acc = 0
+    angle = [0,0,0] # pre, true ,acc
     #main loop
     try:
         start_time = time.time()
@@ -103,7 +103,6 @@ if __name__ == '__main__':
                 if EXPLORE is True: #explore
                     [action,angleid_pre] = Agent.feedforward(observation, explorationRate)
 
-                    angle_num += 1
                     if angleid_pre == angle_id:
                         angle_right.append(1.0)
                     else:
@@ -111,14 +110,12 @@ if __name__ == '__main__':
 
                     angle_acc = np.array(angle_right[-min(100,len(angle_right)):]).mean()
 
-
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
 
-                    #angle_id = int((info['Angle']/45.0 + 0.5)%8)
-                    #angle_onehot = io_util.onehot(angle_id,8)
-                    angle_onehot = io_util.onehot_angle(info['Angle'],ANGLE_SIZE)
+                    angle_onehot, angle_id = io_util.onehot_angle(info['Direction'],ANGLE_SIZE)
+
                     Agent.addMemory_new(observation, action, reward, newObservation, done, angle_onehot)
                     observation = newObservation
                     if stepCounter == LEARN_START_STEP:
@@ -129,19 +126,20 @@ if __name__ == '__main__':
 
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
-                            explorationRate = 0.99
-                            print 'Reset Exploration Rate'
+                        #elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
+                            #explorationRate = 0.99
+                            #print 'Reset Exploration Rate'
 
                 #test
                 else:
-                    [action, angle] = Agent.feedforward(observation,0)
+                    [action, angleid_pre] = Agent.feedforward(observation,0)
+
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
 
                 if SHOW:
-                    io_util.show_info(info, obs_new)
+                    io_util.show_info(info, obs_new, angleid_pre)
                 if MAP:
                     io_util.live_plot(info)
 
