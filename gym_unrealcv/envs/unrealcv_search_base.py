@@ -63,7 +63,8 @@ class UnrealCvSearch_base(gym.Env):
      self.trigger_count  = 0
 
      self.distance_last, self.target_last = self.select_target_by_distance(self.unrealcv.get_pose(), self.targets_pos)
-
+     self.reset_startpoint = True
+     self.start_xy_candidate = []
    def _step(self, action = (0,0,0), show = False):
         info = dict(
             Collision=False,
@@ -96,7 +97,7 @@ class UnrealCvSearch_base(gym.Env):
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
                 print 'Trigger Terminal!'
-
+                self.reset_startpoint = True
         # if collision occurs, the episode is done and reward is -1
         else :
             info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
@@ -115,6 +116,7 @@ class UnrealCvSearch_base(gym.Env):
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
+                self.reset_startpoint = False
                 print ('Collision!!')
 
         # limit the max steps of every episode
@@ -133,19 +135,26 @@ class UnrealCvSearch_base(gym.Env):
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        # set a random start point according to the origin list
+
+       if len(self.trajectory) > 5:
+           self.update_candidate_point()
+
+
        self.count_steps = 0
-       start_id = random.randint(0, len(self.start_xy)-1)
-       x,y = self.start_xy[start_id]
-       self.unrealcv.set_position(self.cam_id, x, y, self.height)
-       self.unrealcv.set_rotation(self.cam_id, 0, random.randint(0,360), 0)
+       if self.reset_startpoint == True:
+           self.reset_from_startpoint()
+
+       else:
+           self.reset_from_farthest()
+
        state = self.unrealcv.read_image(self.cam_id , 'lit')
 
-       current_pos = self.unrealcv.get_pos()
+       current_pose = self.unrealcv.get_pose()
        self.trajectory = []
-       self.trajectory.append(current_pos)
+       self.trajectory.append(current_pose)
        self.trigger_count = 0
 
-       self.distance_last, self.target_last = self.select_target_by_distance(self.unrealcv.get_pose(), self.targets_pos)
+       self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
        return state
 
@@ -155,6 +164,68 @@ class UnrealCvSearch_base(gym.Env):
 
    def _get_action_size(self):
        return len(self.action)
+
+   def reset_from_startpoint(self):
+       start_id = random.randint(0, len(self.start_xy)-1)
+       x,y = self.start_xy[start_id]
+       yaw = random.randint(0, 360)
+       self.unrealcv.set_position(self.cam_id, x, y, self.height)
+       self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
+       self.start_xy_candidate.append([x,y,self.height,yaw])
+
+   def reset_from_collisionpoint(self): # this method may run in a local place
+       x,y,z,yaw = self.trajectory[(len(self.trajectory)-1)/2]
+       self.unrealcv.set_position(self.cam_id,x,y,z)
+       self.unrealcv.set_rotation(self.cam_id, 0, (yaw+random.randint(-1,1) * 45)%360.0, 0)
+
+   def reset_from_farthest(self):
+   # restart from farthest point in history
+       x, y, z, yaw = self.select_farthest(self.trajectory[-1])
+       self.unrealcv.set_position(self.cam_id,x,y,z)
+       self.unrealcv.set_rotation(self.cam_id, 0, random.randint(0, 360), 0)
+
+   def select_farthest(self,currentpose):
+       # select the farthest point in history
+       distance_max = 0
+       for point in self.start_xy_candidate:
+           distance = self.get_distance(currentpose,point)
+           if distance > distance_max:
+               startpoint = point
+               distance_max = distance
+       #start_id = random.randint(0,len(self.start_xy_candidate) - 1)
+       #startpoint = self.start_xy_candidate[start_id]
+       return startpoint
+
+   def update_candidate_point(self):
+       # select x y z max point
+       x,y,z,yaw = self.trajectory[1]
+       x_min = x_max = x
+       y_min = y_max = y
+       P_xmin = P_xmax = P_ymin = P_ymax = [x,y,z,yaw]
+       for x,y,z,yaw in self.trajectory[1:-2]:
+           if x < x_min:
+               P_xmin = [x,y,z,yaw]
+           if x > x_max:
+               P_xmax = [x,y,z,yaw]
+           if y < y_min:
+               P_ymin = [x,y,z,yaw]
+           if y > y_max:
+               P_ymax = [x,y,z,yaw]
+
+       P = [P_xmin,P_xmax,P_ymin,P_ymax]
+
+       # check these point's distance to current candidate point, if very close, skip it.
+       for point in P:
+           distance_min = self.get_distance(point, self.start_xy_candidate[0])
+           for point_candidate in self.start_xy_candidate:
+               distance = self.get_distance(point, point_candidate)
+               if distance < distance_min:
+                   distance_min = distance
+
+           if distance_min > 100:
+                self.start_xy_candidate.append(point)
+
+       print self.start_xy_candidate
 
 
    def reward_bbox(self):
@@ -189,7 +260,7 @@ class UnrealCvSearch_base(gym.Env):
        return reward
 
 
-   def cauculate_distance(self,target,current):
+   def get_distance(self,target,current):
 
        error = abs(np.array(target)[:2] - np.array(current)[:2])# only x and y
        distance = math.sqrt(sum(error * error))
@@ -199,7 +270,7 @@ class UnrealCvSearch_base(gym.Env):
        # find the nearest target, return distance and targetid
        distances = []
        for target_pos in targets_pos:
-           distances.append(self.cauculate_distance(target_pos, current_pos))
+           distances.append(self.get_distance(target_pos, current_pos))
        distances = np.array(distances)
        distance_now = distances.min()
        target_id = distances.argmin()
