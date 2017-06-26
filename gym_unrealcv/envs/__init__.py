@@ -1,4 +1,3 @@
 from gym_unrealcv.envs.unrealcv_simple import UnrealCvSimple
 from gym_unrealcv.envs.unrealcv_search import UnrealCvSearch
-from gym_unrealcv.envs.unrealcv_search_v1 import UnrealCvSearch_v1
-from gym_unrealcv.envs.unrealcv_search_v2 import UnrealCvSearch_v2
+from gym_unrealcv.envs.unrealcv_search_base import UnrealCvSearch_base
