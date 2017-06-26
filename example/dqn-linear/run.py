@@ -38,8 +38,17 @@ if __name__ == '__main__':
         current_epoch = 0
         stepCounter = 0
         loadsim_seconds = 0
-        Agent = dqn.DeepQ(ACTION_SIZE, MEMORY_SIZE, GAMMA, LEARNING_RATE,
-                          INPUT_SIZE, INPUT_SIZE,INPUT_CHANNELS,USE_TARGET_NETWORK,ANGLE_SIZE)
+        Agent = dqn.DeepQ(ACTION_SIZE,
+                          MEMORY_SIZE,
+                          GAMMA,
+                          LEARNING_RATE,
+                          INPUT_SIZE,
+                          INPUT_SIZE,
+                          INPUT_CHANNELS,
+                          USE_TARGET_NETWORK,
+                          ANGLE_SIZE,
+                          LOSS_DIR
+                          )
         env = wrappers.Monitor(env, MONITOR_DIR + 'tmp', write_upon_reset=True,force=True)
 
         #io_util.create_csv_header(TRA_DIR)
@@ -48,10 +57,15 @@ if __name__ == '__main__':
         #Load weights, monitor info and parameter info.
         with open(params_json) as outfile:
             d = json.load(outfile)
-            explorationRate = d.get('explorationRate')
+            '''explorationRate = d.get('explorationRate')
             current_epoch = d.get('current_epoch')
             stepCounter = d.get('stepCounter')
-            loadsim_seconds = d.get('loadsim_seconds')
+            loadsim_seconds = d.get('loadsim_seconds')'''
+            explorationRate = INITIAL_EPSILON
+            current_epoch = 0
+            stepCounter = 0
+            loadsim_seconds = 0
+
             Agent = dqn.DeepQ(
                 ACTION_SIZE,
                 MEMORY_SIZE,
@@ -61,7 +75,8 @@ if __name__ == '__main__':
                 INPUT_SIZE,
                 INPUT_CHANNELS,
                 USE_TARGET_NETWORK,
-                ANGLE_SIZE
+                ANGLE_SIZE,
+                LOSS_DIR
             )
             Agent.loadWeights(weights_path)
             io_util.clear_monitor_files(MONITOR_DIR + 'tmp')
@@ -103,7 +118,8 @@ if __name__ == '__main__':
 
                     #angle_onehot, angle_id = io_util.onehot_angle(info['Direction'],ANGLE_SIZE)
 
-                    direction_linear = ((info['Direction']+180)%360)/360.0
+                    #direction_linear = ((info['Direction']+180)%360)/360.0
+                    direction_linear = (info['Pose'][-1]%360) / 360.0
 
                     Agent.addMemory_new(observation, action, reward, newObservation, done, direction_linear )
                     observation = newObservation
