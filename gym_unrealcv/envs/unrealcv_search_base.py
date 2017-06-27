@@ -61,10 +61,11 @@ class UnrealCvSearch_base(gym.Env):
      self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
      self.trigger_count  = 0
-
-     self.distance_last, self.target_last = self.select_target_by_distance(self.unrealcv.get_pose(), self.targets_pos)
+     current_pose = self.unrealcv.get_pose()
+     self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
      self.reset_startpoint = True
      self.start_xy_candidate = []
+     #self.trajectory.append(current_pose)
    def _step(self, action = (0,0,0), show = False):
         info = dict(
             Collision=False,
@@ -97,7 +98,7 @@ class UnrealCvSearch_base(gym.Env):
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
                 print 'Trigger Terminal!'
-                self.reset_startpoint = True
+                self.reset_startpoint = False
         # if collision occurs, the episode is done and reward is -1
         else :
             info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
@@ -136,7 +137,7 @@ class UnrealCvSearch_base(gym.Env):
    def _reset(self, ):
        # set a random start point according to the origin list
 
-       if len(self.trajectory) > 5:
+       if len(self.trajectory) > 10:
            self.update_candidate_point()
 
 
@@ -187,13 +188,17 @@ class UnrealCvSearch_base(gym.Env):
    def select_farthest(self,currentpose):
        # select the farthest point in history
        distance_max = 0
+       dis = dict()
+       i = 0
        for point in self.start_xy_candidate:
-           distance = self.get_distance(currentpose,point)
-           if distance > distance_max:
-               startpoint = point
-               distance_max = distance
-       #start_id = random.randint(0,len(self.start_xy_candidate) - 1)
-       #startpoint = self.start_xy_candidate[start_id]
+           dis[i]= self.get_distance(currentpose,point)
+           i += 1
+
+       dis_list = sorted(dis.items(), key=lambda item: item[1], reverse=True)
+
+       # random sample the pos from top half point
+       start_id = random.randint(0,(len(dis_list) - 1)/2)
+       startpoint = self.start_xy_candidate[dis_list[start_id][0]]
        return startpoint
 
    def update_candidate_point(self):
@@ -202,7 +207,7 @@ class UnrealCvSearch_base(gym.Env):
        x_min = x_max = x
        y_min = y_max = y
        P_xmin = P_xmax = P_ymin = P_ymax = [x,y,z,yaw]
-       for x,y,z,yaw in self.trajectory[1:-2]:
+       for x,y,z,yaw in self.trajectory[3:-3]:
            if x < x_min:
                P_xmin = [x,y,z,yaw]
            if x > x_max:
@@ -222,10 +227,10 @@ class UnrealCvSearch_base(gym.Env):
                if distance < distance_min:
                    distance_min = distance
 
-           if distance_min > 100:
+           if distance_min > 200:
                 self.start_xy_candidate.append(point)
 
-       print self.start_xy_candidate
+       print len(self.start_xy_candidate)
 
 
    def reward_bbox(self):
