@@ -109,8 +109,8 @@ if __name__ == '__main__':
                 if EXPLORE is True: #explore
                     [action,direction_pre] = Agent.feedforward(observation, explorationRate)
 
-                    dir_loss.append(abs(direction_pre - direction_linear))
-                    dir_loss_mean = np.array(dir_loss[-min(100,len(dir_loss)):]).mean()
+                    '''dir_loss.append(abs(direction_pre - direction_linear))
+                    dir_loss_mean = np.array(dir_loss[-min(100,len(dir_loss)):]).mean()'''
 
                     obs_new, reward, done, info = env.step(ACTION_LIST[action])
                     newObservation = io_util.preprocess_img(obs_new)
@@ -156,7 +156,7 @@ if __name__ == '__main__':
                     h, m = divmod(m, 60)
 
                     print ("EP " + str(epoch) +" Csteps= " + str(stepCounter) + " - {} steps".format(t + 1) + " - CReward: " + str(
-                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) + " Direction Loss: " + str(dir_loss_mean) )
+                        round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s)  )
                         # SAVE SIMULATION DATA
                     if (epoch) % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
                         # save model weights and monitoring data
