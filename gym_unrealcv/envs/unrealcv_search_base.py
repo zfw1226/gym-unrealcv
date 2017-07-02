@@ -235,7 +235,6 @@ class UnrealCvSearch_base(gym.Env):
                self.update_dis2collision(self.trajectory[-1])
                self.sollision = False
 
-
            for P in self.trajectory:
 
                dis2waypoint,waypoint_id, dis2others = self.get_dis2waypoints(P)
@@ -274,11 +273,13 @@ class UnrealCvSearch_base(gym.Env):
        for W in self.waypoints:
            dis2waypoints.append(self.get_distance(pose,W['pose']))
        dis2waypoints = np.array(dis2waypoints)
-       id_min = dis2waypoints.argmin()
-       dis_min = dis2waypoints.min()
-       dis2waypoints[id_min] = dis2waypoints.max()
-       dis2waypoints.sort()
-       return dis_min, id_min, dis2waypoints.min()
+       arg = np.array(dis2waypoints)
+
+
+       id_min = arg[0]
+       dis_min = dis2waypoints[id_min]
+       dis_other = dis2waypoints[min(id_min+1,len(dis2waypoints)-1)]
+       return dis_min, id_min, dis_other
 
 
    def update_dis2collision(self,C_point): #update dis2collision of every point
