@@ -73,8 +73,7 @@ class UnrealCvSearch_base(gym.Env):
      self.collisionpoints = []
      self.start_id = 0
      self.yaw_id = 0
-     self.collision_th = 50
-     self.waypoint_th = 200
+
      self.collision = False
    def _step(self, action = (0,0,0), show = False):
         info = dict(
@@ -275,7 +274,6 @@ class UnrealCvSearch_base(gym.Env):
        dis2waypoints = np.array(dis2waypoints)
        arg = np.array(dis2waypoints)
 
-
        id_min = arg[0]
        dis_min = dis2waypoints[id_min]
        dis_other = dis2waypoints[min(id_min+1,len(dis2waypoints)-1)]
@@ -375,6 +373,8 @@ class UnrealCvSearch_base(gym.Env):
        self.height = setting['height']
        self.testpoints = setting['start_xy']
        self.use_reward_distance = setting['use_reward_distance']
+       self.collision_th = setting['collision_th']
+       self.waypoint_th = setting['waypoint_th']
 
        return setting
 
