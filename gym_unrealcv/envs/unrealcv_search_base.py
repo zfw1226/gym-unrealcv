@@ -10,6 +10,7 @@ from gym import spaces
 import yaml
 import sys
 import os
+from operator import itemgetter
 '''
  
 '''
@@ -33,10 +34,12 @@ Recommend object list in Arch1
 
 class UnrealCvSearch_base(gym.Env):
    def __init__(self,
-                setting_file = 'search_rr_plant78.yaml'
+                setting_file = 'search_rr_plant78.yaml',
+                test = True
                 ):
 
      setting = self.load_env_setting(setting_file)
+     self.test = test
 
      if setting['docker']:
          self.docker = run_docker.RunDocker()
@@ -63,9 +66,16 @@ class UnrealCvSearch_base(gym.Env):
      self.trigger_count  = 0
      current_pose = self.unrealcv.get_pose()
      self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
-     self.reset_startpoint = True
-     self.start_xy_candidate = []
-     #self.trajectory.append(current_pose)
+
+     # for reset point generation
+     self.waypoints = []
+     self.new_waypoint([self.testpoints[0][0],self.testpoints[0][1],self.height,0],1000)
+     self.collisionpoints = []
+     self.start_id = 0
+     self.yaw_id = 0
+     self.collision_th = 50
+     self.waypoint_th = 200
+     self.collision = False
    def _step(self, action = (0,0,0), show = False):
         info = dict(
             Collision=False,
@@ -79,7 +89,9 @@ class UnrealCvSearch_base(gym.Env):
             Trajectory = [],
             Steps = self.count_steps,
             Target = [],
-            Direction = self.distance_last
+            Direction = self.distance_last,
+            Waypoints = self.waypoints,
+            Testpoints = self.testpoints
         )
 
         (velocity, angle, info['Trigger']) = action
@@ -97,11 +109,14 @@ class UnrealCvSearch_base(gym.Env):
             info['Reward'],info['Bbox'] = self.reward_bbox()
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
+                if info['Reward'] > 0:
+                    self.waypoints[self.start_id]['successed'] += 1
+                    self.waypoints[self.start_id]['steps2target'].append(self.count_steps)
+
                 print 'Trigger Terminal!'
-                self.reset_startpoint = False
         # if collision occurs, the episode is done and reward is -1
         else :
-            info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
+            self.collision = info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
             state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
 
             info['Pose'] = self.unrealcv.get_pose()
@@ -112,12 +127,12 @@ class UnrealCvSearch_base(gym.Env):
             else:
                 info['Reward'] = 0
 
-            info['Direction'] = self.get_direction(info['Pose'],self.targets_pos[self.target_id])
+            info['Direction'] = self.get_direction (info['Pose'],self.targets_pos[self.target_id])
 
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
-                self.reset_startpoint = False
+                self.collisionpoints.append(info['Pose'])
                 print ('Collision!!')
 
         # limit the max steps of every episode
@@ -136,25 +151,21 @@ class UnrealCvSearch_base(gym.Env):
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        # set a random start point according to the origin list
-
-       if len(self.trajectory) > 10:
-           self.update_candidate_point()
-
-
        self.count_steps = 0
-       if self.reset_startpoint == True:
-           self.reset_from_startpoint()
-
+       if self.test:
+           current_pose = self.reset_from_testpoint()
        else:
-           self.reset_from_farthest()
+           if len(self.trajectory) > 5:
+               self.update_waypoint()
+           current_pose = self.reset_from_waypoint()
 
        state = self.unrealcv.read_image(self.cam_id , 'lit')
 
-       current_pose = self.unrealcv.get_pose()
        self.trajectory = []
        self.trajectory.append(current_pose)
        self.trigger_count = 0
-
+       #print current_pose,self.targets_pos
+       print self.waypoints
        self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
        return state
@@ -166,71 +177,114 @@ class UnrealCvSearch_base(gym.Env):
    def _get_action_size(self):
        return len(self.action)
 
-   def reset_from_startpoint(self):
-       start_id = random.randint(0, len(self.start_xy)-1)
-       x,y = self.start_xy[start_id]
-       yaw = random.randint(0, 360)
-       self.unrealcv.set_position(self.cam_id, x, y, self.height)
+
+   def reset_from_testpoint(self):
+
+       x,y = self.testpoints[self.start_id]
+       z = self.height
+       yaw = self.yaw_id * 45
+       self.unrealcv.set_position(self.cam_id, x, y, z)
        self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-       self.start_xy_candidate.append([x,y,self.height,yaw])
+       self.yaw_id += 1
+       if self.yaw_id >=8:
+           self.start_id = (self.start_id + 1) % len(self.testpoints)
+           self.yaw_id = 0
+       return [x,y,z,yaw]
 
-   def reset_from_collisionpoint(self): # this method may run in a local place
-       x,y,z,yaw = self.trajectory[(len(self.trajectory)-1)/2]
-       self.unrealcv.set_position(self.cam_id,x,y,z)
-       self.unrealcv.set_rotation(self.cam_id, 0, (yaw+random.randint(-1,1) * 45)%360.0, 0)
-
-   def reset_from_farthest(self):
+   def reset_from_waypoint(self):
    # restart from farthest point in history
-       x, y, z, yaw = self.select_farthest(self.trajectory[-1])
+       x, y, z, yaw = self.select_waypoint_times()
+       yaw = random.randint(0, 360)
        self.unrealcv.set_position(self.cam_id,x,y,z)
-       self.unrealcv.set_rotation(self.cam_id, 0, random.randint(0, 360), 0)
+       self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
+       #print [x,y,z,yaw]
+       return [x,y,z,yaw]
 
-   def select_farthest(self,currentpose):
+   def select_waypoint_distance(self,currentpose):
        # select the farthest point in history
-       distance_max = 0
        dis = dict()
        i = 0
-       for point in self.start_xy_candidate:
-           dis[i]= self.get_distance(currentpose,point)
+       for wp in self.waypoints:
+           dis[i]= self.get_distance(currentpose,wp['pose'])
            i += 1
-
        dis_list = sorted(dis.items(), key=lambda item: item[1], reverse=True)
-
-       # random sample the pos from top half point
+       # random sample the pos
        start_id = random.randint(0,(len(dis_list) - 1)/2)
-       startpoint = self.start_xy_candidate[dis_list[start_id][0]]
+       startpoint = self.waypoints[dis_list[start_id][0]]
        return startpoint
 
-   def update_candidate_point(self):
-       # select x y z max point
-       x,y,z,yaw = self.trajectory[1]
-       x_min = x_max = x
-       y_min = y_max = y
-       P_xmin = P_xmax = P_ymin = P_ymax = [x,y,z,yaw]
-       for x,y,z,yaw in self.trajectory[3:-3]:
-           if x < x_min:
-               P_xmin = [x,y,z,yaw]
-           if x > x_max:
-               P_xmax = [x,y,z,yaw]
-           if y < y_min:
-               P_ymin = [x,y,z,yaw]
-           if y > y_max:
-               P_ymax = [x,y,z,yaw]
+   def select_waypoint_random(self):
+       self.start_id = random.randint(0, (len(self.waypoints) - 1) )
+       startpoint = self.waypoints[self.start_id]['pose']
+       self.waypoints[self.start_id]['selected'] += 1
+       return startpoint
 
-       P = [P_xmin,P_xmax,P_ymin,P_ymax]
+   def select_waypoint_times(self):
 
-       # check these point's distance to current candidate point, if very close, skip it.
-       for point in P:
-           distance_min = self.get_distance(point, self.start_xy_candidate[0])
-           for point_candidate in self.start_xy_candidate:
-               distance = self.get_distance(point, point_candidate)
-               if distance < distance_min:
-                   distance_min = distance
+       self.waypoints = sorted(self.waypoints,key=itemgetter('selected'))
+       self.start_id = random.randint(0, (len(self.waypoints) - 1)/3 )
+       self.waypoints[self.start_id]['selected'] += 1
 
-           if distance_min > 200:
-                self.start_xy_candidate.append(point)
+       return self.waypoints[self.start_id]['pose']
 
-       print len(self.start_xy_candidate)
+   def update_waypoint(self):
+       #delete point close to collision point
+       if len(self.collisionpoints)>1:
+
+           if self.collision:
+               self.update_dis2collision(self.trajectory[-1])
+               self.sollision = False
+
+
+           for P in self.trajectory:
+
+               dis2waypoint,waypoint_id, dis2others = self.get_dis2waypoints(P)
+               dis2collision = self.get_dis2collision(P)
+
+               # update waypint
+               if dis2waypoint < self.waypoint_th/4 and dis2collision > self.waypoints[waypoint_id]['dis2collision'] and dis2others>self.waypoint_th :
+                   self.waypoints[waypoint_id]['pose'] = P
+                   self.waypoints[waypoint_id]['dis2collision'] = dis2collision
+                   print 'update waypoint'
+
+               if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
+                   self.new_waypoint(P,dis2collision)
+                   print 'add new waypoint'
+
+       return len(self.waypoints)
+
+   def get_dis2collision(self,pose):
+       dis2collision = 1000
+       for C in self.collisionpoints:
+           dis2collision = min(dis2collision, self.get_distance(pose, C))
+       return dis2collision
+
+   def new_waypoint(self,pose,dis2collision):
+       waypoint = dict()
+       waypoint['pose']=pose
+       waypoint['successed'] = 0
+       waypoint['selected'] = 0
+       waypoint['dis2collision'] = dis2collision
+       waypoint['steps2target'] = []
+       self.waypoints.append(waypoint)
+       return waypoint
+
+   def get_dis2waypoints(self,pose):
+       dis2waypoints = []
+       for W in self.waypoints:
+           dis2waypoints.append(self.get_distance(pose,W['pose']))
+       dis2waypoints = np.array(dis2waypoints)
+       id_min = dis2waypoints.argmin()
+       dis_min = dis2waypoints.min()
+       dis2waypoints[id_min] = dis2waypoints.max()
+       dis2waypoints.sort()
+       return dis_min, id_min, dis2waypoints.min()
+
+
+   def update_dis2collision(self,C_point): #update dis2collision of every point
+       for i in range(len(self.waypoints)):
+           distance = self.get_distance(self.waypoints[i]['pose'],C_point)
+           self.waypoints[i]['dis2collision'] = min(self.waypoints[i]['dis2collision'],distance)
 
 
    def reward_bbox(self):
@@ -240,7 +294,7 @@ class UnrealCvSearch_base(gym.Env):
        boxes = self.unrealcv.get_bboxes(object_mask,self.target_list)
        reward = 0
        for box in boxes:
-           reward += self.calculate_bbox_reward(box)
+           reward += self.get_bbox_reward(box)
 
        if reward > self.reward_th:
             reward = reward * 10
@@ -255,7 +309,7 @@ class UnrealCvSearch_base(gym.Env):
        return reward,boxes
 
 
-   def calculate_bbox_reward(self,box):
+   def get_bbox_reward(self,box):
        (xmin,ymin),(xmax,ymax) = box
        boxsize = (ymax - ymin) * (xmax - xmin)
        x_c = (xmax + xmin) / 2.0
@@ -318,7 +372,7 @@ class UnrealCvSearch_base(gym.Env):
        self.reward_th = setting['reward_th']
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
-       self.start_xy = setting['start_xy']
+       self.testpoints = setting['start_xy']
        self.use_reward_distance = setting['use_reward_distance']
 
        return setting
