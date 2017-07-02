@@ -5,6 +5,7 @@ import math
 import time
 import os
 import re
+import StringIO
 
 
 ####TO DO#######
@@ -77,18 +78,23 @@ class UnrealCv:
             # cam_id:0 1 2 ...
             # viewmode:lit,  =normal, depth, object_mask
             cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}{ip}.png'
-
             if self.docker:
                 img_dirs_docker = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 img_dirs = self.envdir + img_dirs_docker[7:]
             else :
                 img_dirs = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
             image = cv2.imread(img_dirs)
+
             if show is True:
                 self.show_img(image)
 
             return image
 
+    def read_depth(self, cam_id):
+        cmd = 'vget /camera/0/depth npy'
+        res = client.request(cmd)
+        depth = np.load(StringIO.StringIO(res))
+        return depth
 
 
     def set_position(self,cam_id, x, y, z):
