@@ -18,8 +18,10 @@ import time
 if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
-
-    ACTION_SIZE = len(env.action)
+    assert env.discrete_action is False
+    ACTION_SIZE = env.action_space.shape[0]
+    ACTION_HIGH = env.action_space.high
+    ACTION_LOW = env.action_space.low
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -75,9 +77,10 @@ if __name__ == '__main__':
                     action_pred = Agent.actor.model.predict(observation)
                     action = Agent.Action_Noise(action_pred, explorationRate)
                     #print action
-                    action_env = ( action[0] * VELOCITY_MAX,
+                    '''action_env = ( action[0] * VELOCITY_MAX,
                               (action[1]-0.5) * ANGLE_MAX,
-                              action[2])
+                              action[2])'''
+                    action_env = action * (ACTION_HIGH - ACTION_LOW) + ACTION_LOW
                     obs_new, reward, done, info = env.step(action_env)
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
