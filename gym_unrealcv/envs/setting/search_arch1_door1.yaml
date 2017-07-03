@@ -5,10 +5,21 @@ cam_id: 0
 height: 40
 maxsteps: 100
 trigger_th: 0.6
-reward_th: 0.3
+reward_th: 0.05
 collision_th: 50
 waypoint_th: 200
 targets: ['BP_door_001_C_0']
+discrete_actions:
+  -  [50,  0, 0]
+  -  [30, 15, 0]
+  -  [30,-15, 0]
+  -  [15, 30, 0]
+  -  [15,-30, 0]
+  -  [0 ,  0, 1]
+continous_actions:
+ high: [100, 45.0, 1.0]
+ low:  [0,  -45.0,   0]
+
 start_xy:
    0: [ 470,  -300]
    1: [ 400,   450]
