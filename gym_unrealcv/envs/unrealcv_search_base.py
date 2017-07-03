@@ -35,7 +35,8 @@ Recommend object list in Arch1
 class UnrealCvSearch_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.yaml',
-                test = True
+                test = True,
+                discrete_action = True
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -53,14 +54,19 @@ class UnrealCvSearch_base(gym.Env):
 
      print env_ip
 
-     self.action = (0,0,0) #(velocity,angle,trigger)
-     self.action_space = spaces.Box(low = 0,high = 100, shape = self.action)
+     self.discrete_action = discrete_action
+     if discrete_action:
+         self.action_space = spaces.Discrete(len(self.discrete_actions))
+     else:
+         #self.action = (0,0,0) #(velocity,angle,trigger)
+         self.action_space = spaces.Box(low = np.array(self.continous_actions['low']),high = np.array(self.continous_actions['high']))
 
      self.count_steps = 0
      self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
      self.trajectory = []
 
      state = self.unrealcv.read_image(self.cam_id, 'lit')
+
      self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
      self.trigger_count  = 0
@@ -75,7 +81,7 @@ class UnrealCvSearch_base(gym.Env):
      self.yaw_id = 0
 
      self.collision = False
-   def _step(self, action = (0,0,0), show = False):
+   def _step(self, action , show = True):
         info = dict(
             Collision=False,
             Done = False,
@@ -85,7 +91,7 @@ class UnrealCvSearch_base(gym.Env):
             Action = action,
             Bbox =[],
             Pose = [],
-            Trajectory = [],
+            Trajectory = self.trajectory,
             Steps = self.count_steps,
             Target = [],
             Direction = self.distance_last,
@@ -93,7 +99,11 @@ class UnrealCvSearch_base(gym.Env):
             Testpoints = self.testpoints
         )
 
-        (velocity, angle, info['Trigger']) = action
+
+        if self.discrete_action:
+            (velocity, angle, info['Trigger']) = self.discrete_actions[action]
+        else:
+            (velocity, angle, info['Trigger']) = action
         self.count_steps += 1
         info['Done'] = False
 
@@ -101,8 +111,10 @@ class UnrealCvSearch_base(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
+            color = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
+            depth = self.unrealcv.read_depth(self.cam_id)
+            state = [color,depth]
 
-            state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
             info['Pose'] = self.unrealcv.get_pose()
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
@@ -116,7 +128,9 @@ class UnrealCvSearch_base(gym.Env):
         # if collision occurs, the episode is done and reward is -1
         else :
             self.collision = info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
-            state = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
+            color = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
+            depth = self.unrealcv.read_depth(self.cam_id)
+            state = [color,depth]
 
             info['Pose'] = self.unrealcv.get_pose()
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
@@ -145,7 +159,7 @@ class UnrealCvSearch_base(gym.Env):
         info['Trajectory'] = self.trajectory
 
         if show:
-            self.unrealcv.show_img(state, 'state')
+            self.unrealcv.show_img(state[0], 'state')
 
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
@@ -176,7 +190,7 @@ class UnrealCvSearch_base(gym.Env):
    def _get_action_size(self):
        return len(self.action)
 
-
+# functions for starting point module
    def reset_from_testpoint(self):
 
        x,y = self.testpoints[self.start_id]
@@ -191,12 +205,11 @@ class UnrealCvSearch_base(gym.Env):
        return [x,y,z,yaw]
 
    def reset_from_waypoint(self):
-   # restart from farthest point in history
+       # reset from waypoints generated in exploration
        x, y, z, yaw = self.select_waypoint_times()
        yaw = random.randint(0, 360)
        self.unrealcv.set_position(self.cam_id,x,y,z)
        self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-       #print [x,y,z,yaw]
        return [x,y,z,yaw]
 
    def select_waypoint_distance(self,currentpose):
@@ -272,15 +285,18 @@ class UnrealCvSearch_base(gym.Env):
        for W in self.waypoints:
            dis2waypoints.append(self.get_distance(pose,W['pose']))
        dis2waypoints = np.array(dis2waypoints)
-       arg = np.array(dis2waypoints)
+       arg = np.argsort(dis2waypoints)
 
        id_min = arg[0]
        dis_min = dis2waypoints[id_min]
-       dis_other = dis2waypoints[min(id_min+1,len(dis2waypoints)-1)]
+       if len(dis2waypoints) > 1:
+           dis_other = dis2waypoints[arg[1]]
+       else:
+           dis_other = dis_min
        return dis_min, id_min, dis_other
 
-
-   def update_dis2collision(self,C_point): #update dis2collision of every point
+   def update_dis2collision(self,C_point):
+       # update dis2collision of every waypoint when detect a new collision point
        for i in range(len(self.waypoints)):
            distance = self.get_distance(self.waypoints[i]['pose'],C_point)
            self.waypoints[i]['dis2collision'] = min(self.waypoints[i]['dis2collision'],distance)
@@ -289,7 +305,7 @@ class UnrealCvSearch_base(gym.Env):
    def reward_bbox(self):
 
        object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
-       #mask, box = self.unrealcv.get_bbox(object_mask, self.target_list[0])
+
        boxes = self.unrealcv.get_bboxes(object_mask,self.target_list)
        reward = 0
        for box in boxes:
@@ -306,7 +322,6 @@ class UnrealCvSearch_base(gym.Env):
            print ('Get small Target!!!')
 
        return reward,boxes
-
 
    def get_bbox_reward(self,box):
        (xmin,ymin),(xmax,ymax) = box
@@ -375,6 +390,11 @@ class UnrealCvSearch_base(gym.Env):
        self.use_reward_distance = setting['use_reward_distance']
        self.collision_th = setting['collision_th']
        self.waypoint_th = setting['waypoint_th']
+
+       self.discrete_actions = setting['discrete_actions']
+       self.continous_actions = setting['continous_actions']
+
+
 
        return setting
 
