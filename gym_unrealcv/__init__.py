@@ -13,41 +13,198 @@ register(
 
 # single target, reward by trigger
 register(
-    id='Search-RrPlant-v0',
+    id='Search-RrPlantDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant7.yaml'}
+    kwargs = {'setting_file' : 'search_rr_plant7.yaml',
+              'test' : False,
+              'discrete_action': True
+              }
+)
+register(
+    id='Search-RrPlantContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant7.yaml',
+              'test' : False,
+              'discrete_action': False
+              }
 )
 
 register(
-    id='Search-RrPlant-v1',
+    id='Search-RrPlantDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant8.yaml'}
+    kwargs = {'setting_file' : 'search_rr_plant7.yaml',
+              'test' : True,
+              'discrete_action': True
+              }
+)
+register(
+    id='Search-RrPlantContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant7.yaml',
+              'test' : True,
+              'discrete_action': False
+              }
+)
+
+
+
+register(
+    id='Search-RrPlantDiscrete-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant8.yaml',
+              'test': False,
+              'discrete_action': True}
+)
+register(
+    id='Search-RrPlantContinuous-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant8.yaml',
+              'test': False,
+              'discrete_action': False}
+)
+register(
+    id='Search-RrPlantDiscreteTest-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant8.yaml',
+              'test': True,
+              'discrete_action': True}
+)
+register(
+    id='Search-RrPlantContinuousTest-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant8.yaml',
+              'test': True,
+              'discrete_action': False}
+)
+
+
+register(
+    id='Search-RrDoorDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_door41.yaml',
+              'test': False,
+              'discrete_action': True}
 )
 
 register(
-    id='Search-RrDoor-v0',
+    id='Search-RrDoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_door41.yaml'}
+    kwargs = {'setting_file' : 'search_rr_door41.yaml',
+              'test': False,
+              'discrete_action': False}
 )
 
 register(
-    id='Search-Arch1Door-v0',
+    id='Search-RrDoorDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.yaml'}
+    kwargs = {'setting_file' : 'search_rr_door41.yaml',
+              'test': True,
+              'discrete_action': True}
 )
+register(
+    id='Search-RrDoorContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_door41.yaml',
+              'test': True,
+              'discrete_action': False}
+)
+
+
+
+register(
+    id='Search-Arch1DoorDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door1.yaml',
+              'test': False,
+              'discrete_action': True}
+)
+
+
+register(
+    id='Search-Arch1DoorContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door1.yaml',
+              'test': False,
+              'discrete_action': False}
+)
+
+register(
+    id='Search-Arch1DoorDiscreteTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door1.yaml',
+              'test': True,
+              'discrete_action': True}
+)
+register(
+    id='Search-Arch1DoorContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door1.yaml',
+              'test': True,
+              'discrete_action': False}
+)
+
 
 # multi targets
 register(
-    id='Search-RrMultiPlants-v0',
+    id='Search-RrMultiPlantsDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant78.yaml'},
+    kwargs = {'setting_file' : 'search_rr_plant78.yaml',
+              'test': False,
+              'discrete_action': True}
+)
+register(
+    id='Search-RrMultiPlantsContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant78.yaml',
+              'test': False,
+              'discrete_action': False}
 )
 
 register(
-    id='Search-Arch1MultiDoors-v0',
+    id='Search-RrMultiPlantsDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door12.yaml'}
+    kwargs = {'setting_file' : 'search_rr_plant78.yaml',
+              'test': True,
+              'discrete_action': True},
 )
+register(
+    id='Search-RrMultiPlantsContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_plant78.yaml',
+              'test': True,
+              'discrete_action': False},
+)
+
+register(
+    id='Search-Arch1MultiDoorsDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door12.yaml',
+              'test': False,
+              'discrete_action': True}
+)
+register(
+    id='Search-Arch1MultiDoorsContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door12.yaml',
+              'test': False,
+              'discrete_action': False}
+)
+register(
+    id='Search-Arch1MultiDoorsDiscreteTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door12.yaml',
+              'test': True,
+              'discrete_action': True}
+)
+register(
+    id='Search-Arch1MultiDoorsContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_arch1_door12.yaml',
+              'test': True,
+              'discrete_action': False}
+)
+
+
 
 
 
