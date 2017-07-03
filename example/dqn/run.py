@@ -18,8 +18,11 @@ if __name__ == '__main__':
 
 
     env = gym.make(ENV_NAME)
+    # must be discrete action
+    assert env.discrete_action
 
-    ACTION_SIZE = len(ACTION_LIST)
+    ACTION_SIZE = env.action_space.n
+    #ACTION_LIST = env.discrete_actions
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -83,7 +86,7 @@ if __name__ == '__main__':
 
                 if EXPLORE is True: #explore
                     action = Agent.feedforward(observation, explorationRate)
-                    obs_new, reward, done, info = env.step(ACTION_LIST[action])
+                    obs_new, reward, done, info = env.step(action)
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
                     Agent.addMemory(observation, action, reward, newObservation, done)
@@ -103,7 +106,7 @@ if __name__ == '__main__':
                 #test
                 else:
                     action = Agent.feedforward(observation,0)
-                    obs_new, reward, done, info = env.step(ACTION_LIST[action])
+                    obs_new, reward, done, info = env.step(action)
                     newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
 
