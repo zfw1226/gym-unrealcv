@@ -11,7 +11,7 @@ register(
 )
 
 
-# single target, reward by trigger
+#RrPlant7
 register(
     id='Search-RrPlantDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -47,7 +47,7 @@ register(
 )
 
 
-
+# RrPlant8
 register(
     id='Search-RrPlantDiscrete-v1',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -77,7 +77,7 @@ register(
               'discrete_action': False}
 )
 
-
+# RrDoor41
 register(
     id='Search-RrDoorDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -85,7 +85,6 @@ register(
               'test': False,
               'discrete_action': True}
 )
-
 register(
     id='Search-RrDoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -93,7 +92,6 @@ register(
               'test': False,
               'discrete_action': False}
 )
-
 register(
     id='Search-RrDoorDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -110,7 +108,7 @@ register(
 )
 
 
-
+#Arch1Door1
 register(
     id='Search-Arch1DoorDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -118,8 +116,6 @@ register(
               'test': False,
               'discrete_action': True}
 )
-
-
 register(
     id='Search-Arch1DoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -127,7 +123,6 @@ register(
               'test': False,
               'discrete_action': False}
 )
-
 register(
     id='Search-Arch1DoorDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -144,7 +139,7 @@ register(
 )
 
 
-# multi targets
+# RrMultiPlants
 register(
     id='Search-RrMultiPlantsDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -175,6 +170,8 @@ register(
               'discrete_action': False},
 )
 
+
+# Arch1MultiDoors
 register(
     id='Search-Arch1MultiDoorsDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -203,9 +200,3 @@ register(
               'test': True,
               'discrete_action': False}
 )
-
-
-
-
-
-
