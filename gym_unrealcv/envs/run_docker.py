@@ -32,7 +32,7 @@ class RunDocker():
         run_cmd = 'bash -c "chown unrealcv {ENV_DIR_DOCKER} -R && su unrealcv -c {ENV_DIR_BIN_DOCKER}"'
         cmd = docker_cmd.format(ENV_DIR_HOST=self.path2env, ENV_DIR_DOCKER=ENV_DIR_DOCKER, IMAGE=self.image) + \
               run_cmd.format(ENV_DIR_DOCKER=ENV_DIR_DOCKER, ENV_DIR_BIN_DOCKER = os.path.join(ENV_DIR_DOCKER,ENV_BIN))
-  
+
         print cmd
         os.system(cmd)
         self.container = self.docker_client.containers.list()
@@ -70,11 +70,3 @@ class RunDocker():
 
 
 
-#docker = RunDocker()
-
-#ip,pwd = docker.start('ArchinteriorsVol2Sceen1')
-#print ip
-#time.sleep(50)
-#docker.close()
-
-#print ip
