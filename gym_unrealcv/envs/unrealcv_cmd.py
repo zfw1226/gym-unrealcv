@@ -5,7 +5,7 @@ import math
 import time
 import os
 import re
-import StringIO
+
 
 
 ####TO DO#######
@@ -56,9 +56,7 @@ class UnrealCv:
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
-        #(x, y, z) = self.get_position(self.cam_id)
-        #roll,yaw,pitch = self.get_rotation(self.cam_id)
-        #return x, y, z ,yaw
+
 
     def check_connection(self):
         while (client.isconnected() is False):
@@ -85,17 +83,21 @@ class UnrealCv:
                 img_dirs = client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
             image = cv2.imread(img_dirs)
 
-            if show is True:
-                self.show_img(image)
-
             return image
 
     def read_depth(self, cam_id):
-        cmd = 'vget /camera/0/depth npy'
-        res = client.request(cmd)
+        cmd = 'vget /camera/{cam_id}/depth npy'
+        res = client.request(cmd.format(cam_id=cam_id))
+        import StringIO
         depth = np.load(StringIO.StringIO(res))
-        return depth
+        depth[depth>10.0] = 10.0
+        return np.expand_dims(depth,axis=2)
 
+    def get_rgbd(self,cam_id):
+        rgb = self.read_image(cam_id,'lit')
+        d = self.read_depth(cam_id)
+        rgbd = np.append(rgb,d,axis=2)
+        return rgbd
 
     def set_position(self,cam_id, x, y, z):
         cmd = 'vset /camera/{cam_id}/location {x} {y} {z}'
