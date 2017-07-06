@@ -8,9 +8,10 @@ import math
 import run_docker
 from gym import spaces
 import yaml
-import sys
 import os
 from operator import itemgetter
+import env_unreal
+import sys
 '''
  
 '''
@@ -36,52 +37,66 @@ class UnrealCvSearch_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.yaml',
                 test = True,
-                discrete_action = True
+                action_type = 'discrete',  # 'discrete', 'continuous'
+                observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
+                docker = False
                 ):
 
      setting = self.load_env_setting(setting_file)
      self.test = test
+     self.docker = docker
 
-     if setting['docker']:
-         self.docker = run_docker.RunDocker()
-         env_ip, env_dir = self.docker.start(ENV_NAME = setting['env_name'])
-         self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list, env=env_dir)
-     else:
-         self.docker = False
-         #you need run the environment previously
-         env_ip = '127.0.0.1'
-         self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list)
+     # start unreal env anc connect unrealcv
+     self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
+     env_ip = self.unreal.start(docker)
+     time.sleep(10)
+     self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list, env=self.unreal.path2env)
 
-     print env_ip
-
-     self.discrete_action = discrete_action
-     if discrete_action:
+    # define action
+     self.action_type = action_type
+     assert self.action_type == 'discrete' or self.action_type == 'continuous'
+     if self.action_type == 'discrete':
          self.action_space = spaces.Discrete(len(self.discrete_actions))
-     else:
-         #self.action = (0,0,0) #(velocity,angle,trigger)
+     elif self.action_type == 'continuous':
          self.action_space = spaces.Box(low = np.array(self.continous_actions['low']),high = np.array(self.continous_actions['high']))
 
      self.count_steps = 0
      self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
-     self.trajectory = []
 
-     state = self.unrealcv.read_image(self.cam_id, 'lit')
+    # define observation
+     self.observation_type = observation_type
+     assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
+     if self.observation_type == 'color':
+         state = self.unrealcv.read_image(self.cam_id,'lit')
+         self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+     elif self.observation_type == 'depth':
+         state = self.unrealcv.read_depth(self.cam_id)
+         self.observation_space = spaces.Box(low=0, high=10, shape=state.shape)
+     elif self.observation_type == 'rgbd':
+         state = self.unrealcv.get_rgbd(self.cam_id)
+         s_high = s_low = state
+         s_high[:,:,-1] = 10.0
+         s_high[:,:,:-1] = 255
+         s_low[:,:,:] = 0
 
-     self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+         self.observation_space = spaces.Box(low=s_low, high=s_high)
 
+     # set start position
      self.trigger_count  = 0
      current_pose = self.unrealcv.get_pose()
+     current_pose[2] = self.height
+     self.unrealcv.set_position(self.cam_id,current_pose[0],current_pose[1],current_pose[2])
      self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
-
      # for reset point generation
      self.waypoints = []
-     self.new_waypoint([self.testpoints[0][0],self.testpoints[0][1],self.height,0],1000)
+     self.trajectory = []
+     self.new_waypoint(current_pose,1000)
      self.collisionpoints = []
      self.start_id = 0
      self.yaw_id = 0
 
      self.collision = False
-   def _step(self, action , show = True):
+   def _step(self, action , show = False):
         info = dict(
             Collision=False,
             Done = False,
@@ -96,11 +111,13 @@ class UnrealCvSearch_base(gym.Env):
             Target = [],
             Direction = self.distance_last,
             Waypoints = self.waypoints,
-            Testpoints = self.testpoints
+            Testpoints = self.testpoints,
+            Color = None,
+            Depth = None,
         )
 
 
-        if self.discrete_action:
+        if self.action_type == 'discrete':
             (velocity, angle, info['Trigger']) = self.discrete_actions[action]
         else:
             (velocity, angle, info['Trigger']) = action
@@ -111,10 +128,17 @@ class UnrealCvSearch_base(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
-            color = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
-            depth = self.unrealcv.read_depth(self.cam_id)
-            state = [color,depth]
+            if self.observation_type == 'color':
+                state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+            elif self.observation_type == 'depth':
+                state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+            elif self.observation_type == 'rgbd':
+                info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+                info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+                state = np.append(info['Color'], info['Depth'], axis=2)
 
+
+            # get reward
             info['Pose'] = self.unrealcv.get_pose()
             self.trigger_count += 1
             info['Reward'],info['Bbox'] = self.reward_bbox()
@@ -127,11 +151,19 @@ class UnrealCvSearch_base(gym.Env):
                 print 'Trigger Terminal!'
         # if collision occurs, the episode is done and reward is -1
         else :
+            # take action
             self.collision = info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
-            color = self.unrealcv.read_image(self.cam_id, 'lit', show=False)
-            depth = self.unrealcv.read_depth(self.cam_id)
-            state = [color,depth]
+            # update observation
+            if self.observation_type == 'color':
+                state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+            elif self.observation_type == 'depth':
+                state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+            elif self.observation_type == 'rgbd':
+                info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+                info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+                state = np.append(info['Color'], info['Depth'], axis=2)
 
+            # get reward
             info['Pose'] = self.unrealcv.get_pose()
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
@@ -159,12 +191,11 @@ class UnrealCvSearch_base(gym.Env):
         info['Trajectory'] = self.trajectory
 
         if show:
-            self.unrealcv.show_img(state[0], 'state')
+            self.unrealcv.show_img(info['Color'], 'state')
 
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
-       # set a random start point according to the origin list
-       self.count_steps = 0
+       # select a starting point
        if self.test:
            current_pose = self.reset_from_testpoint()
        else:
@@ -172,27 +203,34 @@ class UnrealCvSearch_base(gym.Env):
                self.update_waypoint()
            current_pose = self.reset_from_waypoint()
 
-       state = self.unrealcv.read_image(self.cam_id , 'lit')
+       if self.observation_type == 'color':
+           state = self.unrealcv.read_image(self.cam_id, 'lit')
+       elif self.observation_type == 'depth':
+           state = self.unrealcv.read_depth(self.cam_id)
+       elif self.observation_type == 'rgbd':
+           state = self.unrealcv.get_rgbd(self.cam_id)
+
 
        self.trajectory = []
        self.trajectory.append(current_pose)
        self.trigger_count = 0
-       #print current_pose,self.targets_pos
-       print self.waypoints
+       self.count_steps = 0
        self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
        return state
 
    def _close(self):
        if self.docker:
-           self.docker.close()
+           self.unreal.docker.close()
+
+       #sys.exit()
+
 
    def _get_action_size(self):
        return len(self.action)
 
 # functions for starting point module
    def reset_from_testpoint(self):
-
        x,y = self.testpoints[self.start_id]
        z = self.height
        yaw = self.yaw_id * 45
@@ -377,7 +415,7 @@ class UnrealCvSearch_base(gym.Env):
        return reward
 
    def load_env_setting(self,filename):
-       f = open(self.get_abspath(filename))
+       f = open(self.get_settingpath(filename))
        setting = yaml.load(f)
        print setting
        self.cam_id = setting['cam_id']
@@ -398,12 +436,10 @@ class UnrealCvSearch_base(gym.Env):
 
        return setting
 
-   def get_abspath(self, filename):
-       paths = sys.path
-       for p in paths:
-           if p[-20:].find('gym-unrealcv') > 0:
-               gympath = p
-       return os.path.join(gympath, 'gym_unrealcv/envs/setting', filename)
+   def get_settingpath(self, filename):
+       import gym_unrealcv
+       gympath = os.path.dirname(gym_unrealcv.__file__)
+       return os.path.join(gympath, 'envs/setting', filename)
 
    def open_door(self):
        self.unrealcv.keyboard('RightMouseButton')
