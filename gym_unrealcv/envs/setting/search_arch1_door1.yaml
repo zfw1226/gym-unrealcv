@@ -1,5 +1,5 @@
 env_name: 'ArchinteriorsVol2Sceen1'
-docker: True
+env_bin: 'ArchinteriorsVol2Scene1/ArchinteriorsVol2Scene1/Binaries/Linux/ArchinteriorsVol2Scene1'
 use_reward_distance: False
 cam_id: 0
 height: 40

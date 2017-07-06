@@ -1,5 +1,5 @@
 env_name: 'RealisticRendering'
-docker: True
+env_bin: 'RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering'
 use_reward_distance: False
 cam_id: 0
 height: 40
@@ -10,12 +10,12 @@ collision_th: 50
 waypoint_th: 200
 targets: ['SM_Plant_7']
 start_xy:
-   0: [-106.195,  437.424]
-   1: [  27.897, -162.437]
-   2: [  10.832,  135.126]
-   3: [  67.903,   26.995]
-   4: [ -23.558, -187.354]
-   5: [ -80.312,  254.579]
+   - [-106.195,  437.424]
+   - [  27.897, -162.437]
+   - [  10.832,  135.126]
+   - [  67.903,   26.995]
+   - [ -23.558, -187.354]
+   - [ -80.312,  254.579]
 discrete_actions:
   -  [50,  0, 0]
   -  [30, 15, 0]

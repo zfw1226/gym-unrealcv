@@ -1,5 +1,5 @@
 env_name: 'ArchinteriorsVol2Sceen1'
-docker: True
+env_bin: 'ArchinteriorsVol2Scene1/ArchinteriorsVol2Scene1/Binaries/Linux/ArchinteriorsVol2Scene1'
 use_reward_distance: False
 cam_id: 0
 height: 40
@@ -10,8 +10,8 @@ collision_th: 50
 waypoint_th: 200
 targets: ['BP_door_001_C_0','BP_door_002_C_0']
 start_xy:
-   0: [ -530,  -425]
-   1: [ 1480,  -570]
+   - [ -530,  -425]
+   - [ 1480,  -570]
 discrete_actions:
   -  [50,  0, 0]
   -  [30, 15, 0]
