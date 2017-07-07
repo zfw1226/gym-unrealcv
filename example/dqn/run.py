@@ -19,10 +19,11 @@ if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
     # must be discrete action
-    assert env.discrete_action
+    assert env.action_type == 'discrete'
 
     ACTION_SIZE = env.action_space.n
     #ACTION_LIST = env.discrete_actions
+    INPUT_CHANNELS = env.observation_space.shape[2]
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -99,9 +100,9 @@ if __name__ == '__main__':
 
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        '''elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
+                        elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
                             explorationRate = 0.99
-                            print 'Reset Exploration Rate'''
+                            print 'Reset Exploration Rate'
 
                 #test
                 else:
@@ -111,7 +112,7 @@ if __name__ == '__main__':
                     observation = newObservation
 
                 if SHOW:
-                    io_util.show_info(info, obs_new)
+                    io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
 
@@ -133,8 +134,8 @@ if __name__ == '__main__':
                         #backup monitor file
                         copy_tree(MONITOR_DIR+ 'tmp', MONITOR_DIR + str(epoch))
 
-                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds']
-                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds)]
+                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds','waypoints']
+                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds), info['Waypoints']]
                         parameter_dictionary = dict(zip(parameter_keys, parameter_values))
                         with open(PARAM_DIR + '/dqn_ep' + str(epoch) + '.json','w') as outfile:
                             json.dump(parameter_dictionary, outfile)
