@@ -2,7 +2,7 @@ import os
 from multiprocessing import Process
 import run_docker
 import getpass
-
+import time
 
 # api for running unrealenv
 
@@ -17,6 +17,7 @@ class RunUnreal():
         if docker :
             self.docker = run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
+            print 'Running nvidia-docker env'
         else:
             self.pid = []
             self.modify_permission(self.path2env)
@@ -24,6 +25,9 @@ class RunUnreal():
             self.env.start()
             env_ip = '127.0.0.1'
             print 'Running docker-free env'
+
+        print 'Please wait for a while to launch env......'
+        time.sleep(10)
         return env_ip
 
     def get_path2UnrealEnv(self):
