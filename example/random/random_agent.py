@@ -18,6 +18,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     env = gym.make(args.env_id)
 
+    #hello
+
     # You provide the directory to write to (can be an existing
     # directory, including one with existing data -- all monitor files
     # will be namespaced). You can also dump to a tempdir if you'd
