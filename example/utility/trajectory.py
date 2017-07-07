@@ -61,11 +61,13 @@ plt.xlabel('x')
 for i in range(start, min(start + show_num,len(X)) ):
    if collision[i] == 'True' or float(reward[i]) <=0 :
       line_tpye = 'k'
-      plt.scatter(X[i][-1], Y[i][-1], c='magenta', s=30, alpha=0.6, edgecolors='white')
+      if collision[i] == 'True':#collision point
+         plt.scatter(X[i][-1], Y[i][-1], c='magenta', s=30, alpha=0.6, edgecolors='white')
    else :
       size = max(float(reward[i]),0.1) *10
       plt.scatter(X[i][-1], Y[i][-1], c='green', s=size , alpha=0.6, edgecolors='white')
       line_tpye = 'r'
+   plt.scatter(X[i][0], Y[i][0], c='blue', s=30, alpha=0.6, edgecolors='white')
 
    plt.plot(X[i], Y[i], line_tpye)
 
