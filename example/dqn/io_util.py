@@ -18,11 +18,12 @@ def clear_monitor_files(training_dir):
     for file in files:
         os.unlink(file)
 
-def show_info( info, cv_img):
+def show_info( info):
     font = cv2.FONT_HERSHEY_SIMPLEX
+    cv_img = info['Color']
     cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'],3)), (200, 450), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
-    cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Velocity:' + str(info['Action'][0]), (500, 430), font, 0.5, (255, 255, 255), 2)
+    #cv2.putText(cv_img, 'Angle:' + str(info['Action'][1]), (500, 450), font, 0.5, (255, 255, 255), 2)
 
     if info['Trigger']:
         cv2.putText(cv_img, 'Trigger', (400, 450), font, 0.5, (0, 0, 255), 2)
@@ -70,7 +71,7 @@ def create_csv_header(DIR):
 
 def preprocess_img(image):
     cv_image = cv2.resize(image, (INPUT_SIZE, INPUT_SIZE))
-    img_processed = cv_image.reshape(1, INPUT_CHANNELS, INPUT_SIZE, INPUT_SIZE)
+    img_processed = cv_image.reshape(1, cv_image.shape[-1], INPUT_SIZE, INPUT_SIZE)
     img_processed = img_processed / 255.0
     if K.image_dim_ordering() == 'tf':
         img_processed = img_processed.transpose(0, 2, 3, 1)
