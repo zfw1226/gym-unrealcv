@@ -416,7 +416,17 @@ class UnrealCvSearch_base(gym.Env):
 
    def load_env_setting(self,filename):
        f = open(self.get_settingpath(filename))
-       setting = yaml.load(f)
+       type = os.path.splitext(filename)[1]
+       if type == '.json':
+           import json
+           setting = json.load(f)
+       elif type == '.yaml':
+           import yaml
+           setting = yaml.load(f)
+       else:
+           print 'unknown type'
+
+
        print setting
        self.cam_id = setting['cam_id']
        self.target_list = setting['targets']
@@ -428,13 +438,11 @@ class UnrealCvSearch_base(gym.Env):
        self.use_reward_distance = setting['use_reward_distance']
        self.collision_th = setting['collision_th']
        self.waypoint_th = setting['waypoint_th']
-
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
-
-
-
        return setting
+
+
 
    def get_settingpath(self, filename):
        import gym_unrealcv
