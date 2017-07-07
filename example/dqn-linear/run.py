@@ -116,7 +116,7 @@ if __name__ == '__main__':
                     newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
 
-                    #angle_onehot, angle_id = io_util.onehot_angle(info['Direction'],ANGLE_SIZE)
+
 
                     #direction_linear = ((info['Direction']+180)%360)/360.0
                     direction_linear = (info['Pose'][-1]%360) / 360.0
