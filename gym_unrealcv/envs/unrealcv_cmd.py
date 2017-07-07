@@ -12,13 +12,13 @@ import re
 ###the observation in memory replay only save the image dir instead of feature####
 ###do not delet the image right away, save them and only detet it when buffer is filled totally.
 class UnrealCv:
-    def __init__(self,cam_id = 0, ip = '127.0.0.1' , targets = None,env = '/home/zfw/Documents/Realistic5'):
+    def __init__(self, port=9000, cam_id = 0, ip = '127.0.0.1' , targets = None,env = '/home/zfw/Documents/Realistic5'):
         global client
         if ip == '127.0.0.1':
             self.docker = False
         else:
             self.docker = True
-        client = unrealcv.Client((ip, 9000))
+        client = unrealcv.Client((ip, port))
         self.cam_id = cam_id
         self.envdir = env
         self.ip = ip
@@ -44,9 +44,6 @@ class UnrealCv:
         elif targets is not None:
             self.targets = targets
             self.color_dict = self.target_color_dic(self.targets)
-
-
-
 
 
     def init_unrealcv(self):
