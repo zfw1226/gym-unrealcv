@@ -18,7 +18,7 @@ import time
 if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
-    assert env.discrete_action is False
+    assert env.action_type == 'continuous'
     ACTION_SIZE = env.action_space.shape[0]
     ACTION_HIGH = env.action_space.high
     ACTION_LOW = env.action_space.low
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
                 #print 'step time:' + str(time.time() - start_req)
                 if SHOW:
-                    io_util.show_info(info, obs_new)
+                    io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
                 io_util.save_trajectory(info, TRA_DIR, epoch)
@@ -124,8 +124,8 @@ if __name__ == '__main__':
 
                         copy_tree(MONITOR_DIR + 'tmp', MONITOR_DIR + str(epoch))
                         # save simulation parameters.
-                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds']
-                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds)]
+                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds','waypoints']
+                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds), info['Waypoints']]
                         parameter_dictionary = dict(zip(parameter_keys, parameter_values))
                         with open(PARAM_DIR + '/' + str(epoch) + '.json','w') as outfile:
                             json.dump(parameter_dictionary, outfile)
