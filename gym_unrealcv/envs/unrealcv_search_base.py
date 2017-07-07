@@ -46,11 +46,16 @@ class UnrealCvSearch_base(gym.Env):
      self.test = test
      self.docker = docker
 
-     # start unreal env anc connect unrealcv
+     # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
      env_ip = self.unreal.start(docker)
-     time.sleep(10)
-     self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, targets=self.target_list, env=self.unreal.path2env)
+
+     # connect UnrealCV
+     self.unrealcv = UnrealCv(self.cam_id,
+                              port= 9000,
+                              ip=env_ip,
+                              targets=self.target_list,
+                              env=self.unreal.path2env)
 
     # define action
      self.action_type = action_type
@@ -78,7 +83,6 @@ class UnrealCvSearch_base(gym.Env):
          s_high[:,:,-1] = 10.0
          s_high[:,:,:-1] = 255
          s_low[:,:,:] = 0
-
          self.observation_space = spaces.Box(low=s_low, high=s_high)
 
      # set start position
@@ -87,6 +91,7 @@ class UnrealCvSearch_base(gym.Env):
      current_pose[2] = self.height
      self.unrealcv.set_position(self.cam_id,current_pose[0],current_pose[1],current_pose[2])
      self.distance_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
+
      # for reset point generation
      self.waypoints = []
      self.trajectory = []
