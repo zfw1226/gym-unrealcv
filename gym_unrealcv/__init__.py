@@ -1,6 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
+docker = True  # True: use nvidia docker   False: do not use nvidia-docker
 register(
     id='Unrealcv-Simple-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSimple'
@@ -17,7 +18,9 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant7.yaml',
               'test' : False,
-              'discrete_action': True
+              'action_type' : 'discrete',
+              'observation_type' : 'rgbd',
+              'docker' : docker
               }
 )
 register(
@@ -25,7 +28,9 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant7.yaml',
               'test' : False,
-              'discrete_action': False
+              'action_type' : 'continuous',
+              'observation_type' : 'rgbd',
+              'docker' : docker
               }
 )
 
@@ -34,7 +39,9 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant7.yaml',
               'test' : True,
-              'discrete_action': True
+              'action_type' : 'discrete',
+              'observation_type' : 'rgbd',
+              'docker': docker
               }
 )
 register(
@@ -42,10 +49,11 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant7.yaml',
               'test' : True,
-              'discrete_action': False
+              'action_type' : 'continuous',
+              'observation_type' : 'rgbd',
+              'docker': docker
               }
 )
-
 
 # RrPlant8
 register(
@@ -53,28 +61,40 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant8.yaml',
               'test': False,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrPlantContinuous-v1',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant8.yaml',
               'test': False,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrPlantDiscreteTest-v1',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant8.yaml',
               'test': True,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrPlantContinuousTest-v1',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant8.yaml',
               'test': True,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 
 # RrDoor41
@@ -83,28 +103,39 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_door41.yaml',
               'test': False,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrDoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_door41.yaml',
               'test': False,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrDoorDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_door41.yaml',
               'test': True,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd'
+              }
 )
 register(
     id='Search-RrDoorContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_door41.yaml',
               'test': True,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 
 
@@ -114,28 +145,40 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door1.yaml',
               'test': False,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1DoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door1.yaml',
               'test': False,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1DoorDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door1.yaml',
               'test': True,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1DoorContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.yaml',
+    kwargs = {'setting_file' : 'search_arch1_door12.yaml',
               'test': True,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 
 
@@ -145,14 +188,20 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.yaml',
               'test': False,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-RrMultiPlantsContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.yaml',
               'test': False,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 
 register(
@@ -160,14 +209,20 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.yaml',
               'test': True,
-              'discrete_action': True},
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              },
 )
 register(
     id='Search-RrMultiPlantsContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.yaml',
               'test': True,
-              'discrete_action': False},
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              },
 )
 
 
@@ -177,26 +232,38 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door12.yaml',
               'test': False,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1MultiDoorsContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door12.yaml',
               'test': False,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1MultiDoorsDiscreteTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door12.yaml',
               'test': True,
-              'discrete_action': True}
+              'action_type' : 'discrete',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
 register(
     id='Search-Arch1MultiDoorsContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_arch1_door12.yaml',
               'test': True,
-              'discrete_action': False}
+              'action_type' : 'continuous',
+              'observation_type': 'rgbd',
+              'docker': docker
+              }
 )
