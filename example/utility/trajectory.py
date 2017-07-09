@@ -17,9 +17,6 @@ parser.add_argument("-s", "--start", type =int,default=0, help="print the full d
 parser.add_argument("-n", "--num", type=int, default= 100,help="the number of trajectories to be plotted. Default =100")
 args = parser.parse_args()
 
-
-
-
 history = read_csv(args.path)
 print len(history)
 
