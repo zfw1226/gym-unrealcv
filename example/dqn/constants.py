@@ -1,15 +1,15 @@
-ENV_NAME = 'Search-RrDoorDiscrete-v0'
+ENV_NAME = 'Search-RrPlantDiscrete-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
 USE_TARGET_NETWORK = False # use the target network
-SHOW = True # show the current state, reward and action
+SHOW = False # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
 MAX_EPOCHS = 10000 # max episode number
-MEMORY_SIZE = 30000
+MEMORY_SIZE = 10000
 LEARN_START_STEP = 5000
 INPUT_SIZE = 150
 BATCH_SIZE = 64
@@ -17,7 +17,7 @@ LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95
 INITIAL_EPSILON = 1  # starting value of epsilon
 FINAL_EPSILON = 0.1  # final value of epsilon
-MAX_EXPLORE_STEPS = 15000
+MAX_EXPLORE_STEPS = 10000
 TEST_INTERVAL_EPOCHS = 100000
 SAVE_INTERVAL_EPOCHS = 500
 
