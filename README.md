@@ -8,6 +8,16 @@ This branch is in experiment!!!
 
 Installation
 ===
+## Dependencies
+- Docker
+- Nvidia-Docker
+- UnrealCV
+- Gym
+- CV2
+- Matplotlib
+- Numpy
+ 
+We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 
 ## Gym-UnrealCV
 
