@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-docker = False  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 #RrPlant7
 register(
@@ -11,7 +11,7 @@ register(
               'test' : False,
               'action_type' : 'discrete',
               'observation_type' : 'rgbd',
-              'docker' : docker
+              'docker' : use_docker
               }
 )
 register(
@@ -21,7 +21,7 @@ register(
               'test' : False,
               'action_type' : 'continuous',
               'observation_type' : 'rgbd',
-              'docker' : docker
+              'docker' : use_docker
               }
 )
 
@@ -32,7 +32,7 @@ register(
               'test' : True,
               'action_type' : 'discrete',
               'observation_type' : 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -42,7 +42,7 @@ register(
               'test' : True,
               'action_type' : 'continuous',
               'observation_type' : 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 
@@ -54,7 +54,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -64,7 +64,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -74,7 +74,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -84,7 +84,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 
@@ -96,7 +96,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -106,7 +106,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -125,7 +125,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 
@@ -138,7 +138,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -148,7 +148,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -158,7 +158,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -168,7 +168,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 
@@ -181,7 +181,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -191,7 +191,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 
@@ -202,7 +202,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               },
 )
 register(
@@ -212,7 +212,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               },
 )
 
@@ -225,7 +225,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -235,7 +235,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -245,7 +245,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
 register(
@@ -255,6 +255,6 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
-              'docker': docker
+              'docker': use_docker
               }
 )
