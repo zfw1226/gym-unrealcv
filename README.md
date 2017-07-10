@@ -16,8 +16,8 @@ The framework of this project is shown as below:
 ![search2](./doc/search2.gif)
 
 Snapshots of RL based visual navigation for object searching and obstacle avoidance.
-Installation
-===
+
+# Installation
 ## Dependencies
 - UnrealCV
 - Gym
@@ -44,7 +44,7 @@ You need prepare an unreal environment to run the demo as below. You can do it b
 ```buildoutcfg
 sh RealisiticRendering.sh
 ```
-To run environments based on ArchinteriorsVol2Scene1, you need run script [Arch1.sh](Arch1.sh) to get the ArchinteriorsVol2Scene1 binary
+To run environments based on ArchinteriorsVol2Scene1, you need run script [Arch1.sh](Arch1.sh) to get the ArchinteriorsVol2Scene1 binary.
 ```buildoutcfg
 sh Arch1.sh
 ```
@@ -115,7 +115,7 @@ Please see [this instruction](https://keras.io/backend/) to switch backend betwe
 
 If you use  the ```Theano``` backend, please see [this instruction](http://deeplearning.net/software/theano/library/config.html) to config gpu.
 
-If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [constants.py](./example/dqn/constants.py) to config gpu
+If you use ```Tensorflow```backend, please set ```DEVICE_TF``` in [constants.py](./example/dqn/constants.py) to config gpu.
 
 
 ### Training an agent
