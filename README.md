@@ -34,7 +34,7 @@ We recommend you to use [anaconda](https://www.continuum.io/downloads) to instal
 Install gym-unrealcv
 It is easy to install gym-unrealcv, just run
 ```
-git clone https://github.com/zfw1226/gym-unreal.git
+git clone https://github.com/zfw1226/gym-unreal.git -b develop
 cd gym-unrealcv
 pip install -e . 
 ```
