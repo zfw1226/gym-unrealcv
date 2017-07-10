@@ -1,34 +1,27 @@
 import gym
 from unrealcv_cmd import  UnrealCv
-import cv2
 import numpy as np
 import time
 import random
 import math
-import run_docker
 from gym import spaces
-import yaml
 import os
 from operator import itemgetter
 import env_unreal
-import sys
-'''
- 
-'''
 
 '''
 It is a general env for searching target object.
 
-State : raw color image (640x480)
-Action:  (linear velocity ,angle velocity , trigger) /continuous space
-Done : Collision or get target place
+State : raw color image and depth (640x480) 
+Action:  (linear velocity ,angle velocity , trigger) 
+Done : Collision or get target place or False trigger three times.
 Task: Learn to avoid obstacle and search for a target object in a room, 
       you can select the target name according to the Recommend object list as below
 
 Recommend object list in RealisticRendering
  'SM_CoffeeTable_14', 'Couch_13','SM_Couch_1seat_5','Statue_48','SM_TV_5', 'SM_DeskLamp_5'
  'SM_Plant_7', 'SM_Plant_8', 'SM_Door_37', 'SM_Door_39', 'SM_Door_41'
- 
+
 Recommend object list in Arch1
 'BP_door_001_C_0','BP_door_002_C_0'
 '''
