@@ -51,7 +51,7 @@ class UnrealCvSearch_base(gym.Env):
      env_ip = self.unreal.start(docker)
 
      # connect UnrealCV
-     self.unrealcv = UnrealCv(self.cam_id,
+     self.unrealcv = UnrealCv(cam_id=self.cam_id,
                               port= 9000,
                               ip=env_ip,
                               targets=self.target_list,
