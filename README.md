@@ -9,13 +9,35 @@ This branch is in experiment!!!
 Installation
 ===
 
-## Docker-Free
-Currently, the docker-free version only support running an unreal environment in a computer.
+## Gym-UnrealCV
 
+Install gym-unrealcv
+```
+git clone https://github.com/zfw1226/gym-unreal.git
+cd gym-unrealcv
+pip install -e . 
+```
+## Prepare Unreal Environment
+You need prepare an unreal environment to run the demo as below. You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
+```buildoutcfg
+sh RealisiticRendering.sh
+```
+To run environments based on ArchinteriorsVol2Scene1, you need run script [Arch1.sh](Arch1.sh) to get the ArchinteriorsVol2Scene1 binary
+```buildoutcfg
+sh Arch1.sh
+```
 
-## Docker
+There are two ways to run the unreal environment in gym-unrealcv. One need install [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker), another do not need install anything else.
+Currently the docker-free version only support running an unreal environment in a computer for the confliction of server IP.
+If you need running multiple unreal environments in a computer in parallel, [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) and [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) are required.
 
-To support running multiple unreal environments in a computer. You need install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).For the reason that ```nvidia-docker``` supports ```Linux```  and ```Nvidia GPU```only , you will have to install and run our openai-gym environment in ```Linux``` system with ```Nvidida GPU```.
+**To make gym-unrealcv easy to run, the default config do not need install ``Docker``.**
+
+### Run without Docker
+There is nothing required to be installed.
+
+### Run with Docker
+For the reason that ```nvidia-docker``` supports ```Linux```  and ```Nvidia GPU```only , you will have to install and run our openai-gym environment in ```Linux``` system with ```Nvidida GPU```.
 As the unreal environment with UnrealCV runs inside Docker containers, you are supposed to install [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) first. If you use Linux, you can run scripts as below:
 ```
 curl -sSL http://acs-public-mirror.oss-cn-hangzhou.aliyuncs.com/docker-engine/internet | sh -
@@ -37,149 +59,22 @@ nvidia-docker run --rm nvidia/cuda nvidia-smi
 ```
 You should be able to get the same result as you run ```nvidia-smi``` in your host.
 
-## Openai Gym
-Install openai gym
-```
-git clone https://github.com/openai/gym
-cd gym
-pip install -e . 
-```
-If you prefer, you can do a minimal install of the packaged version directly from PyPI:
-```
-pip install gym
-```
-
-Install gym-unrealcv
-```
-git clone https://github.com/zfw1226/gym-unreal.git
-cd gym-unrealcv
-pip install -e . 
-```
-
-
-
 Run a simple envirnment
 ===
-Before you run any examples, please run
-```
-xhost +
-```
-
 Once ```gym-unrealcv``` is installed sucessfully, you will see that your agent walking randomly in first-person view, after you run:
 ```
 cd example/random
 python random_agent.py
 ```
-It will take a few minutes for the image and realistic environment to pull the first time. After that, if all goes well，a simple predefined gym environment ```Unrealcv-Simple-v0``` wiil be launched.And then you will see that your agent is moving around the realistic room randomly.
+It will take a few minutes for the image to pull if you runs environment based on docker at the first time. 
 
-Add a new UnrealCV Environment
-===
-In this section, we will show you how to add a new unrealcv environment in openai gym for your RL tasks, step by step.
-1. Copy your new Unreal Environment to ```/gym-unrealcv/gym_unrealcv/envs/UnrealEnv```
-2. Create a new python file in ```/gym-unrealcv/gym_unrealcv/envs```, Write your environment in this file. A simple environment in [unrealcv_simple.py]() is avliable for you.The details of the code are shown as below:
-```python =
-import gym # openai gym interface
-from unrealcv_cmd import  UnrealCv # a lib for using unrealcv client command
-import run_docker # a lib for run env in a docker container
-import numpy as np
-import math
-'''
-State :  color image
-Action:  (linear velocity ,angle velocity)
-Done :   Collision detected or get a target place
-'''
-class UnrealCvSimple(gym.Env):
-    # init the Unreal Gym Environment
-   def __init__(self,
-                ENV_DIR_BIN = '/RealisticRendering/RealisticRendering/Binaries/Linux/RealisticRendering',
-   ):
-     self.cam_id = 0
-     # run virtual enrionment in docker container
-     self.docker = run_docker.RunDocker()
-     env_ip, env_dir = self.docker.start(ENV_DIR_BIN=ENV_DIR_BIN)
-     # connect unrealcv client to server
-     self.unrealcv = UnrealCv(self.cam_id, ip=env_ip, env=env_dir)
-     self.startpose = self.unrealcv.get_pose()
-     # ACTION: (linear velocity ,angle velocity)
-     self.ACTION_LIST = [
-             (20,  0),
-             (20, 15),
-             (20,-15),
-             (20, 30),
-             (20,-30),
-     ]
-     self.count_steps = 0
-     self.max_steps = 100
-     self.target_pos = ( -60,   0,   50)
-     self.action_space = gym.spaces.Discrete(len(self.ACTION_LIST))
-     state = self.unrealcv.read_image(self.cam_id, 'lit')
-     self.observation_space = gym.spaces.Box(low=0, high=255, shape=state.shape)
+After that, if all goes well，a predefined gym environment ```Search-RrPlantDiscrete-v0``` will be launched.
+And then you will see that your agent is moving around the realistic room randomly.
 
-   # update the environment step by step
-   def _step(self, action = 0):
-        (velocity, angle) = self.ACTION_LIST[action]
-        self.count_steps += 1
-        collision =  self.unrealcv.move(self.cam_id, angle, velocity)
-        reward, done = self.reward(collision)
-        state = self.unrealcv.read_image(self.cam_id, 'lit')
-
-        # limit max step per episode
-        if self.count_steps > self.max_steps:
-            done = True
-            print 'Reach Max Steps'
-
-        return state, reward, done, {}
-        
-   # reset the environment
-   def _reset(self, ):
-       x,y,z,yaw = self.startpose
-       self.unrealcv.set_position(self.cam_id, x, y, z)
-       self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-       state = self.unrealcv.read_image(self.cam_id, 'lit')
-       self.count_steps = 0
-       return  state
-
-   # close docker while closing openai gym
-   def _close(self):
-       self.docker.close()
-
-   # calcuate reward according to your task
-   def reward(self,collision):
-       done = False
-       reward = - 0.01
-       if collision:
-            done = True
-            reward = -1
-            print 'Collision Detected!!'
-       else:
-            distance = self.cauculate_distance(self.target_pos, self.unrealcv.get_pos())
-            if distance < 50:
-                reward = 10
-                done = True
-                print ('Get Target Place!')
-       return reward, done
-
-   # calcuate the 2D distance between the target and camera
-   def cauculate_distance(self,target,current):
-       error = abs(np.array(target) - np.array(current))[:2]# only x and y
-       distance = math.sqrt(sum(error * error))
-       return distance
-
-```
-**You should modify ```ENV_DIR_BIN``` to the path of your Unreal Binary**. The same to other gym environments, ```step()```,```reset()``` is necessary.```close()```will help you to close the unreal environment while you closing the gym environment. Differently, you need design your reward function in ```reward()``` for your own task.
-
-3. Import your environment into the ```__init__.py``` file of the collection. This file will be located at ```/gym-unrealcv/gym_unrealcv/envs/__init__.py.``` Add ```from gym_unrealcv.envs.your_env import YourEnv``` to this file.
-4. Register your env in ```gym-unrealcv/gym_unrealcv/_init_.py```
-5. You can test your environment by using a random agent
-```
-cd example/random
-python random_agent.py -e YOUR_ENV_NAME
-```
-You will see your agent take some actions randomly and get reward as you defined in the new environment.
 
 Run a reinforcement learning example
 ===
-Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in [Unrealcv-Search-v0]() environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
+Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in ``Search-RrPlantDiscrete-v0`` environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 ### Dependences
 To run this example, you should make sure that you have installed all the dependences. We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 - Keras(Tested with v1.2)
@@ -194,7 +89,6 @@ To use Keras(v1.2), you should run
 pip install keras==1.2
 ```
 
- 
 You can start the training process with default parameters by runinng the following script:
 ```
 cd example/dqn
