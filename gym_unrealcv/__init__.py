@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-docker = True  # True: use nvidia docker   False: do not use nvidia-docker
+docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 register(
     id='Unrealcv-Simple-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSimple'
