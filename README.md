@@ -10,8 +10,7 @@ Installation
 ===
 
 ## Docker-Free
-
-
+Currently, the docker-free version only support running an unreal environment in a computer.
 
 
 ## Docker
