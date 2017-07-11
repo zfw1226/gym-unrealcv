@@ -144,7 +144,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
         print("Shutting down")
-        #cv2.destroyAllWindows()
-        #env.monitor.close() # not needed in latest gym update
-        #env.close_docker()
         env.close()
