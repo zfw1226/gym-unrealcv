@@ -97,11 +97,11 @@ cd example/random
 python random_agent.py
 ```
 It will take a few minutes for the image to pull if you runs environment based on docker at the first time. 
-After that, if all goes well，a predefined gym environment ```Search-RrPlantDiscrete-v0``` will be launched.
+After that, if all goes well，a predefined gym environment ```Search-RrMultiPlantsDiscreteTest-v0``` will be launched.
 And then you will see that your agent is moving around the realistic room randomly.
 
 ## Training a reinforcement learning agent
-Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in ``Search-RrPlantDiscrete-v0`` environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
+Besides, we provide an example to train an agent to visual navigation by searching for specific object and avoiding obstacle simultaneously in ``Search-RrMultiPlantsDiscreteTest-v0`` environement using [Deep Q-Learning](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf).
 ### Dependences
 To run this example, you should make sure that you have installed all the dependences. We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
 - Keras(Tested with v1.2)
