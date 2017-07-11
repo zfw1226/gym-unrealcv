@@ -444,7 +444,7 @@ class UnrealCvSearch_base(gym.Env):
        self.trigger_th = setting['trigger_th']
        self.reward_factor = setting['reward_factor']
        self.height = setting['height']
-       self.testpoints = setting['start_xy']
+       self.testpoints = setting['test_xy']
        self.collision_th = setting['collision_th']
        self.waypoint_th = setting['waypoint_th']
        self.discrete_actions = setting['discrete_actions']
