@@ -8,6 +8,7 @@
 	"reward_th": 0.1,
 	"collision_th": 50,
 	"waypoint_th": 100,
+	"reward_factor": 10,
 	"targets": [
 		"SM_Plant_8",
         "SM_Plant_7"
