@@ -1,4 +1,4 @@
-ENV_NAME = 'Search-RrPlantDiscrete-v0'
+ENV_NAME = 'Search-RrMultiPlantsDiscreteTest-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
