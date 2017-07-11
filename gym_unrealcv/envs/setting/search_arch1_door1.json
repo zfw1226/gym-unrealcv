@@ -9,12 +9,13 @@
 	"collision_th": 50,
 	"waypoint_th": 200,
 	"targets": [
-		"BP_door_001_C_0",
-		"BP_door_002_C_0"
+		"BP_door_001_C_0"
 	],
 	"start_xy": [
-      [-530, -425],
-      [1480, -570]
+     [ 470,  -300],
+     [ 400,   450],
+     [ 880,  -320],
+     [  90,  -500]
     ],
 	"discrete_actions": [
 		[50,   0, 0],

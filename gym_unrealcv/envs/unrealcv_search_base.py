@@ -32,6 +32,7 @@ class UnrealCvSearch_base(gym.Env):
                 test = True,
                 action_type = 'discrete',  # 'discrete', 'continuous'
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
+                reward_type = 'bbox', # distance, bbox, bbox_distance,
                 docker = False
                 ):
 
@@ -77,6 +78,10 @@ class UnrealCvSearch_base(gym.Env):
          s_high[:,:,:-1] = 255
          s_low[:,:,:] = 0
          self.observation_space = spaces.Box(low=s_low, high=s_high)
+
+     # define reward
+     self.reward_type = reward_type
+
 
      # set start position
      self.trigger_count  = 0
@@ -126,6 +131,7 @@ class UnrealCvSearch_base(gym.Env):
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
+            # get observation
             if self.observation_type == 'color':
                 state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
             elif self.observation_type == 'depth':
@@ -139,7 +145,12 @@ class UnrealCvSearch_base(gym.Env):
             # get reward
             info['Pose'] = self.unrealcv.get_pose()
             self.trigger_count += 1
-            info['Reward'],info['Bbox'] = self.reward_bbox()
+
+            if self.reward_type == 'bbox_distance' or self.reward_type == 'bbox':
+                info['Reward'],info['Bbox'] = self.reward_bbox()
+            else:
+                info['Reward'] = 0
+
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
                 if info['Reward'] > 0:
@@ -165,7 +176,7 @@ class UnrealCvSearch_base(gym.Env):
             info['Pose'] = self.unrealcv.get_pose()
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
-            if self.use_reward_distance:
+            if self.reward_type=='distance' or self.reward_type == 'bbox_distance':
                 info['Reward'] = self.reward_distance(distance, self.target_id)
             else:
                 info['Reward'] = 0
@@ -433,7 +444,6 @@ class UnrealCvSearch_base(gym.Env):
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
        self.testpoints = setting['start_xy']
-       self.use_reward_distance = setting['use_reward_distance']
        self.collision_th = setting['collision_th']
        self.waypoint_th = setting['waypoint_th']
        self.discrete_actions = setting['discrete_actions']

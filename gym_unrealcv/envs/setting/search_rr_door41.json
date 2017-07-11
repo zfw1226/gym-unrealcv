@@ -1,7 +1,6 @@
 {
 	"env_name": "RealisticRendering",
 	"env_bin": "RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering",
-	"use_reward_distance": false,
 	"cam_id": 0,
 	"height": 40,
 	"maxsteps": 100,

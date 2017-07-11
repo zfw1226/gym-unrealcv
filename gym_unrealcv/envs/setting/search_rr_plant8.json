@@ -9,8 +9,7 @@
 	"collision_th": 50,
 	"waypoint_th": 200,
 	"targets": [
-		"SM_Plant_8",
-        "SM_Plant_7"
+        "SM_Plant_8"
 	],
 	"start_xy": [
 		[-106.195, 437.424],
