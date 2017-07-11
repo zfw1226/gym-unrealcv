@@ -90,7 +90,7 @@ register(
 register(
     id='Search-Arch1DoorContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door12.json',
+    kwargs = {'setting_file' : 'search_arch1_door1.json',
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'color',
@@ -137,6 +137,53 @@ register(
     id='Search-RrMultiPlantsContinuousTest-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
     kwargs = {'setting_file' : 'search_rr_plant78.json',
+              'test': True,
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type': 'bbox',
+              'docker': use_docker
+              },
+)
+
+
+# RrMultiSockets
+register(
+    id='Search-RrMultiSocketsDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_socket.json',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'bbox',
+              'docker': use_docker
+              }
+)
+register(
+    id='Search-RrMultiSocketsContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_socket.json',
+              'test': False,
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'docker': use_docker
+              }
+)
+
+register(
+    id='Search-RrMultiSocketsDiscreteTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_socket.json',
+              'test': True,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'bbox',
+              'docker': use_docker
+              },
+)
+register(
+    id='Search-RrMultiSocketsContinuousTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+    kwargs = {'setting_file' : 'search_rr_socket.json',
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'color',
