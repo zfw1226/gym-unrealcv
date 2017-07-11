@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 
@@ -60,7 +60,7 @@ register(
     kwargs = {'setting_file' : 'search_arch1_door1.json',
               'test': False,
               'action_type' : 'discrete',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -71,7 +71,7 @@ register(
     kwargs = {'setting_file' : 'search_arch1_door1.json',
               'test': False,
               'action_type' : 'continuous',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -82,7 +82,7 @@ register(
     kwargs = {'setting_file' : 'search_arch1_door1.json',
               'test': True,
               'action_type' : 'discrete',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -93,7 +93,7 @@ register(
     kwargs = {'setting_file' : 'search_arch1_door12.json',
               'test': True,
               'action_type' : 'continuous',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'docker': use_docker
               }
 )
@@ -106,7 +106,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': False,
               'action_type' : 'discrete',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -117,7 +117,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': False,
               'action_type' : 'continuous',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'docker': use_docker
               }
 )
@@ -128,7 +128,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': True,
               'action_type' : 'discrete',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               },
@@ -139,7 +139,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': True,
               'action_type' : 'continuous',
-              'observation_type': 'rgb',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               },
