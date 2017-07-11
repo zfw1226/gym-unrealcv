@@ -1,11 +1,11 @@
-ENV_NAME = 'Search-RrMultiPlantsDiscreteTest-v0'
+ENV_NAME = 'Search-RrMultiPlantsDiscrete-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
 USE_TARGET_NETWORK = False # use the target network
-SHOW = False # show the current state, reward and action
+SHOW = True # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
 MAX_EPOCHS = 10000 # max episode number
