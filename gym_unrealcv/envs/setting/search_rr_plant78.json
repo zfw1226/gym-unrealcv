@@ -7,7 +7,7 @@
 	"trigger_th": 0.6,
 	"reward_th": 0.1,
 	"collision_th": 50,
-	"waypoint_th": 200,
+	"waypoint_th": 100,
 	"targets": [
 		"SM_Plant_8",
         "SM_Plant_7"
@@ -21,7 +21,7 @@
 		[-80.312, 254.579 ]
 	],
 	"discrete_actions": [
-		[50, 0, 0],
+		[30, 0, 0],
 		[30, 15, 0],
 		[30, -15, 0],
 		[15, 30, 0],
