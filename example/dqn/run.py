@@ -4,14 +4,10 @@ import time
 from distutils.dir_util import copy_tree
 import os
 import json
-import random
-import numpy as np
 import dqn
-import cv2
 from constants import *
 import io_util
 from gym import wrappers
-import csv
 
 
 if __name__ == '__main__':
