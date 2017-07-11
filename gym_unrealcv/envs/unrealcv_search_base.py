@@ -29,7 +29,7 @@ Recommend object list in Arch1
 class UnrealCvSearch_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.json',
-                test = True,
+                test = True,               # if True will use the test_xy as start point
                 action_type = 'discrete',  # 'discrete', 'continuous'
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
