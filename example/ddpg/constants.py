@@ -1,4 +1,4 @@
-ENV_NAME = 'Search-RrPlantContinuous-v0'
+ENV_NAME = 'Search-RrMultiPlantsContinuousTest-v0'
 
 CONTINUE = False
 RESTART_EP = 8000
