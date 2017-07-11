@@ -7,10 +7,11 @@ use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 register(
     id='Search-RrPlantDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant7.',
+    kwargs = {'setting_file' : 'search_rr_plant7.json',
               'test' : False,
               'action_type' : 'discrete',
               'observation_type' : 'rgbd',
+              'reward_type' : 'bbox',
               'docker' : use_docker
               }
 )
@@ -21,6 +22,7 @@ register(
               'test' : False,
               'action_type' : 'continuous',
               'observation_type' : 'rgbd',
+              'reward_type': 'bbox',
               'docker' : use_docker
               }
 )
@@ -32,6 +34,7 @@ register(
               'test' : True,
               'action_type' : 'discrete',
               'observation_type' : 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -42,6 +45,7 @@ register(
               'test' : True,
               'action_type' : 'continuous',
               'observation_type' : 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -54,6 +58,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -64,6 +69,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -74,6 +80,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -84,6 +91,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -96,6 +104,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -106,6 +115,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -115,7 +125,10 @@ register(
     kwargs = {'setting_file' : 'search_rr_door41.json',
               'test': True,
               'action_type' : 'discrete',
-              'observation_type': 'rgbd'
+              'observation_type': 'rgbd',
+              'reward_type': 'bbox',
+              'docker': use_docker
+
               }
 )
 register(
@@ -125,6 +138,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -138,6 +152,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -148,6 +163,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -158,6 +174,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -181,6 +198,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -202,6 +220,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               },
 )
@@ -212,6 +231,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               },
 )
@@ -225,6 +245,7 @@ register(
               'test': False,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -235,6 +256,7 @@ register(
               'test': False,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -245,6 +267,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
@@ -255,6 +278,7 @@ register(
               'test': True,
               'action_type' : 'continuous',
               'observation_type': 'rgbd',
+              'reward_type': 'bbox',
               'docker': use_docker
               }
 )
