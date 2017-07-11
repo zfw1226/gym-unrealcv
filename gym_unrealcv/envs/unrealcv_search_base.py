@@ -28,7 +28,7 @@ Recommend object list in Arch1
 
 class UnrealCvSearch_base(gym.Env):
    def __init__(self,
-                setting_file = 'search_rr_plant78.yaml',
+                setting_file = 'search_rr_plant78.json',
                 test = True,
                 action_type = 'discrete',  # 'discrete', 'continuous'
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
