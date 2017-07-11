@@ -93,7 +93,7 @@ register(
     kwargs = {'setting_file' : 'search_arch1_door12.json',
               'test': True,
               'action_type' : 'continuous',
-              'observation_type': 'rgbd',
+              'observation_type': 'rgb',
               'docker': use_docker
               }
 )
@@ -106,7 +106,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': False,
               'action_type' : 'discrete',
-              'observation_type': 'rgbd',
+              'observation_type': 'rgb',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -117,7 +117,7 @@ register(
     kwargs = {'setting_file' : 'search_rr_plant78.json',
               'test': False,
               'action_type' : 'continuous',
-              'observation_type': 'rgbd',
+              'observation_type': 'rgb',
               'docker': use_docker
               }
 )
