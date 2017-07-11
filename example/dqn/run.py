@@ -100,9 +100,9 @@ if __name__ == '__main__':
 
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
-                            explorationRate = 0.99
-                            print 'Reset Exploration Rate'
+                        #elif stepCounter%(MAX_EXPLORE_STEPS * 1.5) == 0 :
+                            #explorationRate = 0.99
+                            #print 'Reset Exploration Rate'
 
                 #test
                 else:
