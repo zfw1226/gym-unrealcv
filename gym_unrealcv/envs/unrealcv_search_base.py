@@ -359,7 +359,7 @@ class UnrealCvSearch_base(gym.Env):
            reward += self.get_bbox_reward(box)
 
        if reward > self.reward_th:
-            reward = reward * 10
+            reward = min(reward * self.reward_factor, 10)
             print ('Get ideal Target!!!')
        elif reward == 0:
            reward = -1
@@ -442,12 +442,14 @@ class UnrealCvSearch_base(gym.Env):
        self.max_steps = setting['maxsteps']
        self.reward_th = setting['reward_th']
        self.trigger_th = setting['trigger_th']
+       self.reward_factor = setting['reward_factor']
        self.height = setting['height']
        self.testpoints = setting['start_xy']
        self.collision_th = setting['collision_th']
        self.waypoint_th = setting['waypoint_th']
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
+
        return setting
 
 
