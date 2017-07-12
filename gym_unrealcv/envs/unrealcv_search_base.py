@@ -73,10 +73,10 @@ class UnrealCvSearch_base(gym.Env):
          self.observation_space = spaces.Box(low=0, high=10, shape=state.shape)
      elif self.observation_type == 'rgbd':
          state = self.unrealcv.get_rgbd(self.cam_id)
-         s_high = s_low = state
+         s_high = state
          s_high[:,:,-1] = 10.0
          s_high[:,:,:-1] = 255
-         s_low[:,:,:] = 0
+         s_low = np.zeros(state.shape)
          self.observation_space = spaces.Box(low=s_low, high=s_high)
 
      # define reward
