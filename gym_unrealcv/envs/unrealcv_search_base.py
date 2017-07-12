@@ -153,7 +153,7 @@ class UnrealCvSearch_base(gym.Env):
 
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
-                if info['Reward'] > 0:
+                if info['Reward'] > 0 and self.test == False:
                     self.waypoints[self.start_id]['successed'] += 1
                     self.waypoints[self.start_id]['steps2target'].append(self.count_steps)
 
