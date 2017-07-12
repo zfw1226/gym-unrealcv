@@ -72,7 +72,7 @@ def create_csv_header(DIR):
 def preprocess_img(image):
     cv_image = cv2.resize(image, (INPUT_SIZE, INPUT_SIZE))
     img_processed = cv_image.reshape(1, cv_image.shape[-1], INPUT_SIZE, INPUT_SIZE)
-    img_processed = img_processed / 255.0
+    #img_processed = img_processed / 255.0
     if K.image_dim_ordering() == 'tf':
         img_processed = img_processed.transpose(0, 2, 3, 1)
     return img_processed
