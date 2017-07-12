@@ -20,7 +20,9 @@ if __name__ == '__main__':
     ACTION_SIZE = env.action_space.n
     #ACTION_LIST = env.discrete_actions
     INPUT_CHANNELS = env.observation_space.shape[2]
-
+    OBS_HIGH = env.observation_space.high
+    OBS_LOW = env.observation_space.low
+    OBS_RANGE = OBS_HIGH - OBS_LOW
     #init log file
     if not os.path.exists(MODEL_DIR):
         os.makedirs(MODEL_DIR)
@@ -70,7 +72,7 @@ if __name__ == '__main__':
         start_time = time.time()
         for epoch in xrange(current_epoch, MAX_EPOCHS, 1):
             obs = env.reset()
-            observation = io_util.preprocess_img(obs)
+            observation = io_util.preprocess_img((obs_new-OBS_LOW)/OBS_RANGE)
             cumulated_reward = 0
             if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
                 EXPLORE = True
@@ -84,7 +86,7 @@ if __name__ == '__main__':
                 if EXPLORE is True: #explore
                     action = Agent.feedforward(observation, explorationRate)
                     obs_new, reward, done, info = env.step(action)
-                    newObservation = io_util.preprocess_img(obs_new)
+                    newObservation = io_util.preprocess_img((obs_new-OBS_LOW)/OBS_RANGE)
                     stepCounter += 1
                     Agent.addMemory(observation, action, reward, newObservation, done)
                     observation = newObservation
@@ -104,7 +106,7 @@ if __name__ == '__main__':
                 else:
                     action = Agent.feedforward(observation,0)
                     obs_new, reward, done, info = env.step(action)
-                    newObservation = io_util.preprocess_img(obs_new)
+                    newObservation = io_util.preprocess_img((obs_new-OBS_LOW)/OBS_RANGE)
                     observation = newObservation
 
                 if SHOW:
