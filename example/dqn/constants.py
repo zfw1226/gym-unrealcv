@@ -1,27 +1,28 @@
-ENV_NAME = 'Search-RrMultiPlantsDiscrete-v0'
+ENV_NAME = 'Search-RrMultiSocketsDiscrete-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
-USE_TARGET_NETWORK = False # use the target network
+USE_TARGET_NETWORK = True # use the target network
 SHOW = True # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
+TF_DEVICE = '/gpu:0'
 MAX_EPOCHS = 10000 # max episode number
-MEMORY_SIZE = 10000
+MEMORY_SIZE = 30000
 LEARN_START_STEP = 5000
-INPUT_SIZE = 150
+INPUT_SIZE = 100
 BATCH_SIZE = 64
 LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95
 INITIAL_EPSILON = 1  # starting value of epsilon
 FINAL_EPSILON = 0.1  # final value of epsilon
-MAX_EXPLORE_STEPS = 10000
+MAX_EXPLORE_STEPS = 15000
 TEST_INTERVAL_EPOCHS = 100000
 SAVE_INTERVAL_EPOCHS = 500
 
-LOG_NAME_SAVE = 'log'
+LOG_NAME_SAVE = 'log-sockets'
 MONITOR_DIR = LOG_NAME_SAVE + '/monitor/' #the path to save monitor file
 MODEL_DIR = LOG_NAME_SAVE + '/model' # the path to save deep model
 PARAM_DIR = LOG_NAME_SAVE + '/param' # the path to save the parameters

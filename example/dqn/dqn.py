@@ -10,6 +10,7 @@ import tensorflow as tf
 import keras.backend.tensorflow_backend as KTF
 import memory
 import keras.backend as K
+from constants import *
 class DeepQ:
     """
     DQN abstraction.
@@ -40,7 +41,7 @@ class DeepQ:
         self.useTargetNetwork = useTargetNetwork
         self.count_steps = 0
         if K.backend() == 'tensorflow':
-            with KTF.tf.device('/gpu:1'):
+            with KTF.tf.device(TF_DEVICE):
                 config = tf.ConfigProto()
                 config.gpu_options.allow_growth = True
                 KTF.set_session(tf.Session(config=config))
@@ -60,7 +61,7 @@ class DeepQ:
             input_shape = ( self.img_rows, self.img_cols, self.img_channels)
 
         model = Sequential()
-        model.add(Convolution2D(32, 3, 3,border_mode='same', input_shape = input_shape))
+        model.add(Convolution2D(16, 3, 3,border_mode='same', input_shape = input_shape))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Convolution2D(32, 3, 3, border_mode='same'))
@@ -69,10 +70,6 @@ class DeepQ:
         model.add(Dropout(0.25))
 
 
-        model.add(Convolution2D(64, 3, 3, border_mode='same'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.25))
         model.add(Convolution2D(64, 3, 3, border_mode='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
