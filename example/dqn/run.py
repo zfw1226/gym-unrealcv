@@ -72,7 +72,7 @@ if __name__ == '__main__':
         start_time = time.time()
         for epoch in xrange(current_epoch, MAX_EPOCHS, 1):
             obs = env.reset()
-            observation = io_util.preprocess_img((obs_new-OBS_LOW)/OBS_RANGE)
+            observation = io_util.preprocess_img((obs-OBS_LOW)/OBS_RANGE)
             cumulated_reward = 0
             if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
                 EXPLORE = True
