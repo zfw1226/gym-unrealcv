@@ -5,8 +5,8 @@
 	"height": 40,
 	"maxsteps": 100,
 	"trigger_th": 0.6,
-	"reward_th": 0.1,
-	"collision_th": 50,
+	"reward_th": 0.2,
+	"collision_th": 20,
 	"waypoint_th": 100,
 	"reward_factor": 10,
 	"targets": [
