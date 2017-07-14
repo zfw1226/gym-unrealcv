@@ -33,12 +33,18 @@ We recommend you to use [anaconda](https://www.continuum.io/downloads) to instal
 
 Install gym-unrealcv
 It is easy to install gym-unrealcv, just run
-```
+```buildoutcfg
 git clone https://github.com/zfw1226/gym-unreal.git -b develop
 cd gym-unrealcv
 pip install -e . 
 ```
-While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), cv2 and matplotlib are installed.
+While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym),unrealcv, numpy and matplotlib are installed.
+Besides, opencv is needed to run.
+```buildoutcfg
+conda update conda
+conda install --channel menpo opencv
+```
+
 ## Prepare Unreal Environment
 You need prepare an unreal environment to run the demo as below. You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
 ```buildoutcfg
