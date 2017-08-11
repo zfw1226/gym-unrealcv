@@ -90,6 +90,7 @@ class UnrealCv:
         import StringIO
         depth = np.load(StringIO.StringIO(res))
         depth[depth>10.0] = 10.0
+        #self.show_img(depth,'depth')
         return np.expand_dims(depth,axis=2)
 
     def get_rgbd(self,cam_id):
