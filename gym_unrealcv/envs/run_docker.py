@@ -3,12 +3,6 @@ import docker
 import time
 import sys
 
-ENV = dict(
-    #RealisticRendering = '/RealisticRendering-Linux-0.3.6/LinuxNoEditor/RealisticRendering/Binaries/Linux/RealisticRendering',
-    RealisticRendering = '/RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering',
-    ArchinteriorsVol2Sceen1 = '/ArchinteriorsVol2Scene1/ArchinteriorsVol2Scene1/Binaries/Linux/ArchinteriorsVol2Scene1',
-    UrbanCity = '/UrbanCity/Binaries/Linux/UrbanCity'
-)
 
 class RunDocker():
     def __init__(self, path2env, IMAGE = 'zfw1226/unreal-gpu:v0.1',):
