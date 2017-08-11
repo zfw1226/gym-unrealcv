@@ -29,16 +29,18 @@ Recommend object list in Arch1
 class UnrealCvSearch_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.json',
+                reset_type = 'waypoint',       # testpoint, waypoint,
                 test = True,               # if True will use the test_xy as start point
                 action_type = 'discrete',  # 'discrete', 'continuous'
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
-                docker = False
+                docker = False,
                 ):
 
      setting = self.load_env_setting(setting_file)
      self.test = test
      self.docker = docker
+     self.reset_type = reset_type
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
@@ -78,6 +80,7 @@ class UnrealCvSearch_base(gym.Env):
          s_high[:,:,:-1] = 255
          s_low = np.zeros(state.shape)
          self.observation_space = spaces.Box(low=s_low, high=s_high)
+
 
      # define reward
      self.reward_type = reward_type
@@ -205,9 +208,9 @@ class UnrealCvSearch_base(gym.Env):
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        # select a starting point
-       if self.test:
-           current_pose = self.reset_from_testpoint()
-       else:
+       if self.reset_type== 'testpoint':
+           current_pose = self.reset_from_testpoint(test=self.test)
+       elif self.reset_type =='waypoint':
            if len(self.trajectory) > 5:
                self.update_waypoint()
            current_pose = self.reset_from_waypoint()
@@ -239,16 +242,24 @@ class UnrealCvSearch_base(gym.Env):
        return len(self.action)
 
 # functions for starting point module
-   def reset_from_testpoint(self):
+   def reset_from_testpoint(self, test):
+
+       if test:
+           yaw = self.yaw_id * 45
+           self.yaw_id += 1
+           if self.yaw_id >= 8:
+               self.start_id = (self.start_id + 1) % len(self.testpoints)
+
+       else:
+           self.start_id = random.randint(0, len(self.testpoints) - 1)
+           yaw = random.randint(0, 360)
+           self.yaw_id = 0
+
        x,y = self.testpoints[self.start_id]
        z = self.height
-       yaw = self.yaw_id * 45
        self.unrealcv.set_position(self.cam_id, x, y, z)
        self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-       self.yaw_id += 1
-       if self.yaw_id >=8:
-           self.start_id = (self.start_id + 1) % len(self.testpoints)
-           self.yaw_id = 0
+
        return [x,y,z,yaw]
 
    def reset_from_waypoint(self):
