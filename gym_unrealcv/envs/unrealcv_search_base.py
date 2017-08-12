@@ -4,7 +4,6 @@ import numpy as np
 import time
 import random
 import math
-from gym import spaces
 import os
 from operator import itemgetter
 import env_unreal
@@ -57,32 +56,34 @@ class UnrealCvSearch_base(gym.Env):
      self.action_type = action_type
      assert self.action_type == 'discrete' or self.action_type == 'continuous'
      if self.action_type == 'discrete':
-         self.action_space = spaces.Discrete(len(self.discrete_actions))
+         self.action_space = gym.spaces.Discrete(len(self.discrete_actions))
      elif self.action_type == 'continuous':
-         self.action_space = spaces.Box(low = np.array(self.continous_actions['low']),high = np.array(self.continous_actions['high']))
+         self.action_space = gym.spaces.Box(low = np.array(self.continous_actions['low']),high = np.array(self.continous_actions['high']))
 
      self.count_steps = 0
      self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
 
-    # define observation
+    # define observation space,
+    # color, depth, rgbd,...
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
      if self.observation_type == 'color':
          state = self.unrealcv.read_image(self.cam_id,'lit')
-         self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+         self.observation_space = gym.spaces.Box(low=0, high=255, shape=state.shape)
      elif self.observation_type == 'depth':
          state = self.unrealcv.read_depth(self.cam_id)
-         self.observation_space = spaces.Box(low=0, high=10, shape=state.shape)
+         self.observation_space = gym.spaces.Box(low=0, high=10, shape=state.shape)
      elif self.observation_type == 'rgbd':
          state = self.unrealcv.get_rgbd(self.cam_id)
          s_high = state
          s_high[:,:,-1] = 10.0
          s_high[:,:,:-1] = 255
          s_low = np.zeros(state.shape)
-         self.observation_space = spaces.Box(low=s_low, high=s_high)
+         self.observation_space = gym.spaces.Box(low=s_low, high=s_high)
 
 
-     # define reward
+     # define reward type
+     # distance, bbox, bbox_distance,
      self.reward_type = reward_type
 
 
@@ -445,7 +446,6 @@ class UnrealCvSearch_base(gym.Env):
            setting = yaml.load(f)
        else:
            print 'unknown type'
-
 
        print setting
        self.cam_id = setting['cam_id']
