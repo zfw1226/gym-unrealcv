@@ -9,6 +9,7 @@ import os
 from operator import itemgetter
 import env_unreal
 import reward
+import reset_point
 '''
 It is a general env for searching target object.
 
@@ -96,12 +97,13 @@ class UnrealCvSearch_base(gym.Env):
 
 
      # for reset point generation
-     self.waypoints = []
+     #self.waypoints = []
      self.trajectory = []
-     self.new_waypoint(current_pose,1000)
-     self.collisionpoints = []
-     self.start_id = 0
-     self.yaw_id = 0
+     #self.new_waypoint(current_pose,1000)
+
+     self.reset_module = reset_point.ResetPoint(setting, reset_type, test, current_pose)
+
+
 
      self.collision = False # collision state flag
 
@@ -123,8 +125,7 @@ class UnrealCvSearch_base(gym.Env):
             Steps = self.count_steps,
             Target = [],
             Direction = None,
-            Waypoints = self.waypoints,
-            Testpoints = self.testpoints,
+            Waypoints = self.reset_module.waypoints,
             Color = None,
             Depth = None,
         )
@@ -168,14 +169,15 @@ class UnrealCvSearch_base(gym.Env):
             if info['Reward'] > 0 or self.trigger_count > 3:
                 info['Done'] = True
                 if info['Reward'] > 0 and self.test == False:
-                    self.waypoints[self.start_id]['successed'] += 1
-                    self.waypoints[self.start_id]['steps2target'].append(self.count_steps)
+                    self.reset_module.success_waypoint(self.count_steps)
+                    #self.waypoints[self.start_id]['successed'] += 1
+                    #self.waypoints[self.start_id]['steps2target'].append(self.count_steps)
 
                 print 'Trigger Terminal!'
         # if collision occurs, the episode is done and reward is -1
         else :
             # take action
-            self.collision = info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
+            info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
             # update observation
             if self.observation_type == 'color':
                 state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
@@ -199,12 +201,12 @@ class UnrealCvSearch_base(gym.Env):
                 info['Reward'] = 0
 
             info['Direction'] = self.get_direction (info['Pose'],self.targets_pos[self.target_id])
-
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
-                self.collisionpoints.append(info['Pose'])
+                self.reset_module.update_dis2collision(info['Pose'])
                 print ('Collision!!')
+
 
         # limit the max steps of every episode
         if self.count_steps > self.max_steps:
@@ -216,18 +218,25 @@ class UnrealCvSearch_base(gym.Env):
         self.trajectory.append(info['Pose'])
         info['Trajectory'] = self.trajectory
 
+        if info['Done'] and len(self.trajectory) > 5:
+            self.reset_module.update_waypoint(info['Trajectory'])
+
         if show:
             self.unrealcv.show_img(info['Color'], 'state')
-        print info['Reward']
+
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        # select a starting point
-       if self.reset_type== 'testpoint':
+       '''if self.reset_type== 'testpoint':
            current_pose = self.reset_from_testpoint(test=self.test)
        elif self.reset_type =='waypoint':
            if len(self.trajectory) > 5:
                self.update_waypoint()
-           current_pose = self.reset_from_waypoint()
+           current_pose = self.reset_from_waypoint()'''
+       current_pose = self.reset_module.select_resetpoint()
+       self.unrealcv.set_position(self.cam_id, current_pose[0], current_pose[1], current_pose[2])
+       self.unrealcv.set_rotation(self.cam_id, 0, current_pose[3], 0)
+
 
        if self.observation_type == 'color':
            state = self.unrealcv.read_image(self.cam_id, 'lit')
@@ -256,127 +265,6 @@ class UnrealCvSearch_base(gym.Env):
    def _get_action_size(self):
        return len(self.action)
 
-# functions for starting point module
-   def reset_from_testpoint(self, test):
-
-       if test:
-           yaw = self.yaw_id * 45
-           self.yaw_id += 1
-           if self.yaw_id >= 8:
-               self.start_id = (self.start_id + 1) % len(self.testpoints)
-
-       else:
-           self.start_id = random.randint(0, len(self.testpoints) - 1)
-           yaw = random.randint(0, 360)
-           self.yaw_id = 0
-
-       x,y = self.testpoints[self.start_id]
-       z = self.height
-       self.unrealcv.set_position(self.cam_id, x, y, z)
-       self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-
-       return [x,y,z,yaw]
-
-   def reset_from_waypoint(self):
-       # reset from waypoints generated in exploration
-       x, y, z, yaw = self.select_waypoint_times()
-       yaw = random.randint(0, 360)
-       self.unrealcv.set_position(self.cam_id,x,y,z)
-       self.unrealcv.set_rotation(self.cam_id, 0, yaw, 0)
-       return [x,y,z,yaw]
-
-   def select_waypoint_distance(self,currentpose):
-       # select the farthest point in history
-       dis = dict()
-       i = 0
-       for wp in self.waypoints:
-           dis[i]= self.get_distance(currentpose,wp['pose'])
-           i += 1
-       dis_list = sorted(dis.items(), key=lambda item: item[1], reverse=True)
-       # random sample the pos
-       start_id = random.randint(0,(len(dis_list) - 1)/2)
-       startpoint = self.waypoints[dis_list[start_id][0]]
-       return startpoint
-
-   def select_waypoint_random(self):
-       self.start_id = random.randint(0, (len(self.waypoints) - 1) )
-       startpoint = self.waypoints[self.start_id]['pose']
-       self.waypoints[self.start_id]['selected'] += 1
-       return startpoint
-
-   def select_waypoint_times(self):
-
-       self.waypoints = sorted(self.waypoints,key=itemgetter('selected'))
-       self.start_id = random.randint(0, (len(self.waypoints) - 1)/3 )
-       self.waypoints[self.start_id]['selected'] += 1
-
-       return self.waypoints[self.start_id]['pose']
-
-   def update_waypoint(self):
-       #delete point close to collision point
-       if len(self.collisionpoints)>1:
-
-           if self.collision:
-               self.update_dis2collision(self.trajectory[-1])
-               self.sollision = False
-
-           for P in self.trajectory:
-
-               dis2waypoint,waypoint_id, dis2others = self.get_dis2waypoints(P)
-               dis2collision = self.get_dis2collision(P)
-
-               # update waypint
-               if dis2waypoint < self.waypoint_th/4 and dis2collision > self.waypoints[waypoint_id]['dis2collision'] and dis2others>self.waypoint_th :
-                   self.waypoints[waypoint_id]['pose'] = P
-                   self.waypoints[waypoint_id]['dis2collision'] = dis2collision
-                   print 'update waypoint'
-
-               if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
-                   self.new_waypoint(P,dis2collision)
-                   print 'add new waypoint'
-
-       return len(self.waypoints)
-
-
-   def get_dis2collision(self,pose):
-       dis2collision = 1000
-       for C in self.collisionpoints:
-           dis2collision = min(dis2collision, self.get_distance(pose, C))
-       return dis2collision
-
-
-   def new_waypoint(self,pose,dis2collision):
-       waypoint = dict()
-       waypoint['pose']=pose
-       waypoint['successed'] = 0
-       waypoint['selected'] = 0
-       waypoint['dis2collision'] = dis2collision
-       waypoint['steps2target'] = []
-       self.waypoints.append(waypoint)
-       return waypoint
-
-
-   def get_dis2waypoints(self,pose):
-       dis2waypoints = []
-       for W in self.waypoints:
-           dis2waypoints.append(self.get_distance(pose,W['pose']))
-       dis2waypoints = np.array(dis2waypoints)
-       arg = np.argsort(dis2waypoints)
-
-       id_min = arg[0]
-       dis_min = dis2waypoints[id_min]
-       if len(dis2waypoints) > 1:
-           dis_other = dis2waypoints[arg[1]]
-       else:
-           dis_other = dis_min
-       return dis_min, id_min, dis_other
-
-
-   def update_dis2collision(self,C_point):
-       # update dis2collision of every waypoint when detect a new collision point
-       for i in range(len(self.waypoints)):
-           distance = self.get_distance(self.waypoints[i]['pose'],C_point)
-           self.waypoints[i]['dis2collision'] = min(self.waypoints[i]['dis2collision'],distance)
 
    def get_distance(self,target,current):
 
@@ -435,9 +323,7 @@ class UnrealCvSearch_base(gym.Env):
        #self.reward_factor = setting['reward_factor']
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
-       self.testpoints = setting['test_xy']
-       self.collision_th = setting['collision_th']
-       self.waypoint_th = setting['waypoint_th']
+
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
 
