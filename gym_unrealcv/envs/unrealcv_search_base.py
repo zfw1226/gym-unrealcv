@@ -96,16 +96,10 @@ class UnrealCvSearch_base(gym.Env):
      self.unrealcv.set_position(self.cam_id,current_pose[0],current_pose[1],current_pose[2])
 
 
-     # for reset point generation
-     #self.waypoints = []
      self.trajectory = []
-     #self.new_waypoint(current_pose,1000)
 
+     # for reset point generation and selection
      self.reset_module = reset_point.ResetPoint(setting, reset_type, test, current_pose)
-
-
-
-     self.collision = False # collision state flag
 
      self.reward_function = reward.Reward(setting)
      self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose, self.targets_pos)
@@ -161,7 +155,7 @@ class UnrealCvSearch_base(gym.Env):
                 object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
                 boxes = self.unrealcv.get_bboxes(object_mask, self.target_list)
                 info['Reward'], info['Bbox'] = self.reward_function.reward_bbox(boxes)
-                #info['Reward'],info['Bbox'] = self.reward_bbox()
+
 
             else:
                 info['Reward'] = 0
@@ -170,8 +164,7 @@ class UnrealCvSearch_base(gym.Env):
                 info['Done'] = True
                 if info['Reward'] > 0 and self.test == False:
                     self.reset_module.success_waypoint(self.count_steps)
-                    #self.waypoints[self.start_id]['successed'] += 1
-                    #self.waypoints[self.start_id]['steps2target'].append(self.count_steps)
+
 
                 print 'Trigger Terminal!'
         # if collision occurs, the episode is done and reward is -1
@@ -195,7 +188,6 @@ class UnrealCvSearch_base(gym.Env):
 
 
             if self.reward_type=='distance' or self.reward_type == 'bbox_distance':
-                #info['Reward'] = self.reward_distance(distance, self.target_id)
                 info['Reward'] = self.reward_function.reward_distance(distance)
             else:
                 info['Reward'] = 0
@@ -226,13 +218,6 @@ class UnrealCvSearch_base(gym.Env):
 
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
-       # select a starting point
-       '''if self.reset_type== 'testpoint':
-           current_pose = self.reset_from_testpoint(test=self.test)
-       elif self.reset_type =='waypoint':
-           if len(self.trajectory) > 5:
-               self.update_waypoint()
-           current_pose = self.reset_from_waypoint()'''
        current_pose = self.reset_module.select_resetpoint()
        self.unrealcv.set_position(self.cam_id, current_pose[0], current_pose[1], current_pose[2])
        self.unrealcv.set_rotation(self.cam_id, 0, current_pose[3], 0)
@@ -250,7 +235,6 @@ class UnrealCvSearch_base(gym.Env):
        self.trajectory.append(current_pose)
        self.trigger_count = 0
        self.count_steps = 0
-       #self.dis2target_last, self.target_last = self.select_target_by_distance(current_pose, self.targets_pos)
        self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose,
                                                                                                  self.targets_pos)
        return state
@@ -319,8 +303,6 @@ class UnrealCvSearch_base(gym.Env):
        self.cam_id = setting['cam_id']
        self.target_list = setting['targets']
        self.max_steps = setting['maxsteps']
-       #self.reward_th = setting['reward_th']
-       #self.reward_factor = setting['reward_factor']
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
 
