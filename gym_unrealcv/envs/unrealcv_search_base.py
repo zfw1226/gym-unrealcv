@@ -105,7 +105,7 @@ class UnrealCvSearch_base(gym.Env):
 
      self.collision = False # collision state flag
 
-     self.reward_function = reward.Reward(setting, reward_type)
+     self.reward_function = reward.Reward(setting)
      self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
 
@@ -378,38 +378,6 @@ class UnrealCvSearch_base(gym.Env):
            distance = self.get_distance(self.waypoints[i]['pose'],C_point)
            self.waypoints[i]['dis2collision'] = min(self.waypoints[i]['dis2collision'],distance)
 
-
-   def reward_bbox(self):
-
-       object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
-       boxes = self.unrealcv.get_bboxes(object_mask,self.target_list)
-       reward = 0
-       for box in boxes:
-           reward += self.get_bbox_reward(box)
-
-       if reward > self.reward_th:
-            reward = min(reward * self.reward_factor, 10)
-            print ('Get ideal Target!!!')
-       elif reward == 0:
-           reward = -1
-           print ('Get Nothing')
-       else:
-           reward = 0
-           print ('Get small Target!!!')
-
-       return reward,boxes
-
-
-   def get_bbox_reward(self,box):
-       (xmin,ymin),(xmax,ymax) = box
-       boxsize = (ymax - ymin) * (xmax - xmin)
-       x_c = (xmax + xmin) / 2.0
-       x_bias = x_c - 0.5
-       discount = max(0, 1 - x_bias ** 2)
-       reward = discount * boxsize
-       return reward
-
-
    def get_distance(self,target,current):
 
        error = abs(np.array(target)[:2] - np.array(current)[:2])# only x and y
@@ -446,16 +414,6 @@ class UnrealCvSearch_base(gym.Env):
 
        return angle_now
 
-
-   def reward_distance(self,distance_now,target_id):
-
-       if target_id == self.targetID_last:
-           reward = (self.distance_last - distance_now) / 100.0
-       else:
-           reward = 0
-       self.distance_last = distance_now
-       self.targetID_last = target_id
-       return reward
 
    def load_env_setting(self,filename):
        f = open(self.get_settingpath(filename))
