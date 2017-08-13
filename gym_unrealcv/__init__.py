@@ -107,7 +107,7 @@ register(
 )
 
 
-# RrMultiPlants
+# RrMultiPlants  Finding plants(large objects)
 register(
     id='Search-RrMultiPlantsDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -158,7 +158,7 @@ register(
 )
 
 
-# RrMultiSockets
+# RrMultiSockets, finding sockets(small object)
 register(
     id='Search-RrMultiSocketsDiscrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
