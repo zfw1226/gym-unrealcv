@@ -10,6 +10,7 @@ from operator import itemgetter
 import env_unreal
 import reward
 import reset_point
+from visualization import show_info
 '''
 It is a general env for searching target object.
 
@@ -105,7 +106,7 @@ class UnrealCvSearch_base(gym.Env):
      self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
 
-   def _step(self, action , show = False):
+   def _step(self, action , show = True):
         info = dict(
             Collision=False,
             Done = False,
@@ -214,7 +215,7 @@ class UnrealCvSearch_base(gym.Env):
             self.reset_module.update_waypoint(info['Trajectory'])
 
         if show:
-            self.unrealcv.show_img(info['Color'], 'state')
+            show_info(info)
 
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
@@ -267,7 +268,6 @@ class UnrealCvSearch_base(gym.Env):
        target_id = distances.argmin()
 
        return distance_now,target_id
-
 
    def get_direction(self,current_pose,target_pose):
        y_delt = target_pose[1] - current_pose[1]
