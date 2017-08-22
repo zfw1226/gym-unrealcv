@@ -114,7 +114,7 @@ if __name__ == '__main__':
                 if MAP:
                     io_util.live_plot(info)
 
-                io_util.save_trajectory(info,TRA_DIR,epoch)
+                #io_util.save_trajectory(info,TRA_DIR,epoch)
 
                 cumulated_reward += reward
                 if done:
@@ -132,8 +132,8 @@ if __name__ == '__main__':
                         #backup monitor file
                         copy_tree(MONITOR_DIR+ 'tmp', MONITOR_DIR + str(epoch))
 
-                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds','waypoints']
-                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds), info['Waypoints']]
+                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds']
+                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds)]
                         parameter_dictionary = dict(zip(parameter_keys, parameter_values))
                         with open(PARAM_DIR + '/dqn_ep' + str(epoch) + '.json','w') as outfile:
                             json.dump(parameter_dictionary, outfile)
