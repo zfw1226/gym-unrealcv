@@ -207,3 +207,17 @@ register(
               'docker': use_docker
               },
 )
+
+
+register(
+    id='RobotArm-Discrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+    kwargs = {'setting_file' : 'robotarm_v1.json',
+              'reset_type': 'keyboard',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'move',
+              'docker': use_docker
+              },
+)

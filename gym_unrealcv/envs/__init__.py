@@ -1,1 +1,2 @@
 from gym_unrealcv.envs.unrealcv_search_base import UnrealCvSearch_base
+from gym_unrealcv.envs.unrealcv_arm import UnrealCvRobotArm_base
