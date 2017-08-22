@@ -1,0 +1,29 @@
+{
+	"env_name": "RobotArm-OWI",
+	"env_bin": "RobotArm_OWI_v0.2/mechanicalArm/Binaries/Linux/mechanicalArm",
+	"cam_view_id": 0,
+	"cam_arm_id": 1,
+	"maxsteps": 200,
+	"reward_th": 0.01,
+	"collision_th": 20,
+	"waypoint_th": 100,
+	"reward_factor": 10,
+	"camera_pose": [
+		[-120, -110, 600 , 0, 180, 270]
+	],
+	"targets":["Sphere15_Blueprint"],
+	"discrete_actions": [
+		"Y",
+		"H",
+		"U",
+		"J",
+		"I",
+		"K",
+		"O",
+		"L"
+	],
+	"continous_actions": {
+		"high": [ 1,  1,  1,  1,  1],
+		"low":  [-1, -1, -1, -1, -1]
+	}
+}
