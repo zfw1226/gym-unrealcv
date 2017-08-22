@@ -84,16 +84,16 @@ class UnrealCvRobotArm_base(gym.Env):
             Action = action,
             Bbox =[],
             Pose = [],
-            Steps = self.count_steps,
+            Steps= self.count_steps+1,
             Target = [],
             Color = None,
             Depth = None,
         )
 
         if self.action_type == 'discrete':
-            duration = 0.2
+            duration = 0.1
             self.unrealcv.keyboard(self.discrete_actions[action], duration=duration)
-            time.sleep(duration)
+            #time.sleep(duration)
 
         self.count_steps += 1
         info['Done'] = False
@@ -109,24 +109,43 @@ class UnrealCvRobotArm_base(gym.Env):
 
         msg = self.unrealcv.read_message()
         if msg == None :  # get reward by distance
-            info['Reward'] = -0.01
+            info['Reward'] = 0
+            grip_position = self.unrealcv.get_grip_position()
+            distance = self.get_distance(self.target_pose,grip_position)
+            distance_delt = self.distance_last - distance
+            self.distance_last = distance
+            info['Reward'] = distance_delt / 100.0
+            #print "reward = {} , distance = {}".format(info['Reward'], distance)
 
         elif msg == 'move':  # touch target
             info['Reward'] = 10
             info['Done'] = True
             print 'Move ball'
 
-        else:  # collision
+        elif "hit" in msg or "Max" in msg:  # collision
             info['Collision'] = True
-            info['Reward'] = -1
+            self.count_collision += 1
             info['Done'] = False
-            print 'Collision'
+            info['Reward'] = -1
+
+            '''
+            if msg == 'hit ground':  # get positive reward only when touch the ground at first time
+                self.count_ground += 1
+                if self.count_ground == 1:
+                    info['Reward'] = 1
+                    print 'Positive hit ground'
+            '''
+
+            if self.count_collision > 10:
+                info['Done'] = True
+            #print 'Collision'
+        #info['Pose'] = self.unrealcv.get_arm_pose()
 
         # limit the max steps of every episode
         if self.count_steps > self.max_steps:
            info['Done'] = True
            info['Maxstep'] = True
-           print 'Reach Max Steps'
+           #print 'Reach Max Steps'
 
         if show:
             show_info_arm(info)
@@ -143,6 +162,8 @@ class UnrealCvRobotArm_base(gym.Env):
            self.reset_env_keyboard()
 
 
+
+
        if self.observation_type == 'color':
            state = self.unrealcv.read_image(self.cam_id, 'lit')
        elif self.observation_type == 'depth':
@@ -151,13 +172,18 @@ class UnrealCvRobotArm_base(gym.Env):
            state = self.unrealcv.get_rgbd(self.cam_id)
 
        self.count_steps = 0
+       self.count_collision = 0
+       self.count_ground = 0
+
+       self.target_pose = self.unrealcv.get_object_pos(self.target_list[0])
+       grip_position = self.unrealcv.get_grip_position()
+       self.distance_last = self.get_distance(self.target_pose, grip_position)
 
        return state
 
    def _close(self):
        if self.docker:
            self.unreal.docker.close()
-
 
 
    def _get_action_size(self):
@@ -186,7 +212,7 @@ class UnrealCvRobotArm_base(gym.Env):
        #print setting
        self.cam_id = setting['cam_view_id']
        self.cam_arm_id = setting['cam_arm_id']
-       #self.target_list = setting['targets']
+       self.target_list = setting['targets']
        self.max_steps = setting['maxsteps']
        self.camera_pose = setting['camera_pose']
        self.discrete_actions = setting['discrete_actions']
@@ -201,14 +227,10 @@ class UnrealCvRobotArm_base(gym.Env):
        return os.path.join(gympath, 'envs/setting', filename)
 
 
-   def open_door(self):
-       self.unrealcv.keyboard('RightMouseButton')
-       time.sleep(2)
-       self.unrealcv.keyboard('RightMouseButton') # close the door
-
    def reset_env_keyboard(self):
        self.unrealcv.keyboard('RightBracket') # random light and ball position
        num = ['One','Two','Three','Four','Five']
        self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
        self.unrealcv.keyboard('R') # reset arm pose
+
 
