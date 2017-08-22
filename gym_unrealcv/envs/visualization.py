@@ -58,3 +58,33 @@ def show_info(info ):
 
     cv2.imshow('info_show', cv_img)
     cv2.waitKey(10)
+
+
+def show_info_arm(info ):
+    cv_img = info['Color'].copy()
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    height = cv_img.shape[0]
+    width = cv_img.shape[1]
+
+    cv2.putText(cv_img, 'Reward:' + str(round(info['Reward'], 3)), (int(3*width/10), int(9*height/10)), font, 0.5, (255, 255, 255), 2)
+
+    #action
+    action_x = int(5*width/10)
+    action_y = int(9*height/10)
+    cv2.putText(cv_img, 'Action:' + str(info['Action']), (action_x, action_y), font, 0.5, (255, 255, 255), 2)
+
+    step_x = int(7*width/10)
+    step_y = int(9*height/10)
+    cv2.putText(cv_img, 'Steps:' + str(info['Steps']), (step_x, step_y), font, 0.5, (255, 255, 255), 2)
+
+    collision_x = int(1*width/10)
+    collision_y = int(9*height/10)
+    if info['Collision']:
+        cv2.putText(cv_img, 'Collision', (collision_x, collision_y), font, 0.5, (0, 0, 255), 2)
+        cv2.circle(cv_img, (collision_x + int(width * 0.05), collision_y - 30), 15, (0, 0, 255), -1)
+    else:
+        cv2.putText(cv_img, 'Collision', (collision_x, collision_y), font, 0.5, (0, 255, 0), 2)
+        cv2.circle(cv_img, (collision_x + int(width * 0.05), collision_y - 30), 15, (0, 255, 0), -1)
+
+    cv2.imshow('info_show', cv_img)
+    cv2.waitKey(10)
