@@ -59,7 +59,10 @@ class RunDocker():
 
     def close(self):
         #.container[0].stop()
-        self.container[0].remove(force = True)
+        #self.container[0].remove(force = True)
+        container_id = self.container[0]['Id']
+        self.docker_client.stop(container_id)
+        #self.docker_client.remove_container(container_id)
 
     def check_image(self,target_images='zfw1226/unreal-gpu:v0.1'):
         images = self.docker_client.images()
