@@ -42,12 +42,12 @@ class RunDocker():
         print cmd
         os.system(cmd)
         time.sleep(5)
-        self.container = self.docker_client.containers.list()
+        self.container = self.docker_client.containers()
         return self.get_ip(),HOST_DIR
 
 
     def get_ip(self):
-        return self.container[0].attrs['NetworkSettings']['Networks']['bridge']['IPAddress']
+        return self.container[0]['NetworkSettings']['Networks']['bridge']['IPAddress']
     def get_abspath(self, relativepath):
         paths = sys.path
         for p in paths:
@@ -62,17 +62,17 @@ class RunDocker():
         self.container[0].remove(force = True)
 
     def check_image(self,target_images='zfw1226/unreal-gpu:v0.1'):
-
-        images = self.docker_client.images.list()
+        images = self.docker_client.images()
 
         # Check the existence of image
         Found_Img = False
         for i in range(len(images)):
-            if images[i].tags.count(target_images) > 0:
+            if images[i]['RepoTags'].count(target_images) > 0:
                 Found_Img = True
         # Download image
         if Found_Img == False:
             print 'Do not found images,Downloading'
-            self.docker_client.images.pull(target_images)
+            #pdb.set_trace()
+            self.docker_client.pull(target_images)
         else:
             print 'Found images'
