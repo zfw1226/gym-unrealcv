@@ -56,7 +56,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
 
     # define observation space,
-    # color, depth, rgbd,...
+    # color, depth, rgbd...
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd' or self.observation_type == 'measured'
      if self.observation_type == 'color':
@@ -77,16 +77,17 @@ class UnrealCvRobotArm_base(gym.Env):
          s_low = [ 0, -90, -60, -55, -120, -400, -150,  0, -350, -150,  40]
          self.observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
 
-
-
-
      # define reward type
      # distance, bbox, bbox_distance,
      self.reward_type = reward_type
+     self.rendering = False
 
 
+   def _render(self):
+       self.rendering = True
 
-   def _step(self, action , show = True):
+
+   def _step(self, action):
         info = dict(
             Collision=False,
             Done = False,
@@ -100,22 +101,25 @@ class UnrealCvRobotArm_base(gym.Env):
             Color = None,
             Depth = None,
         )
-        self.unrealcv.message = None
 
+        self.unrealcv.message = []
+
+        # take a action
         if self.action_type == 'discrete':
             duration = 0.1
             self.unrealcv.keyboard(self.discrete_actions[action], duration=duration)
-            time.sleep(duration)
+
         elif self.action_type == 'continuous':
             for i in range(len(action)):
+                if abs(action[i]) < 0.05:
+                    continue
                 if action[i] > 0:
                     self.unrealcv.keyboard(self.discrete_actions[i*2],duration=max(action[i],0.5))
                 else:
                     self.unrealcv.keyboard(self.discrete_actions[i*2 + 1],duration=max(abs(action[i]),0.5))
+            duration = abs(np.array(abs(action))).max()
 
-            time.sleep(abs(np.array(abs(action))).max())
-
-
+        time.sleep(duration)
 
         self.count_steps += 1
         info['Done'] = False
@@ -127,37 +131,32 @@ class UnrealCvRobotArm_base(gym.Env):
             info['Bbox'] = self.bboxes
         '''
 
+        # Get reward
         msg = self.unrealcv.read_message()
-        if msg == None :  # get reward by distance
+
+        # 'hit ground' 'ReachmaxM2' 'ReachminM2'
+        if len(msg) == 0:
             info['Reward'] = 0
-            self.grip_position = np.array(self.unrealcv.get_grip_position())
-            distance = self.get_distance(self.target_pose,self.grip_position)
-            distance_delt = self.distance_last - distance
-            self.distance_last = distance
-            info['Reward'] = distance_delt / 100.0
-            #print "reward = {} , distance = {}".format(info['Reward'], distance)
-
-        elif msg == 'move':  # touch target
-            info['Reward'] = 10
+            if 'distance' in self.reward_type:
+                self.grip_position = np.array(self.unrealcv.get_grip_position())
+                distance = self.get_distance(self.target_pose,self.grip_position)
+                distance_delt = self.distance_last - distance
+                self.distance_last = distance
+                info['Reward'] = distance_delt / 100.0
+        elif 'move' in msg:
             info['Done'] = True
+            if 'move' in self.reward_type:
+                info['Reward'] = 10
             print 'Move ball'
-
         else:
             info['Collision'] = True
             self.count_collision += 1
             info['Done'] = False
             info['Reward'] = -1
-
-            '''
-            if msg == 'hit ground':  # get positive reward only when touch the ground at first time
-                self.count_ground += 1
-                if self.count_ground == 1:
-                    info['Reward'] = 1
-                    print 'Positive hit ground'
-            '''
             if self.count_collision > 3:
                 info['Done'] = True
 
+        # Get observation
         if self.observation_type == 'color':
             state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
         elif self.observation_type == 'depth':
@@ -169,7 +168,8 @@ class UnrealCvRobotArm_base(gym.Env):
         elif self.observation_type == 'measured':
             self.arm_pose = np.array(self.unrealcv.get_arm_pose())
             state = np.append(self.arm_pose, [np.array(self.grip_position), self.target_pose])
-            #print 'Collision'
+
+
         #self.arm_pose = np.array(self.unrealcv.get_arm_pose())
         #info['Pose'] = (self.arm_pose - self.pose_low)/(self.pose_high-self.pose_low)
         #print info['Pose']
@@ -180,7 +180,7 @@ class UnrealCvRobotArm_base(gym.Env):
            info['Maxstep'] = True
            #print 'Reach Max Steps'
 
-        if show:
+        if self.rendering:
             show_info_arm(info)
 
 
@@ -196,7 +196,6 @@ class UnrealCvRobotArm_base(gym.Env):
            self.reset_env_keyboard()
 
 
-
        if self.observation_type == 'color':
            state = self.unrealcv.read_image(self.cam_id, 'lit')
        elif self.observation_type == 'depth':
@@ -204,7 +203,7 @@ class UnrealCvRobotArm_base(gym.Env):
        elif self.observation_type == 'rgbd':
            state = self.unrealcv.get_rgbd(self.cam_id)
        elif self.observation_type == 'measured':
-           self.unrealcv.message = None
+           self.unrealcv.message = []
            self.arm_pose = np.array(self.unrealcv.get_arm_pose())
            self.target_pose = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
            self.grip_position = np.array(self.unrealcv.get_grip_position())
@@ -216,17 +215,15 @@ class UnrealCvRobotArm_base(gym.Env):
 
        self.bboxes = None
        if self.observation_type != 'measured':
-           self.unrealcv.message = None
+           self.unrealcv.message = []
            self.target_pose = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
            self.grip_position = np.array(self.unrealcv.get_grip_position())
            object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
            self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
 
-
        self.distance_last = self.get_distance(self.target_pose, self.grip_position)
 
-
-       self.unrealcv.message = None
+       self.unrealcv.message = []
 
        return state
 
