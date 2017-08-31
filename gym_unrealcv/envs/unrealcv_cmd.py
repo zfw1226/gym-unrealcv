@@ -36,6 +36,14 @@ class UnrealCv:
                  pitch = 0,
         )
 
+        self.arm = dict(
+                pose = np.zeros(5),
+                flag_pose = False,
+                grip = np.zeros(3),
+                flag_grip = False
+
+        )
+
         self.init_unrealcv()
         self.pitch = 0 #-30
         self.color_dict = dict()
@@ -47,6 +55,8 @@ class UnrealCv:
             self.targets = targets
             self.color_dict = self.target_color_dic(self.targets)
 
+        self.message = []
+
 
     def init_unrealcv(self):
         client.connect()
@@ -55,6 +65,52 @@ class UnrealCv:
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
+        client.message_handler = self.message_handler
+
+    def message_handler(self,message):
+
+        msg = message
+        #filter for pose
+        if 'Currentpose' in msg:
+            pose_str = msg[12:].split()
+            self.arm['pose'] = np.array(pose_str,dtype=np.float16)
+            self.arm['flag_pose'] = True
+            #print 'get arm pose:{}'.format(self.arm['pose'])
+        elif 'GripLocation' in msg:
+            pose_str = msg[13:].split()
+            self.arm['grip'] = np.array(pose_str, dtype=np.float16)
+            self.arm['flag_grip'] = True
+        else:
+            self.message.append(message)
+
+    def read_message(self):
+        msg = self.message
+        self.message = []
+        return msg
+
+    def get_arm_pose(self):
+
+        self.keyboard('C')
+        start_time = time.time()
+        while self.arm['flag_pose']==False:
+            delt_time = time.time() - start_time
+            if delt_time > 0.5:  # time out
+                break
+        self.arm['flag_pose'] = False
+        return self.arm['pose']
+
+
+    def get_grip_position(self):
+
+        self.keyboard('F')
+        start_time = time.time()
+        while self.arm['flag_grip']==False:
+            delt_time = time.time() - start_time
+            if delt_time > 0.5:  # time out
+                print 'time out'
+                break
+        self.arm['flag_grip'] = False
+        return self.arm['grip']
 
 
     def check_connection(self):
@@ -124,6 +180,7 @@ class UnrealCv:
         self.cam['rotation'] = [float(roll), float(yaw), float(pitch)]
         return self.cam['rotation']
 
+
     def moveto(self,cam_id, x, y, z):
         cmd = 'vset /camera/{cam_id}/moveto {x} {y} {z}'
         client.request(cmd.format(cam_id=cam_id, x=x, y=y, z=z))
@@ -156,7 +213,7 @@ class UnrealCv:
         return pos_error.mean()
 
 
-    def keyboard(self,key, duration = 0.3):# Up Down Left Right
+    def keyboard(self,key, duration = 0.01):# Up Down Left Right
         cmd = 'vset /action/keyboard {key} {duration}'
         return client.request(cmd.format(key = key,duration = duration))
 
