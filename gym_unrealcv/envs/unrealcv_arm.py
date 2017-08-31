@@ -135,7 +135,15 @@ class UnrealCvRobotArm_base(gym.Env):
         msg = self.unrealcv.read_message()
 
         # 'hit ground' 'ReachmaxM2' 'ReachminM2'
-        if len(msg) == 0:
+        if len(msg) > 0:
+            info['Collision'] = True
+            self.count_collision += 1
+            info['Done'] = False
+            info['Reward'] = -1
+            if self.count_collision > 3:
+                info['Done'] = True
+
+        else:
             info['Reward'] = 0
             if 'distance' in self.reward_type:
                 self.grip_position = np.array(self.unrealcv.get_grip_position())
@@ -143,18 +151,15 @@ class UnrealCvRobotArm_base(gym.Env):
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
                 info['Reward'] = distance_delt / 100.0
-        elif 'move' in msg:
-            info['Done'] = True
-            if 'move' in self.reward_type:
-                info['Reward'] = 10
-            print 'Move ball'
-        else:
-            info['Collision'] = True
-            self.count_collision += 1
-            info['Done'] = False
-            info['Reward'] = -1
-            if self.count_collision > 3:
+
+            target_pose_current = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
+            if self.target_pose != target_pose_current:
                 info['Done'] = True
+                if 'move' in self.reward_type:
+                    info['Reward'] = 10
+                    self.target_pose = target_pose_current
+                    print 'move ball'
+
 
         # Get observation
         if self.observation_type == 'color':
