@@ -133,31 +133,17 @@ class UnrealCvSearch_base(gym.Env):
         self.count_steps += 1
         info['Done'] = False
 
+        info['Pose'] = self.unrealcv.get_pose()
         # the robot think that it found the target object,the episode is done
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
         if info['Trigger'] > self.trigger_th :
-            # get observation
-            if self.observation_type == 'color':
-                state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-            elif self.observation_type == 'depth':
-                state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-            elif self.observation_type == 'rgbd':
-                info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-                info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-                state = np.append(info['Color'], info['Depth'], axis=2)
-
-
-            # get reward
-            info['Pose'] = self.unrealcv.get_pose()
             self.trigger_count += 1
-
+            # get reward
             if self.reward_type == 'bbox_distance' or self.reward_type == 'bbox':
                 object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
                 boxes = self.unrealcv.get_bboxes(object_mask, self.target_list)
                 info['Reward'], info['Bbox'] = self.reward_function.reward_bbox(boxes)
-
-
             else:
                 info['Reward'] = 0
 
@@ -172,21 +158,10 @@ class UnrealCvSearch_base(gym.Env):
         else :
             # take action
             info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
-            # update observation
-            if self.observation_type == 'color':
-                state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-            elif self.observation_type == 'depth':
-                state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-            elif self.observation_type == 'rgbd':
-                info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-                info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-                state = np.append(info['Color'], info['Depth'], axis=2)
-
             # get reward
             info['Pose'] = self.unrealcv.get_pose()
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
-
 
             if self.reward_type=='distance' or self.reward_type == 'bbox_distance':
                 info['Reward'] = self.reward_function.reward_distance(distance)
@@ -200,6 +175,15 @@ class UnrealCvSearch_base(gym.Env):
                 self.reset_module.update_dis2collision(info['Pose'])
                 print ('Collision!!')
 
+        # update observation
+        if self.observation_type == 'color':
+            state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+        elif self.observation_type == 'depth':
+            state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+        elif self.observation_type == 'rgbd':
+            info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+            info['Depth'] = self.unrealcv.read_depth(self.cam_id)
+            state = np.append(info['Color'], info['Depth'], axis=2)
 
         # limit the max steps of every episode
         if self.count_steps > self.max_steps:
