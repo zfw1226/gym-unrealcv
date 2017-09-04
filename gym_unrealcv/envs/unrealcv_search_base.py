@@ -105,8 +105,12 @@ class UnrealCvSearch_base(gym.Env):
      self.reward_function = reward.Reward(setting)
      self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
+     self.rendering = False
 
-   def _step(self, action , show = True):
+   def _render(self, mode='cv2', close=False):
+       self.rendering = True
+
+   def _step(self, action ):
         info = dict(
             Collision=False,
             Done = False,
@@ -198,7 +202,7 @@ class UnrealCvSearch_base(gym.Env):
         if info['Done'] and len(self.trajectory) > 5:
             self.reset_module.update_waypoint(info['Trajectory'])
 
-        if show:
+        if self.rendering:
             show_info(info)
 
         return state, info['Reward'], info['Done'], info
