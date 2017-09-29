@@ -80,10 +80,10 @@ class UnrealCvRobotArm_base(gym.Env):
      # define reward type
      # distance, bbox, bbox_distance,
      self.reward_type = reward_type
-     self.rendering = False
+     self.rendering = True
 
 
-   def _render(self):
+   def _render(self, mode='cv2', close=False):
        self.rendering = True
 
 
@@ -95,9 +95,11 @@ class UnrealCvRobotArm_base(gym.Env):
             Reward=0.0,
             Action = action,
             Bbox =self.bboxes,
-            Pose = [],
+            ArmPose = [],
+            GripPosition = [],
             Steps= self.count_steps+1,
-            Target = [],
+            Target = self.target_list,
+            TargetPose = self.target_pose,
             Color = None,
             Depth = None,
         )
@@ -106,7 +108,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
         # take a action
         if self.action_type == 'discrete':
-            duration = 0.1
+            duration = max(0.05, 0.2 + 0.1 * np.random.randn())
             self.unrealcv.keyboard(self.discrete_actions[action], duration=duration)
 
         elif self.action_type == 'continuous':
@@ -124,46 +126,46 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_steps += 1
         info['Done'] = False
 
-        '''
-        if len(self.bboxes) == 0:
-            object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
-            self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
-            info['Bbox'] = self.bboxes
-        '''
+
+        info['TargetPose'] = self.unrealcv.get_object_pos(self.target_list[0])
+        info['GripPosition'] = self.unrealcv.get_grip_position().tolist()
 
         # Get reward
         msg = self.unrealcv.read_message()
-
         # 'hit ground' 'ReachmaxM2' 'ReachminM2'
         if len(msg) > 0:
+            print msg
             info['Collision'] = True
             self.count_collision += 1
             info['Done'] = False
             info['Reward'] = -1
             if self.count_collision > 3:
                 info['Done'] = True
+            self.target_pose = info['TargetPose']
 
         else:
             info['Reward'] = 0
+            #target_pose_current = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
+            if self.get_distance(self.target_pose,info['TargetPose']) > 0.1:
+                if self.count_steps > 1:
+                    info['Done'] = True
+                    if 'move' in self.reward_type:
+                        info['Reward'] = 10
+                        print 'move ball'
+                self.target_pose = info['TargetPose']
+
             if 'distance' in self.reward_type:
-                self.grip_position = np.array(self.unrealcv.get_grip_position())
+                self.grip_position = np.array(info['GripPosition'])
                 distance = self.get_distance(self.target_pose,self.grip_position)
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
-                info['Reward'] = distance_delt / 100.0
-
-            target_pose_current = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
-            if self.target_pose != target_pose_current:
-                info['Done'] = True
-                if 'move' in self.reward_type:
-                    info['Reward'] = 10
-                    self.target_pose = target_pose_current
-                    print 'move ball'
+                info['Reward'] = info['Reward'] + distance_delt / 100.0
 
 
         # Get observation
         if self.observation_type == 'color':
             state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
+            info['Depth'] = self.unrealcv.read_depth(self.cam_id)
         elif self.observation_type == 'depth':
             state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
         elif self.observation_type == 'rgbd':
@@ -174,9 +176,15 @@ class UnrealCvRobotArm_base(gym.Env):
             self.arm_pose = np.array(self.unrealcv.get_arm_pose())
             state = np.append(self.arm_pose, [np.array(self.grip_position), self.target_pose])
 
+        # bbox
+        object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
+        self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
+        info['Bbox'] = self.bboxes
 
-        #self.arm_pose = np.array(self.unrealcv.get_arm_pose())
-        #info['Pose'] = (self.arm_pose - self.pose_low)/(self.pose_high-self.pose_low)
+        info['ArmPose'] = self.unrealcv.get_arm_pose().tolist()
+
+        self.arm_pose = np.array(info['ArmPose'])
+        #info['ArmPose'] = (self.arm_pose - self.pose_low)/(self.pose_high-self.pose_low)
         #print info['Pose']
 
         # limit the max steps of every episode
@@ -280,9 +288,11 @@ class UnrealCvRobotArm_base(gym.Env):
 
 
    def reset_env_keyboard(self):
+       self.unrealcv.keyboard('R')  # reset arm pose
+       time.sleep(0.1)
        self.unrealcv.keyboard('RightBracket') # random light and ball position
-       #num = ['One','Two','Three','Four','Five']
-       #self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
-       self.unrealcv.keyboard('R') # reset arm pose
+       num = ['One','Two','Three','Four','Five']
+       self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
+
 
 
