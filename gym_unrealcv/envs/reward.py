@@ -5,14 +5,10 @@ class Reward():
     def __init__(self, setting):
         self.reward_factor = setting['reward_factor']
         self.reward_th = setting['reward_th']
-
         self.dis2target_last = 0
 
 
     def reward_bbox(self, boxes):
-
-       # object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
-       # boxes = self.unrealcv.get_bboxes(object_mask, self.target_list)
         reward = 0
         for box in boxes:
             reward += self.get_bbox_reward(box)  #sum the reward of all detected boxes
@@ -29,7 +25,8 @@ class Reward():
 
         return reward, boxes
 
-    def get_bbox_reward(self, box):
+
+    def get_bbox_reward(self, box):  # get reward of single box considering the size and position of box
         (xmin, ymin), (xmax, ymax) = box
         boxsize = (ymax - ymin) * (xmax - xmin)
         x_c = (xmax + xmin) / 2.0
@@ -39,8 +36,10 @@ class Reward():
         return reward
 
     def reward_distance(self, dis2target_now):
-
         reward = (self.dis2target_last - dis2target_now) / max(self.dis2target_last, 100)
         self.dis2target_last = dis2target_now
 
         return reward
+
+    def reward_move(self):
+        return 10
