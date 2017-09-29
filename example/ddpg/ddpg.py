@@ -4,12 +4,12 @@ import os
 import json
 import random
 import numpy as np
-
 import tensorflow as tf
 import memory
 import keras.backend as K
 from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
+from constants import *
 
 class DDPG:
     def __init__(self, outputs, memorySize, discountFactor,
@@ -38,7 +38,7 @@ class DDPG:
             self.img_shape = (self.img_rows, self.img_cols, self.img_channels)
 
 
-        with tf.device('/gpu:0'):
+        with tf.device(TF_DEVICE):
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             self.sess = tf.Session(config=config)
