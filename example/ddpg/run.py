@@ -13,6 +13,7 @@ from ddpg import DDPG
 import io_util
 from gym import wrappers
 import time
+import preprocessing
 
 
 if __name__ == '__main__':
@@ -22,6 +23,12 @@ if __name__ == '__main__':
     ACTION_SIZE = env.action_space.shape[0]
     ACTION_HIGH = env.action_space.high
     ACTION_LOW = env.action_space.low
+    INPUT_CHANNELS = env.observation_space.shape[2]
+    OBS_HIGH = env.observation_space.high
+    OBS_LOW = env.observation_space.low
+    OBS_RANGE = OBS_HIGH - OBS_LOW
+
+    process_img = preprocessing.preprocessor(observation_space=env.observation_space, length = 3, size = (INPUT_SIZE,INPUT_SIZE))
 
     #init log file
     if not os.path.exists(MODEL_DIR):
@@ -31,7 +38,7 @@ if __name__ == '__main__':
 
     Agent = DDPG(ACTION_SIZE, MEMORY_SIZE, GAMMA,
                  LEARNINGRATE_CRITIC, LEARNINGRATE_ACTOR, TARGET_UPDATE_RATE,
-                 INPUT_SIZE, INPUT_SIZE, INPUT_CHANNELS)
+                 INPUT_SIZE, INPUT_SIZE, 3)
     #load init param
     if not CONTINUE:
         explorationRate = INITIAL_EPSILON
@@ -60,7 +67,8 @@ if __name__ == '__main__':
         start_time = time.time()
         for epoch in xrange(current_epoch + 1, MAX_EPOCHS + 1, 1):
             obs = env.reset()
-            observation = io_util.preprocess_img(obs)
+            #observation = io_util.preprocess_img(obs)
+            observation = process_img.process_gray(obs,reset=True)
             cumulated_reward = 0
             #if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
             EXPLORE = True
@@ -71,18 +79,17 @@ if __name__ == '__main__':
 
                 start_req = time.time()
 
-
                 if EXPLORE is True: #explore
 
                     action_pred = Agent.actor.model.predict(observation)
                     action = Agent.Action_Noise(action_pred, explorationRate)
                     #print action
-                    '''action_env = ( action[0] * VELOCITY_MAX,
-                              (action[1]-0.5) * ANGLE_MAX,
-                              action[2])'''
+
                     action_env = action * (ACTION_HIGH - ACTION_LOW) + ACTION_LOW
                     obs_new, reward, done, info = env.step(action_env)
-                    newObservation = io_util.preprocess_img(obs_new)
+
+                    newObservation = process_img.process_gray(obs_new)
+                    #newObservation = io_util.preprocess_img(obs_new)
                     stepCounter += 1
 
                     Agent.addMemory(observation, action, reward, newObservation, done)
@@ -95,11 +102,15 @@ if __name__ == '__main__':
                         Agent.learnOnMiniBatch(BATCH_SIZE)
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
+                        elif stepCounter % (MAX_EXPLORE_STEPS * 1.5) == 0:
+                            explorationRate = 0.99
+                            print 'Reset Exploration Rate'
                 #test
                 else:
                     action = Agent.actor.model.predict(observation)
                     obs_new, reward, done, info = env.step(action)
-                    newObservation = io_util.preprocess_img(obs_new)
+                    newObservation = process_img.process_gray(obs_new)
+                    #newObservation = io_util.preprocess_img(obs_new)
                     observation = newObservation
 
                 #print 'step time:' + str(time.time() - start_req)
@@ -107,7 +118,7 @@ if __name__ == '__main__':
                     io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
-                io_util.save_trajectory(info, TRA_DIR, epoch)
+                #io_util.save_trajectory(info, TRA_DIR, epoch)
 
                 cumulated_reward += reward
                 if done:
@@ -124,8 +135,8 @@ if __name__ == '__main__':
 
                         copy_tree(MONITOR_DIR + 'tmp', MONITOR_DIR + str(epoch))
                         # save simulation parameters.
-                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds','waypoints']
-                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds), info['Waypoints']]
+                        parameter_keys = ['explorationRate', 'current_epoch','stepCounter', 'FINAL_EPSILON','loadsim_seconds']
+                        parameter_values = [explorationRate, epoch, stepCounter,FINAL_EPSILON, int(time.time() - start_time + loadsim_seconds)]
                         parameter_dictionary = dict(zip(parameter_keys, parameter_values))
                         with open(PARAM_DIR + '/' + str(epoch) + '.json','w') as outfile:
                             json.dump(parameter_dictionary, outfile)
