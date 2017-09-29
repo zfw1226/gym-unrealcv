@@ -71,10 +71,22 @@ def create_csv_header(DIR):
         f_csv = csv.DictWriter(f, header)
         f_csv.writeheader()
 
-def preprocess_img(image):
+def preprocess_img(image,gray=False,reset=False, sequence=3):
 
     cv_image = cv2.resize(image, (INPUT_SIZE, INPUT_SIZE))
-    img_processed = cv_image.reshape(1, cv_image.shape[-1], INPUT_SIZE, INPUT_SIZE)
+    channel = cv_image.shape[-1]
+    gray_image =  cv2.cvtColor(cv_image,cv2.COLOR_RGB2GRAY)
+    print gray_image.shape
+    cv2.imshow('gray',gray_image)
+    cv2.waitKey(3)
+    if gray:
+        cv_image = cv2.cvtColor(cv_image,cv2.COLOR_RGB2GRAY)
+        channel = 1
+        print cv_image.shape
+        cv2.imshow('info_show', cv_image)
+        cv2.waitKey(3)
+
+    img_processed = cv_image.reshape(1, channel, INPUT_SIZE, INPUT_SIZE)
     img_processed = img_processed / 255.0
     if K.image_dim_ordering() == 'tf':
         img_processed = img_processed.transpose(0, 2, 3, 1)
