@@ -1,18 +1,17 @@
-import gym
-import gym_unrealcv
+import json
+import os
 import time
 from distutils.dir_util import copy_tree
-import os
-import json
+import gym_unrealcv
 import dqn
+import gym
 from constants import *
-import io_util
+from example.utils import preprocessing, io_util
 from gym import wrappers
-import preprocessing
 
 if __name__ == '__main__':
 
-
+    print ENV_NAME
     env = gym.make(ENV_NAME)
     # must be discrete action
     assert env.action_type == 'discrete'
@@ -116,8 +115,6 @@ if __name__ == '__main__':
                     #newObservation = io_util.preprocess_img((obs_new-OBS_LOW)/OBS_RANGE)
                     observation = newObservation
 
-                if SHOW:
-                    io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
 

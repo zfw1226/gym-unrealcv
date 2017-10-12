@@ -2,7 +2,7 @@ import argparse
 import gym_unrealcv
 import gym
 from gym import wrappers
-import preprocessing
+from example.utils import preprocessing
 import json
 import os
 import cv2
@@ -36,16 +36,22 @@ if __name__ == '__main__':
     agent = RandomAgent(env.action_space)
 
 
+
     C_steps = 0
     episode_count = 100
     reward = 0
     done = False
     folderhead = os.path.join(args.env_id,'ep')
 
+    if not os.path.exists(args.env_id):
+        os.makedirs(args.env_id)
+    init_eps = len(os.listdir(args.env_id))
+    print init_eps
+
     for i in range(episode_count):
         ob = env.reset()
         eps = []
-        foldername=folderhead+str(i)
+        foldername=folderhead+str(i+init_eps)
         if not os.path.exists(foldername):
             os.makedirs(foldername)
         #print ob.shape
@@ -69,6 +75,7 @@ if __name__ == '__main__':
             eps.append(step)
 
             if done:
+                C_steps += info['Steps']
                 filename = 'info.json'
                 filename = os.path.join(foldername,filename)
                 with open(filename, 'w') as f:

@@ -1,15 +1,18 @@
-import time
-from distutils.dir_util import copy_tree
-import os
-import json
-import random
 import numpy as np
 import tensorflow as tf
-import memory
+from example.utils import memory
 import keras.backend as K
 from ActorNetwork import ActorNetwork
 from CriticNetwork import CriticNetwork
 from constants import *
+import keras.backend as K
+import numpy as np
+import tensorflow as tf
+from ActorNetwork import ActorNetwork
+from CriticNetwork import CriticNetwork
+from constants import *
+from example.utils import memory
+
 
 class DDPG:
     def __init__(self, outputs, memorySize, discountFactor,

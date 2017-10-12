@@ -8,7 +8,7 @@ from keras.layers.pooling import MaxPooling2D
 from keras.optimizers import SGD , Adam
 import tensorflow as tf
 import keras.backend.tensorflow_backend as KTF
-import memory
+from example.utils import memory
 import keras.backend as K
 from constants import *
 class DeepQ:

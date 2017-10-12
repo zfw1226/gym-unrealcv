@@ -1,4 +1,4 @@
-ENV_NAME = 'RobotArm-Discrete-v0'
+ENV_NAME = 'Search-RrMultiSocketsDiscrete-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
@@ -11,8 +11,8 @@ MAP = False # show the trajectory in 2d map
 TF_DEVICE = '/gpu:0'
 MAX_EPOCHS = 10000 # max episode number
 MEMORY_SIZE = 50000
-LEARN_START_STEP = 10000
-INPUT_SIZE = 4
+LEARN_START_STEP = 100
+INPUT_SIZE = 84
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95

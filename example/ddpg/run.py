@@ -10,10 +10,9 @@ import cv2
 from constants import *
 import keras.backend as K
 from ddpg import DDPG
-import io_util
 from gym import wrappers
 import time
-import preprocessing
+from example.utils import preprocessing, io_util
 
 
 if __name__ == '__main__':

@@ -45,27 +45,13 @@ class preprocessor():
             self.previous = np.delete(self.previous, -1, axis=1)
 
 
-        print self.previous.shape
+        #print self.previous.shape
         if K.image_dim_ordering() == 'tf':
             processed = self.previous.transpose(0, 2, 3, 1)
         else:
             processed = self.previous
         return processed
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         # print img_processed.shape
         return img_processed
+
