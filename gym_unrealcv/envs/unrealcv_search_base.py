@@ -195,7 +195,7 @@ class UnrealCvSearch_base(gym.Env):
         self.trajectory.append(info['Pose'])
         info['Trajectory'] = self.trajectory
 
-        if info['Done'] and len(self.trajectory) > 5:
+        if info['Done'] and len(self.trajectory) > 5 and not self.test:
             self.reset_module.update_waypoint(info['Trajectory'])
 
         if self.rendering:
