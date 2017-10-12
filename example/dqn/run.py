@@ -11,8 +11,9 @@ from gym import wrappers
 
 if __name__ == '__main__':
 
-    print ENV_NAME
     env = gym.make(ENV_NAME)
+
+    env.rendering = SHOW
     # must be discrete action
     assert env.action_type == 'discrete'
 

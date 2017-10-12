@@ -35,12 +35,11 @@ class preprocessor():
         gray_image = self.color2gray(resize_image)
         gray_image = gray_image/255.0
         if reset:
-            print 'reset'
+            #print 'reset'
             for i in range(self.length):
                 self.previous[0][i] = gray_image
         else:
-            print 'update'
-
+            #print 'update'
             self.previous = np.insert(self.previous, 0, gray_image, axis=1)
             self.previous = np.delete(self.previous, -1, axis=1)
 

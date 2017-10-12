@@ -5,13 +5,13 @@ RESTART_EP = 6000 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
 USE_TARGET_NETWORK = False # use the target network
-SHOW = False # show the current state, reward and action
+SHOW = True # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
 TF_DEVICE = '/gpu:0'
 MAX_EPOCHS = 10000 # max episode number
 MEMORY_SIZE = 50000
-LEARN_START_STEP = 100
+LEARN_START_STEP = 10000
 INPUT_SIZE = 84
 BATCH_SIZE = 32
 LEARNING_RATE = 1e-3  # 1e6
