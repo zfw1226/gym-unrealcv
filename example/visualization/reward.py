@@ -103,8 +103,6 @@ def pause():
 
 if __name__ == '__main__':
 
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-p","--path", type=str, default='../dqn/log_multi/monitor/tmp', help="the path of monitor file")
     parser.add_argument("-f", "--full", action='store_true', help="print the full data plot with lines")
