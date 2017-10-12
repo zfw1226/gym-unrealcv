@@ -1,8 +1,10 @@
-import os
-from multiprocessing import Process
-import run_docker
 import getpass
+import os
 import time
+from multiprocessing import Process
+
+import gym_unrealcv.envs.utils.run_docker
+
 
 # api for running unrealenv
 
@@ -15,7 +17,7 @@ class RunUnreal():
 
     def start(self,docker):
         if docker :
-            self.docker = run_docker.RunDocker(self.path2env)
+            self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
             print 'Running nvidia-docker env'
         else:

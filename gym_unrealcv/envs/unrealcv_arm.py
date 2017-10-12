@@ -1,16 +1,15 @@
-import gym
-from gym import spaces
-from unrealcv_cmd import  UnrealCv
-import numpy as np
-import time
-import random
 import math
 import os
-from operator import itemgetter
-import env_unreal
-import reward
-import reset_point
-from visualization import show_info_arm
+import random
+import time
+
+import gym
+import numpy as np
+from gym import spaces
+from gym_unrealcv.envs.robotarm.visualization import show_info
+from gym_unrealcv.envs.utils import env_unreal
+from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
+
 
 class UnrealCvRobotArm_base(gym.Env):
    def __init__(self,
@@ -194,7 +193,7 @@ class UnrealCvRobotArm_base(gym.Env):
            #print 'Reach Max Steps'
 
         if self.rendering:
-            show_info_arm(info)
+            show_info(info)
 
 
         return state, info['Reward'], info['Done'], info

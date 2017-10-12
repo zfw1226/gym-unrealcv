@@ -1,16 +1,15 @@
-import gym
-from gym import spaces
-from unrealcv_cmd import  UnrealCv
-import numpy as np
-import time
-import random
 import math
 import os
-from operator import itemgetter
-import env_unreal
-import reward
-import reset_point
-from visualization import show_info
+import time
+
+import gym
+import numpy as np
+from gym import spaces
+from gym_unrealcv.envs.navigation import reward, reset_point
+from gym_unrealcv.envs.navigation.visualization import show_info
+from gym_unrealcv.envs.utils import env_unreal
+from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
+
 '''
 It is a general env for searching target object.
 
