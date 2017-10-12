@@ -78,8 +78,8 @@ class UnrealCvSearch_base(gym.Env):
      elif self.observation_type == 'rgbd':
          state = self.unrealcv.get_rgbd(self.cam_id)
          s_high = state
-         s_high[:,:,-1] = 10.0
-         s_high[:,:,:-1] = 255
+         s_high[:,:,-1] = 10.0 #max_depth
+         s_high[:,:,:-1] = 255 #max_rgb
          s_low = np.zeros(state.shape)
          self.observation_space = spaces.Box(low=s_low, high=s_high)
 
@@ -105,9 +105,6 @@ class UnrealCvSearch_base(gym.Env):
      self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose, self.targets_pos)
 
      self.rendering = False
-
-   def _render(self, mode='cv2', close=False):
-       self.rendering = True
 
    def _step(self, action ):
         info = dict(

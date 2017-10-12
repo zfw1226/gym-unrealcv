@@ -79,11 +79,8 @@ class UnrealCvRobotArm_base(gym.Env):
      # define reward type
      # distance, bbox, bbox_distance,
      self.reward_type = reward_type
-     self.rendering = True
+     self.rendering = False
 
-
-   def _render(self, mode='cv2', close=False):
-       self.rendering = True
 
 
    def _step(self, action):
