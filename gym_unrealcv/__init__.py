@@ -13,7 +13,7 @@ register(
               'reset_type' : 'waypoint',
               'test': False,
               'action_type' : 'discrete',
-              'observation_type': 'rgbd',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -25,7 +25,7 @@ register(
               'reset_type' : 'waypoint',
               'test': False,
               'action_type' : 'continuous',
-              'observation_type': 'rgbd',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -49,7 +49,7 @@ register(
               'reset_type': 'testpoint',
               'test': True,
               'action_type' : 'continuous',
-              'observation_type': 'rgbd',
+              'observation_type': 'color',
               'reward_type': 'bbox',
               'docker': use_docker
               }
@@ -257,6 +257,32 @@ register(
               'action_type' : 'discrete',
               'observation_type': 'color',
               'reward_type': 'bbox',
+              'docker': use_docker
+              }
+)
+
+register(
+    id='Tracking-Discrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.json',
+              'reset_type': 'last',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'distance',
+              'docker': use_docker
+              }
+)
+
+register(
+    id='Tracking-Continuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.json',
+              'reset_type': 'last',
+              'test': False,
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type': 'distance',
               'docker': use_docker
               }
 )
