@@ -33,7 +33,8 @@ def show_info(info, action_type='discrete'):
         action_x = int(5*width/10)
         action_y = int(9*height/10)
         (velocity, angle) = info['Action']
-        cv2.putText(cv_img, 'V:{} A:{}'.format(velocity,angle), (action_x, action_y), font, 0.5, (255, 255, 255), 2)
+        cv2.putText(cv_img, 'V:{}'.format(velocity), (action_x, action_y- int(height*0.07)), font, 0.5, (255, 255, 255), 2)
+        cv2.putText(cv_img, 'A:{}'.format(angle), (action_x, action_y - int(height*0.15)), font, 0.5, (255, 255, 255), 2)
 
 
     collision_x = int(1*width/10)
