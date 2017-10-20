@@ -1,0 +1,30 @@
+{
+	"env_name": "UrbancityTracking",
+	"env_bin": "SplineCharacterSetup/SplineCharacterSetup/Binaries/Linux/SplineCharacterSetup",
+	"cam_id": 0,
+	"height": 40,
+	"maxsteps": 100,
+	"trigger_th": 0.6,
+	"reward_th": 0.1,
+	"reward_factor": 10,
+	"collision_th": 50,
+	"waypoint_th": 200,
+	"targets": [
+        "BP_Malcom_C_0"
+	],
+	"test_xy": [
+		[-106.195, 437.424]
+	],
+	"discrete_actions": [
+		[60, 0],
+		[30, 10],
+		[30, -10],
+		[30, 20],
+		[30, -20],
+		[30, 0]
+	],
+	"continous_actions": {
+		"high": [100, 45],
+		"low":  [0,  -45]
+	}
+}
