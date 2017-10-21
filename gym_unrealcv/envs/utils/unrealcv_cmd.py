@@ -12,7 +12,7 @@ import PIL.Image
 
 ####TO DO#######
 ###the observation in memory replay only save the image dir instead of feature####
-###do not delet the image right away, save them and only detet it when buffer is filled totally.
+###do not delete the image right away, save them and only detete it when buffer is filled totally.
 class UnrealCv:
     def __init__(self, port = 9000, cam_id = 0,
                  ip = '127.0.0.1' , targets = None,
@@ -100,7 +100,6 @@ class UnrealCv:
                 break
         self.arm['flag_pose'] = False
         return self.arm['pose']
-
 
     def get_grip_position(self):
 
