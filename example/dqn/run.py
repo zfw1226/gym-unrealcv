@@ -79,7 +79,7 @@ if __name__ == '__main__':
             #observation = io_util.preprocess_img((obs-OBS_LOW)/OBS_RANGE)
             observation = process_img.process_gray(obs, reset=True)
             cumulated_reward = 0
-            if ((epoch) % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
+            if (epoch % TEST_INTERVAL_EPOCHS != 0 or stepCounter < LEARN_START_STEP) and TRAIN is True :  # explore
                 EXPLORE = True
             else:
                 EXPLORE = False
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                     print ("EP " + str(epoch) +" Csteps= " + str(stepCounter) + " - {} steps".format(t + 1) + " - CReward: " + str(
                         round(cumulated_reward, 2)) + "  Eps=" + str(round(explorationRate, 2)) + "  Time: %d:%02d:%02d" % (h, m, s) )
                         # SAVE SIMULATION DATA
-                    if (epoch) % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
+                    if epoch % SAVE_INTERVAL_EPOCHS == 0 and TRAIN is True:
                         # save model weights and monitoring data
                         print 'Save model'
                         Agent.saveModel(MODEL_DIR + '/dqn_ep' + str(epoch) + '.h5')

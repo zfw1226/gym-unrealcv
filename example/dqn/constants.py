@@ -1,4 +1,4 @@
-ENV_NAME = 'Search-RrMultiSocketsDiscrete-v0'
+ENV_NAME = 'Tracking-Discrete-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
@@ -18,11 +18,11 @@ LEARNING_RATE = 1e-3  # 1e6
 GAMMA = 0.95
 INITIAL_EPSILON = 1  # starting value of epsilon
 FINAL_EPSILON = 0.1  # final value of epsilon
-MAX_EXPLORE_STEPS = 25000
+MAX_EXPLORE_STEPS = 50000
 TEST_INTERVAL_EPOCHS = 100000
-SAVE_INTERVAL_EPOCHS = 600
+SAVE_INTERVAL_EPOCHS = 500
 
-LOG_NAME_SAVE = 'log'
+LOG_NAME_SAVE = 'log-tracking-v1'
 MONITOR_DIR = LOG_NAME_SAVE + '/monitor/' #the path to save monitor file
 MODEL_DIR = LOG_NAME_SAVE + '/model' # the path to save deep model
 PARAM_DIR = LOG_NAME_SAVE + '/param' # the path to save the parameters
