@@ -199,7 +199,7 @@ class UnrealCvSearch_base(gym.Env):
             self.reset_module.update_waypoint(info['Trajectory'])
 
         if self.rendering:
-            show_info(info)
+            show_info(info,self.action_type)
 
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
