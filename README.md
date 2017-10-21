@@ -186,5 +186,20 @@ python trajectory.py
 - The ```red lines```  represent the trajectories that the agents found taget object sucessfully in the end.
 - The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
 
+## Cite
+If you use Gym-UnrealCV in your academic research, we would be grateful if you could cite it as follow:
+```buildoutcfg
+@misc{gymunrealcv2017,
+    author = {Fangwei Zhong, Weichao Qiu, Tingyun Yan, Alan Yuille, Yizhou Wang},
+    title = {Gym-UnrealCV: Realistic virtual worlds for visual reinforcement learning},
+    howpublished={Web Page},
+    url = {https://github.com/unrealcv/gym-unrealcv},
+    year = {2017}
+}
+```
+
+##Contact
+if you have any suggestion or interested in using Gym-UnrealCv, get in touch at [zfw1226@gmail.com](zfw1226@gmail.com).
+
 
 
