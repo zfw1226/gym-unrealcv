@@ -98,7 +98,7 @@ If you use Gym-UnrealCV in your academic research, we would be grateful if you c
 }
 ```
 
-##Contact
+## Contact
 if you have any suggestion or interested in using Gym-UnrealCv, get in touch at [zfw1226@gmail.com](zfw1226@gmail.com).
 
 
