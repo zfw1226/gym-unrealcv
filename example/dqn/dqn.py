@@ -61,14 +61,15 @@ class DeepQ:
             input_shape = ( self.img_rows, self.img_cols, self.img_channels)
 
         model = Sequential()
-        model.add(Convolution2D(16, 3, 3,border_mode='same', input_shape = input_shape))
+        model.add(Convolution2D(32, 3, 3,border_mode='same', input_shape = input_shape))
         model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Convolution2D(32, 3, 3, border_mode='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.25))
 
+        model.add(Convolution2D(64, 3, 3, border_mode='same'))
+        model.add(Activation('relu'))
         model.add(Convolution2D(64, 3, 3, border_mode='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -173,9 +174,9 @@ class DeepQ:
             self.model.save(path)
 
     def loadWeights(self, path):
-        self.model.set_weights(load_model(path).get_weights())
+        self.model.load_weights(path)
         if self.useTargetNetwork:
-            self.targetModel.set_weights(load_model(path).get_weights())
+            self.targetModel.load_weights(path)
 
 
     def feedforward(self,observation,explorationRate):
