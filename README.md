@@ -186,7 +186,7 @@ python trajectory.py
 - The ```red lines```  represent the trajectories that the agents found taget object sucessfully in the end.
 - The ```black lines``` represent the trajectories of agents that did not find the target object in the end.
 
-##Contact
+## Contact
 if you have any suggestion or interested in using Gym-UnrealCv, get in touch at [zfw1226@gmail.com](zfw1226@gmail.com).
 
 ## Cite
