@@ -4,7 +4,7 @@ import time
 from multiprocessing import Process
 
 import gym_unrealcv.envs.utils.run_docker
-
+import random
 
 # api for running unrealenv
 
@@ -16,8 +16,9 @@ class RunUnreal():
         self.path2binary = os.path.join(self.path2env, self.env_bin)
 
     def start(self,docker):
+        time.sleep(10 * random.random())
         port = self.read_port(self.path2binary)
-        if docker :
+        if docker:
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
             print 'Running nvidia-docker env'
@@ -28,14 +29,14 @@ class RunUnreal():
             print port
             self.write_port(self.path2binary,port)
             self.pid = []
-            self.modify_permission(self.path2env)
+            #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc,args=(self.path2binary,))
             self.env.start()
 
             print 'Running docker-free env'
 
         print 'Please wait for a while to launch env......'
-        time.sleep(10)
+        time.sleep(5)
         return env_ip,port
 
     def get_path2UnrealEnv(self):
