@@ -162,7 +162,7 @@ class UnrealCvTracking_base(gym.Env):
 
         # get reward
 
-        if info['Distance'] > 500 or info['Collision']:
+        if info['Distance'] > 300:
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
