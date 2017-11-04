@@ -1,0 +1,23 @@
+{
+	"env_name": "UrbancityTracking",
+	"env_bin": "SplineCharacterB/SplineCharacterB/Binaries/Linux/SplineCharacterB",
+	"cam_id": 0,
+	"height": 40,
+	"max_steps": 100,
+	"max_distance": 400,
+	"max_direction": 90,
+	"exp_distance": 200,
+	"targets": [
+        "BP_Stefani_C_0"
+	],
+	"discrete_actions": [
+        "W",
+        "Left",
+		"Right",
+		"Stop"
+	],
+	"continous_actions": {
+		"high": [50, 30],
+		"low":  [0,  -30]
+	}
+}
