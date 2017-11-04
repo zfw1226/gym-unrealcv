@@ -9,6 +9,7 @@ from gym_unrealcv.envs.tracking import reward
 from gym_unrealcv.envs.tracking.visualization import show_info
 from gym_unrealcv.envs.utils import env_unreal
 from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
+import random
 
 '''
 It is a general env for searching target object.
@@ -94,7 +95,7 @@ class UnrealCvTracking_base(gym.Env):
 
      # set start position
      self.target_pos = self.unrealcv.get_object_pos(self.target_list[0])
-     time.sleep(0.5)
+     time.sleep(0.5 + 0.3*random.random())
      cam_pos = self.target_pos
      self.unrealcv.set_position(self.cam_id,cam_pos[0],cam_pos[1],cam_pos[2])
      self.target_pos = self.unrealcv.get_object_pos(self.target_list[0])
@@ -126,16 +127,22 @@ class UnrealCvTracking_base(gym.Env):
         )
 
         if self.action_type == 'discrete':
-            (velocity, angle) = self.discrete_actions[action]
+            #keyboard
+            if self.discrete_actions[action] != "Stop":
+                self.unrealcv.keyboard(self.discrete_actions[action], duration=0.1)
+
+            # linear
+            #(velocity, angle) = self.discrete_actions[action]
         else:
             (velocity, angle) = action
-        info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
+        #info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
 
         self.count_steps += 1
 
-        info['Pose'] = self.unrealcv.get_pose()
+        info['Pose'] = self.unrealcv.get_pose('hard')
+        #print info['Pose']
         self.target_pos = self.unrealcv.get_object_pos(self.target_list[0])
-
+        print self.target_pos
         info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-1]
         if info['Direction'] < -180:
             info['Direction'] += 360
@@ -148,7 +155,6 @@ class UnrealCvTracking_base(gym.Env):
 
         #print info['Distance'],info['Direction']
 
-
         # update observation
         if self.observation_type == 'color':
             state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
@@ -160,9 +166,10 @@ class UnrealCvTracking_base(gym.Env):
             state = np.append(info['Color'], info['Depth'], axis=2)
 
 
+
         # get reward
 
-        if info['Distance'] > 300:
+        if info['Distance'] > self.max_distance or abs(info['Direction'])> self.max_direction:
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
@@ -186,7 +193,7 @@ class UnrealCvTracking_base(gym.Env):
    def _reset(self, ):
 
        self.target_pos = self.unrealcv.get_object_pos(self.target_list[0])
-       time.sleep(0.5)
+       time.sleep(0.5 + 0.3*random.random())
        cam_pos = self.target_pos
        self.unrealcv.set_position(self.cam_id, cam_pos[0], cam_pos[1], cam_pos[2])
        self.target_pos = self.unrealcv.get_object_pos(self.target_list[0])
@@ -252,10 +259,12 @@ class UnrealCvTracking_base(gym.Env):
        #print setting
        self.cam_id = setting['cam_id']
        self.target_list = setting['targets']
-       self.max_steps = setting['maxsteps']
+       self.max_steps = setting['max_steps']
 
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
+       self.max_distance = setting['max_distance']
+       self.max_direction = setting['max_direction']
 
        return setting
 
