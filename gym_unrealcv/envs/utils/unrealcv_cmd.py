@@ -16,7 +16,7 @@ import PIL.Image
 
 
 class UnrealCv:
-    def __init__(self, port = 9001, cam_id = 0,
+    def __init__(self, port = 9000, cam_id = 0,
                  ip = '127.0.0.1' , targets = None,
                  env = '/home/zfw/Documents/Realistic5'):
         global client
@@ -65,7 +65,7 @@ class UnrealCv:
     def init_unrealcv(self):
         client.connect()
         self.check_connection()
-        client.request('vrun setres 320x240w')# this will set the resolution of object_mask
+        client.request('vrun setres 80x60w')# this will set the resolution of object_mask
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
@@ -327,13 +327,29 @@ class UnrealCv:
     def get_pos(self):
         return self.cam['position']
 
-    def get_pose(self):
-        pos = self.cam['position'][:]
-        pos.append(self.cam['rotation'][1])
-        return pos
+    def get_pose(self,type='soft'):
+        if type == 'soft':
+            pos = self.cam['position'][:]
+            pos.append(self.cam['rotation'][1])
+            return pos
+        if type == 'hard':
+            position = self.get_position(self.cam_id)
+            rotation = self.get_rotation(self.cam_id)
+            position.append(rotation[1])
+            return position
+
 
     def get_height(self):
         return self.cam['position'][2]
+
+    def hide_objects(self,objects):
+        for obj in objects:
+            client.request('vset /object/{obj}/hide'.format(obj=obj))
+
+    def show_objects(self, objects):
+        for obj in objects:
+            client.request('vset /object/{obj}/show'.format(obj=obj))
+
 
 
 
