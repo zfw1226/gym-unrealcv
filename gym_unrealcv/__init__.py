@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 
@@ -270,8 +270,66 @@ register(
               'action_type' : 'discrete',
               'observation_type': 'color',
               'reward_type': 'distance',
-              'docker': use_docker
-              }
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-Discrete-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.3.json',
+              'reset_type': 'last',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+
+register(
+    id='Tracking-DiscreteTest-v1',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.3_test.json',
+              'reset_type': 'last',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-Discrete-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4.json',
+              'reset_type': 'random_layout',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-DiscreteTest-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.1.json',
+              'reset_type': 'last',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
 )
 
 register(
