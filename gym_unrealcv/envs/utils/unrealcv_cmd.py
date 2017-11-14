@@ -65,7 +65,8 @@ class UnrealCv:
     def init_unrealcv(self):
         client.connect()
         self.check_connection()
-        client.request('vrun setres 80x60w')# this will set the resolution of object_mask
+        client.request('vrun setres 160x120w')# this will set the resolution of object_mask
+        #client.request('vrun setres 640x480w')  # this will set the resolution of object_mask
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
@@ -257,6 +258,14 @@ class UnrealCv:
     def set_object_color(self,object,r,g,b):
         setcolor = 'vset /object/'+object+'/color {r} {g} {b}'
         client.request(setcolor.format(r=r, g=g, b=b))
+
+    def set_object_location(self, object, x,y,z):
+        setlocation = 'vset /object/'+object+'/location {x} {y} {z}'
+        client.request(setlocation.format(x=x,y=y,z=z))
+
+    def set_object_rotation(self, object, roll,yaw,pitch):
+        setlocation = 'vset /object/'+object+'/rotation {pitch} {yaw} {roll}'
+        client.request(setlocation.format(roll=roll,yaw=yaw,pitch=pitch))
 
     def get_mask(self,object_mask,object):
         r,g,b = self.color_dict[object]
