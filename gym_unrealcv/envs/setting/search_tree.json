@@ -3,7 +3,7 @@
 	"env_bin": "forest_v0/tree/Binaries/Linux/tree",
 	"cam_id": 0,
 	"height": -700,
-	"pitch": -30,
+	"pitch": -15,
 	"maxsteps": 1000,
 	"trigger_th": 0.6,
 	"reward_th": 0.1,
