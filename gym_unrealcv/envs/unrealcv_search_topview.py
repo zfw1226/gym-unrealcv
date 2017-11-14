@@ -168,11 +168,6 @@ class UnrealCvSearch_topview(gym.Env):
             else:
                 info['Reward'] = 0
 
-            if distance < 500:
-                info['Done'] = True
-                info['Reward'] = 100
-                print ('get location')
-
             info['Direction'] = self.get_direction (info['Pose'],self.targets_pos[self.target_id])
             if info['Collision']:
                 info['Reward'] = -1
@@ -180,7 +175,6 @@ class UnrealCvSearch_topview(gym.Env):
                 self.reset_module.update_dis2collision(info['Pose'])
                 print ('Collision!!')
 
-        #print distance,info['Reward']
         # update observation
         if self.observation_type == 'color':
             state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
@@ -208,11 +202,12 @@ class UnrealCvSearch_topview(gym.Env):
             show_info(info)
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
+       #self.unrealcv.keyboard('G')
        current_pose = self.reset_module.select_resetpoint()
        self.unrealcv.set_position(self.cam_id, current_pose[0], current_pose[1], current_pose[2])
        self.unrealcv.set_rotation(self.cam_id, 0, current_pose[3], self.pitch)
-       #self.random_scene()
-       self.unrealcv.keyboard('G')
+       self.random_scene()
+
 
        if self.observation_type == 'color':
            state = self.unrealcv.read_image(self.cam_id, 'lit')
@@ -221,12 +216,13 @@ class UnrealCvSearch_topview(gym.Env):
        elif self.observation_type == 'rgbd':
            state = self.unrealcv.get_rgbd(self.cam_id)
 
-       self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
+
        self.trajectory = []
        self.trajectory.append(current_pose)
        self.trigger_count = 0
        self.count_steps = 0
-       print current_pose,self.targets_pos
+       self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
+       #print current_pose,self.targets_pos
        self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose,
                                                                                                  self.targets_pos)
        return state
@@ -283,9 +279,15 @@ class UnrealCvSearch_topview(gym.Env):
        for i in num:
            self.unrealcv.keyboard(i)
        for i in self.target_list:
-           x = random.uniform(self.reset_area[0],self.reset_area[1])
-           y = random.uniform(self.reset_area[2],self.reset_area[3])
-           self.unrealcv.set_object_location(i,x,y,150)
+           z1 = 60
+           while z1 > 50:
+               x = random.uniform(self.reset_area[0],self.reset_area[1])
+               y = random.uniform(self.reset_area[2],self.reset_area[3])
+               self.unrealcv.set_object_location(i,x,y,50)
+               time.sleep(0.5)
+               (x1,y1,z1) = self.unrealcv.get_object_pos(i)
+
+
 
 
    def load_env_setting(self,filename):

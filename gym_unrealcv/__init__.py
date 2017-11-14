@@ -27,7 +27,7 @@ register(
               'test': True,
               'action_type' : 'discrete',
               'observation_type': 'color',
-              'reward_type': 'bbox_distance',
+              'reward_type': 'bbox',
               'docker': use_docker
               },
     max_episode_steps = 1000000
