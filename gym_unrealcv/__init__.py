@@ -18,6 +18,35 @@ register(
               'docker': use_docker
               }
 )
+
+register(
+    id='Search-LoftPlantDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_topview',
+    kwargs = {'setting_file' : 'search_loft_plant.json',
+              'reset_type' : 'random',
+              'test': True,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'bbox_distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Search-ForestDiscrete-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_topview',
+    kwargs = {'setting_file' : 'search_tree.json',
+              'reset_type' : 'random',
+              'test': True,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type': 'distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
 register(
     id='Search-RrDoorContinuous-v0',
     entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
@@ -317,6 +346,101 @@ register(
               },
     max_episode_steps = 1000000
 )
+
+register(
+    id='Tracking-Fstatic-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-A-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_A.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-B-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_B.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+register(
+    id='Tracking-C-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_C.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+register(
+    id='Tracking-D-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_D.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+register(
+    id='Tracking-E-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_E.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+register(
+    id='Tracking-G-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_E.json',
+              'reset_type': 'static',
+              'test': False,
+              'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
 
 register(
     id='Tracking-DiscreteTest-v0',
