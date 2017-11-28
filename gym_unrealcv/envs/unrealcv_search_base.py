@@ -174,6 +174,7 @@ class UnrealCvSearch_base(gym.Env):
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
+                #print info['Pose']
                 self.reset_module.update_dis2collision(info['Pose'])
                 print ('Collision!!')
 
@@ -192,9 +193,8 @@ class UnrealCvSearch_base(gym.Env):
            info['Done'] = True
            info['Maxstep'] = True
            print 'Reach Max Steps'
-
         # save the trajectory
-        self.trajectory.append(info['Pose'])
+        self.trajectory.append(info['Pose'][:6])
         info['Trajectory'] = self.trajectory
 
         if info['Done'] and len(self.trajectory) > 5 and not self.test:
