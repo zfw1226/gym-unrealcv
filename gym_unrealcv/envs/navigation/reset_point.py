@@ -4,7 +4,6 @@ import math
 import numpy as np
 class ResetPoint():
     def __init__(self, setting, type, test, init_pose):
-        self.test = test
         self.reset_type = type
         #self.testpoints = setting['test_xy']
         self.waypoints = []
@@ -26,10 +25,11 @@ class ResetPoint():
             self.reset_area = setting['reset_area']
 
     def select_resetpoint(self):
-        if  self.test:
-                current_pose = self.reset_random()
-                #current_pose = self.reset_for_testing()
-        else :
+        if  'random' in self.reset_type:
+            current_pose = self.reset_random()
+        elif 'testpoint' in self.reset_type:
+            current_pose = self.reset_for_testing()
+        elif 'waypoint' in self.reset_type:
             current_pose = self.reset_for_training()
         return current_pose
 
@@ -90,10 +90,11 @@ class ResetPoint():
     def update_waypoint(self, trajectory):
 
         for P in trajectory:
-            dis2waypoint, waypoint_id, dis2others = self.get_dis2waypoints(P) # searching for closed waypoint
-            dis2collision = self.get_dis2collision(P)
+            dis2waypoint, waypoint_id, dis2others = self.get_dis2waypoints(P[:3]) # searching for the closed waypoint
+            dis2collision = self.get_dis2collision(P[:3])
 
             # update waypoint
+
             if (dis2waypoint < self.waypoint_th / 4 and
                 dis2collision > self.waypoints[waypoint_id]['dis2collision'] and
                 dis2others > self.waypoint_th):
@@ -102,6 +103,7 @@ class ResetPoint():
                 print 'update waypoint'
 
             # if the point is far from other existing waypoints and collision points, insert it to the waypoints list
+
             if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
                 self.new_waypoint(P, dis2collision)
                 print 'add new waypoint'
