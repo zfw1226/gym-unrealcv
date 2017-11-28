@@ -13,7 +13,7 @@ class ResetPoint():
         self.yaw_id = 0
         self.waypoint_th = setting['waypoint_th']
         self.collision_th = setting['collision_th']
-
+        self.height = setting['height']
         if self.reset_type == 'testpoint':
             print setting['test_xy']
             for x,y in setting['test_xy']:
@@ -21,13 +21,24 @@ class ResetPoint():
                 self.new_waypoint(pose, 1000)
         elif self.reset_type == 'waypoint':
             self.new_waypoint(init_pose, 1000)
+        elif self.reset_type == 'random':
+            self.reset_area = setting['reset_area']
 
     def select_resetpoint(self):
         if  self.test:
-            current_pose = self.reset_for_testing()
+                current_pose = self.reset_random()
+                #current_pose = self.reset_for_testing()
         else :
             current_pose = self.reset_for_training()
         return current_pose
+
+    def reset_random(self):
+        x = random.uniform(self.reset_area[0], self.reset_area[1])
+        y = random.uniform(self.reset_area[2], self.reset_area[3])
+        z =  self.height
+        yaw = random.randint(0, 360)
+
+        return [x,y,z,yaw]
 
     def reset_for_testing(self):
         x, y, z, yaw = self.waypoints[self.start_id]['pose']
@@ -40,7 +51,7 @@ class ResetPoint():
 
     def reset_for_training(self):
         # reset from waypoints generated in exploration
-        x, y, z, yaw = self.select_waypoint_times()
+        x, y, z, pitch, yaw, roll = self.select_waypoint_times()
         yaw = random.randint(0, 360)
         return [x, y, z, yaw]
 
