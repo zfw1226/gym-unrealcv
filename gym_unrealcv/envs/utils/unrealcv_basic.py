@@ -16,7 +16,7 @@ import PIL.Image
 
 
 class UnrealCv(object):
-    def __init__(self, port, ip, targets, env, cam_id, resolution):
+    def __init__(self, port, ip, env, cam_id, resolution):
 
         if ip == '127.0.0.1':
             self.docker = False
@@ -153,7 +153,10 @@ class UnrealCv(object):
 
         if type == 'hard':
             cmd = 'vget /camera/{cam_id}/pose'
-            pose = self.client.request(cmd.format(cam_id=cam_id))
+            pose = None
+            while pose is None:
+                pose = self.client.request(cmd.format(cam_id=cam_id))
+
             pose = [float(i) for i in pose.split()]
             self.cam[cam_id]['location'] = pose[:3]
             self.cam[cam_id]['rotation'] = pose[-3:]
@@ -169,7 +172,9 @@ class UnrealCv(object):
             return self.cam[cam_id]['location']
         if type == 'hard':
             cmd = 'vget /camera/{cam_id}/location'
-            location = self.client.request(cmd.format(cam_id=cam_id))
+            location = None
+            while location is None:
+                location = self.client.request(cmd.format(cam_id=cam_id))
             self.cam[cam_id]['location'] = [float(i) for i in location.split()]
             return self.cam[cam_id]['location']
 
@@ -182,7 +187,9 @@ class UnrealCv(object):
 
     def get_rotation(self,cam_id):
         cmd = 'vget /camera/{cam_id}/rotation'
-        rotation = self.client.request(cmd.format(cam_id=cam_id))
+        rotation = None
+        while rotation is None:
+            rotation = self.client.request(cmd.format(cam_id=cam_id))
         self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
         return self.cam[cam_id]['rotation']
 
