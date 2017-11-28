@@ -7,6 +7,7 @@ import numpy as np
 from gym import spaces
 from gym_unrealcv.envs.navigation import reward, reset_point
 from gym_unrealcv.envs.navigation.visualization import show_info
+from gym_unrealcv.envs.navigation.interaction import Navigation
 from gym_unrealcv.envs.utils import env_unreal
 from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
 
@@ -48,7 +49,7 @@ class UnrealCvSearch_topview(gym.Env):
      env_ip,env_port = self.unreal.start(docker)
 
      # connect UnrealCV
-     self.unrealcv = UnrealCv(cam_id=self.cam_id,
+     self.unrealcv = Navigation(cam_id=self.cam_id,
                               port= env_port,
                               ip=env_ip,
                               targets=self.target_list,
@@ -63,7 +64,7 @@ class UnrealCvSearch_topview(gym.Env):
          self.action_space = spaces.Box(low = np.array(self.continous_actions['low']),high = np.array(self.continous_actions['high']))
 
      self.count_steps = 0
-     self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
+     self.targets_pos = self.unrealcv.build_pose_dic(self.target_list)
 
     # define observation space,
     # color, depth, rgbd,...
@@ -91,9 +92,9 @@ class UnrealCvSearch_topview(gym.Env):
 
      # set start position
      self.trigger_count  = 0
-     current_pose = self.unrealcv.get_pose()
+     current_pose = self.unrealcv.get_pose(self.cam_id)
      current_pose[2] = self.height
-     self.unrealcv.set_position(self.cam_id,current_pose[0],current_pose[1],current_pose[2])
+     self.unrealcv.set_location(self.cam_id,[current_pose[0],current_pose[1],current_pose[2]])
 
 
      self.trajectory = []
@@ -133,7 +134,11 @@ class UnrealCvSearch_topview(gym.Env):
         self.count_steps += 1
         info['Done'] = False
 
-        info['Pose'] = self.unrealcv.get_pose()
+
+
+        info['Pose'] = self.unrealcv.get_pose(self.cam_id,'soft')
+
+
         # the robot think that it found the target object,the episode is done
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
@@ -152,23 +157,28 @@ class UnrealCvSearch_topview(gym.Env):
                 if info['Reward'] > 0 and self.test == False:
                     self.reset_module.success_waypoint(self.count_steps)
 
-
                 print 'Trigger Terminal!'
         # if collision occurs, the episode is done and reward is -1
         else :
             # take action
-            info['Collision'] = self.unrealcv.move(self.cam_id, angle, velocity)
+            info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity)
             # get reward
-            info['Pose'] = self.unrealcv.get_pose()
+            info['Pose'] = self.unrealcv.get_pose(self.cam_id)
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
 
             if self.reward_type=='distance' or self.reward_type == 'bbox_distance':
                 info['Reward'] = self.reward_function.reward_distance(distance)
             else:
-                info['Reward'] = 0
+                info['Reward'] = -0.1
 
             info['Direction'] = self.get_direction (info['Pose'],self.targets_pos[self.target_id])
+            if distance < 50:
+                info['Done'] = True
+                info['Reward'] = 10
+                print ('get location')
+
+
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
@@ -198,14 +208,19 @@ class UnrealCvSearch_topview(gym.Env):
         if info['Done'] and len(self.trajectory) > 5 and not self.test:
             self.reset_module.update_waypoint(info['Trajectory'])
 
+        #print info['Reward']
         if self.rendering:
             show_info(info)
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        #self.unrealcv.keyboard('G')
-       current_pose = self.reset_module.select_resetpoint()
-       self.unrealcv.set_position(self.cam_id, current_pose[0], current_pose[1], current_pose[2])
-       self.unrealcv.set_rotation(self.cam_id, 0, current_pose[3], self.pitch)
+       collision = True
+       while collision:
+           current_pose = self.reset_module.select_resetpoint()
+           self.unrealcv.set_location(self.cam_id, current_pose[:3])
+           self.unrealcv.set_rotation(self.cam_id, [0, current_pose[3], self.pitch])
+           collision = self.unrealcv.move_2d(self.cam_id,0,10)
+
        self.random_scene()
 
 
@@ -221,7 +236,9 @@ class UnrealCvSearch_topview(gym.Env):
        self.trajectory.append(current_pose)
        self.trigger_count = 0
        self.count_steps = 0
-       self.targets_pos = self.unrealcv.get_objects_pos(self.target_list)
+
+       self.targets_pos = self.unrealcv.build_pose_dic(self.target_list)
+
        #print current_pose,self.targets_pos
        self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose,
                                                                                                  self.targets_pos)
@@ -247,14 +264,15 @@ class UnrealCvSearch_topview(gym.Env):
 
    def select_target_by_distance(self,current_pos, targets_pos):
        # find the nearest target, return distance and targetid
-       distances = []
-       for target_pos in targets_pos:
-           distances.append(self.get_distance(target_pos, current_pos))
-       distances = np.array(distances)
-       distance_now = distances.min()
-       target_id = distances.argmin()
+       target_id = self.targets_pos.keys()[0]
+       distance_min = self.get_distance(targets_pos[target_id], current_pos)
+       for key, target_pos in targets_pos.items():
+           distance = self.get_distance(target_pos, current_pos)
+           if distance < distance_min:
+               target_id = key
+               distance_min = distance
 
-       return distance_now,target_id
+       return distance_min,target_id
 
    def get_direction(self,current_pose,target_pose):
        y_delt = target_pose[1] - current_pose[1]
@@ -283,10 +301,9 @@ class UnrealCvSearch_topview(gym.Env):
            while z1 > 50:
                x = random.uniform(self.reset_area[0],self.reset_area[1])
                y = random.uniform(self.reset_area[2],self.reset_area[3])
-               self.unrealcv.set_object_location(i,x,y,50)
+               self.unrealcv.set_object_location(i,[x,y,50])
                time.sleep(0.5)
-               (x1,y1,z1) = self.unrealcv.get_object_pos(i)
-
+               [x1,y1,z1] = self.unrealcv.get_obj_location(i)
 
 
 
