@@ -47,7 +47,7 @@ class UnrealCv(object):
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0],h=resolution[1]))  # this will set the resolution of object_mask
         time.sleep(5)
         self.get_pose(cam_id,'hard')
-        self.client.message_handler = self.message_handler
+        #self.client.message_handler = self.message_handler
 
     def message_handler(self,message):
 
