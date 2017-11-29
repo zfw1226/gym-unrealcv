@@ -15,9 +15,10 @@ class RunUnreal():
         self.path2env = self.get_path2UnrealEnv()
         self.path2binary = os.path.join(self.path2env, self.env_bin)
 
-    def start(self,docker):
+    def start(self,docker, resolution=(160,160)):
         time.sleep(10 * random.random())
         port = self.read_port(self.path2binary)
+        self.write_resolution(self.path2binary,resolution)
         if docker:
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
@@ -78,6 +79,23 @@ class RunUnreal():
         with open(ini_path, 'w') as f:
             print ss[1]
             ss[1] = 'Port={port}'.format(port = port)
+            d = '\n'
+            s_new = d.join(ss)
+            f.write(s_new)
+
+    def write_resolution(self,bin_path,resolution):
+        s = bin_path.split('/')
+        s[-1] = 'unrealcv.ini'
+        delimiter = '/'
+        ini_path = delimiter.join(s)
+        with open(ini_path,'r') as f:
+            s=f.read()
+            ss = s.split('\n')
+            print ss
+        with open(ini_path, 'w') as f:
+            #print ss[1]
+            ss[2] = 'Width={width}'.format(width = resolution[0])
+            ss[3] = 'Width={width}'.format(width = resolution[1])
             d = '\n'
             s_new = d.join(ss)
             f.write(s_new)

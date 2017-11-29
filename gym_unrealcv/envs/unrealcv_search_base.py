@@ -37,6 +37,7 @@ class UnrealCvSearch_base(gym.Env):
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
                 docker = False,
+                resolution = (120,120)
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -47,14 +48,15 @@ class UnrealCvSearch_base(gym.Env):
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
-     env_ip,env_port = self.unreal.start(docker)
+     env_ip,env_port = self.unreal.start(docker,resolution)
 
      # connect UnrealCV
      self.unrealcv = Navigation(cam_id=self.cam_id,
                               port= env_port,
                               ip=env_ip,
                               targets=self.target_list,
-                              env=self.unreal.path2env)
+                              env=self.unreal.path2env,
+                              resolution=resolution)
      self.unrealcv.pitch = self.pitch
 
      # define action
