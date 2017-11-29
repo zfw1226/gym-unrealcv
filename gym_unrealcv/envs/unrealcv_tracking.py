@@ -8,7 +8,7 @@ from gym import spaces
 from gym_unrealcv.envs.tracking import reward
 from gym_unrealcv.envs.tracking.visualization import show_info
 from gym_unrealcv.envs.utils import env_unreal
-from gym_unrealcv.envs.tracking.interaction import Tracking
+from gym_unrealcv.envs.navigation.interaction import Navigation
 import random
 
 '''
@@ -25,12 +25,14 @@ Task: Learn to follow the target object(moving person) in the scene
 class UnrealCvTracking_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_quadcopter.json',
-                reset_type = 'waypoint',       # testpoint, waypoint,
+                reset_type = 'random',       # random
                 test = True,               # if True will use the test_xy as start point
                 action_type = 'discrete',  # 'discrete', 'continuous'
-                observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
+                observation_type = 'color', # 'color', 'depth', 'rgbd'
                 reward_type = 'distance', # distance
+
                 docker = False,
+                resolution=(120, 120)
                 ):
 
      print setting_file
@@ -43,13 +45,14 @@ class UnrealCvTracking_base(gym.Env):
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
-     env_ip, env_port = self.unreal.start(docker)
+     env_ip, env_port = self.unreal.start(docker,resolution)
 
      # connect UnrealCV
-     self.unrealcv = Tracking(cam_id=self.cam_id,
-                              port= env_port,
-                              ip=env_ip,
-                              env=self.unreal.path2env)
+     self.unrealcv = Navigation(cam_id=self.cam_id,
+                                port= env_port,
+                                ip=env_ip,
+                                env=self.unreal.path2env,
+                                resolution=resolution)
 
     # define action
      self.action_type = action_type
@@ -66,19 +69,7 @@ class UnrealCvTracking_base(gym.Env):
     # color, depth, rgbd,...
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
-     if self.observation_type == 'color':
-         state = self.unrealcv.read_image(self.cam_id,'lit')
-         self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
-     elif self.observation_type == 'depth':
-         state = self.unrealcv.read_depth(self.cam_id)
-         self.observation_space = spaces.Box(low=0, high=10, shape=state.shape)
-     elif self.observation_type == 'rgbd':
-         state = self.unrealcv.get_rgbd(self.cam_id)
-         s_high = state
-         s_high[:,:,-1] = 10.0
-         s_high[:,:,:-1] = 255
-         s_low = np.zeros(state.shape)
-         self.observation_space = spaces.Box(low=s_low, high=s_high)
+     self.observation_shape = self.unrealcv.define_observation(self.cam_id,self.observation_type)
 
      # define reward type
      # distance, bbox, bbox_distance,
@@ -86,19 +77,9 @@ class UnrealCvTracking_base(gym.Env):
      self.reward_function = reward.Reward(setting)
 
 
-     # set start position
-     self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-     time.sleep(0.5 + 0.3*random.random())
-     cam_pos = self.target_pos
-     self.unrealcv.set_location(self.cam_id,cam_pos)
-     self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-     yaw = self.get_direction(self.target_pos, cam_pos)
-     self.unrealcv.set_rotation(self.cam_id,[self.roll,yaw,self.pitch])
-
-     self.trajectory = []
-
      self.rendering = False
 
+     # init augment env
      if 'random' in self.reset_type:
          self.show_list = self.objects_env
          self.hiden_list = random.sample(self.objects_env, 15)
@@ -148,15 +129,9 @@ class UnrealCvTracking_base(gym.Env):
         info['Distance'] = self.get_distance(self.target_pos,info['Pose'][:3])
 
         # update observation
-        if self.observation_type == 'color':
-            state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-        elif self.observation_type == 'depth':
-            state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-        elif self.observation_type == 'rgbd':
-            info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-            info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-            state = np.append(info['Color'], info['Depth'], axis=2)
-
+        state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
+        info['Color'] = self.unrealcv.img_color
+        info['Depth'] = self.unrealcv.img_depth
 
         if info['Distance'] > self.max_distance or abs(info['Direction'])> self.max_direction:
         #if self.C_reward<-450: # for evaluation
@@ -164,7 +139,6 @@ class UnrealCvTracking_base(gym.Env):
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
             info['Reward'] = self.reward_function.reward_distance(info['Distance'],info['Direction'])
-
 
         # limit the max steps of every episode
         if self.count_steps > self.max_steps:
@@ -184,42 +158,39 @@ class UnrealCvTracking_base(gym.Env):
    def _reset(self, ):
        self.C_reward = 0
 
-       # random env
+       if self.test:
+           self.unrealcv.keyboard('R') #reset target object
+
+       self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
+       # random hide and show objects
        if 'random' in self.reset_type:
            num_update = 3
-           to_hiden = random.sample(self.show_list,num_update)
-           for x in to_hiden:
+           objs_to_hide = random.sample(self.show_list,num_update)
+           for x in objs_to_hide:
                self.show_list.remove(x)
                self.hiden_list.append(x)
-           self.unrealcv.hide_objects(to_hiden)
-
-           to_show = random.sample(self.hiden_list[:-num_update],num_update)
-           for x in to_show:
+               self.unrealcv.hide_obj(x)
+           #self.unrealcv.hide_objects(to_hiden)
+           objs_to_show = random.sample(self.hiden_list[:-num_update],num_update)
+           for x in objs_to_show:
                self.hiden_list.remove(x)
                self.show_list.append(x)
-           self.unrealcv.show_objects(to_show)
+               self.unrealcv.show_obj(x)
+           #self.unrealcv.show_objects(to_show)
+           time.sleep(0.5 * (1 + random.random()))
+       else:
+           time.sleep(0.5)
 
-
-
-
-       #self.unrealcv.keyboard('R') #reset target object
-       self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-       time.sleep(0.5 + 0.3*random.random())
        cam_pos = self.target_pos
-       self.unrealcv.set_location(self.cam_id, [cam_pos[0], cam_pos[1], cam_pos[2]])
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
        yaw = self.get_direction(self.target_pos, cam_pos)
+       # set pose
+       self.unrealcv.set_location(self.cam_id, cam_pos)
        self.unrealcv.set_rotation(self.cam_id, [self.roll, yaw, self.pitch])
-       current_pose = self.unrealcv.get_pose(self.cam_id)
+       current_pose = self.unrealcv.get_pose(self.cam_id,'soft')
 
-
-       if self.observation_type == 'color':
-           state = self.unrealcv.read_image(self.cam_id, 'lit')
-       elif self.observation_type == 'depth':
-           state = self.unrealcv.read_depth(self.cam_id)
-       elif self.observation_type == 'rgbd':
-           state = self.unrealcv.get_rgbd(self.cam_id)
-
+       # get state
+       state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
        self.trajectory = []
        self.trajectory.append(current_pose)
