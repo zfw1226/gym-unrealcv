@@ -1,6 +1,6 @@
 {
 	"env_name": "UrbancityTracking",
-	"env_bin": "F-60-new/SplineCharacterC/Binaries/Linux/SplineCharacterC",
+	"env_bin": "SplineCharacterF/SplineCharacterC/Binaries/Linux/SplineCharacterC",
 	"cam_id": 0,
 	"height": 40,
 	"max_steps": 3000,

@@ -2,7 +2,7 @@
 	"env_name": "Loft",
 	"env_bin": "Loft_nophy/Loft/Binaries/Linux/Loft",
 	"cam_id": 0,
-	"height": 150,
+	"height": 40,
 	"pitch": -30,
 	"maxsteps": 200,
 	"trigger_th": 0.6,
@@ -11,7 +11,7 @@
 	"collision_th": 50,
 	"waypoint_th": 200,
 	"targets": [
-        "potted_plant_0"
+        "SM_sofa_2"
 	],
 	"moveable":["chair_0","chair_1","chair_2","chair_3","chair_4",
                     "potted_plant_0","table_0","table_2","table_3","table_4",
@@ -30,7 +30,8 @@
 		[20,  10, 0],
 		[20, -10, 0],
 		[10,  30, 0],
-		[10, -30, 0]
+		[10, -30, 0],
+		[ 0,   0, 1]
 	],
 	"continous_actions": {
 		"high": [100, 45, 1],
