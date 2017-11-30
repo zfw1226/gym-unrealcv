@@ -9,7 +9,7 @@ The framework of this project is shown as below:
 ![framework](./doc/framework.JPG)
 
 - ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with any numerical computation library, such as Tensorflow or Theano. 
+- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as Tensorflow or Theano. 
 
 
 ![search1](./doc/search1.gif)
@@ -38,7 +38,7 @@ cd gym-unrealcv
 pip install -e . 
 ```
 While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), unrealcv, numpy and matplotlib are installed.
-`Opencv` is required to be installed additionally. 
+`Opencv` is should be installed additionally. 
 If you use ```anaconda```,you can run
 ```buildoutcfg
 conda update conda
@@ -64,7 +64,7 @@ On the contrast, the ```docker-free``` way only support running an unreal enviro
 So the ```docker-based``` way is highly recommended to get better experience.
 You can learn to install and use the ```docker-based``` way in this [page](doc/run_docker.md).
 
-**Note that the default config runs in ``Docker-free`` way.**
+**Note that the default config runs in the ``Docker-free`` way.**
 
 # Usage
 ## Run a random agent
@@ -75,11 +75,11 @@ cd example/random
 python random_agent.py -e 'Search-RrDoorDiscrete-v0'
 ```
 It will take a few minutes for the image to pull if you runs environment based on docker at the first time. 
-After that, if all goes well，a predefined gym environment ```Search-RrDoorDiscrete-v0``` will be launched.
+After that, if all goes well，a pre-defined gym environment ```Search-RrDoorDiscrete-v0``` will be launched.
 And then you will see that your agent is moving around the realistic room randomly.
 
 # Tutorials
-We provide a set of tutorials to help you get start with gym-unrealcv.
+We provide a set of tutorials to help you get started with Gym-UnrealCV.
 ###1. Modify the pre-defined environment
 You can follow the [modify_env_tutorial](doc/config_env.md) to modify the configuration of the pre-defined environment.
 
@@ -100,8 +100,8 @@ If you use Gym-UnrealCV in your academic research, we would be grateful if you c
     year = {2017}
 }
 ```
-##Contact
-if you have any suggestion or interested in using Gym-UnrealCv, get in touch at [zfw1226@gmail.com](zfw1226@gmail.com).
+## Contact
+if you have any suggestion or interested in using Gym-UnrealCV, get in touch at [zfw1226@gmail.com](zfw1226@gmail.com).
 
 
 
