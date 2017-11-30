@@ -2,8 +2,6 @@ import getpass
 import os
 import time
 from multiprocessing import Process
-
-import gym_unrealcv.envs.utils.run_docker
 import random
 
 # api for running unrealenv
@@ -20,6 +18,7 @@ class RunUnreal():
         port = self.read_port(self.path2binary)
         self.write_resolution(self.path2binary,resolution)
         if docker:
+            import gym_unrealcv.envs.utils.run_docker
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
             print 'Running nvidia-docker env'
@@ -27,7 +26,6 @@ class RunUnreal():
             env_ip = '127.0.0.1'
             while not self.isPortFree(env_ip, port):
                 port += 1
-            print port
             self.write_port(self.path2binary,port)
             self.pid = []
             #self.modify_permission(self.path2env)
@@ -75,7 +73,6 @@ class RunUnreal():
         with open(ini_path,'r') as f:
             s=f.read()
             ss = s.split('\n')
-            print ss
         with open(ini_path, 'w') as f:
             print ss[1]
             ss[1] = 'Port={port}'.format(port = port)
@@ -91,11 +88,9 @@ class RunUnreal():
         with open(ini_path,'r') as f:
             s=f.read()
             ss = s.split('\n')
-            print ss
         with open(ini_path, 'w') as f:
-            #print ss[1]
             ss[2] = 'Width={width}'.format(width = resolution[0])
-            ss[3] = 'Width={width}'.format(width = resolution[1])
+            ss[3] = 'Height={height}'.format(height = resolution[1])
             d = '\n'
             s_new = d.join(ss)
             f.write(s_new)

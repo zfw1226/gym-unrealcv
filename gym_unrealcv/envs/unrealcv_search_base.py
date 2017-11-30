@@ -37,7 +37,7 @@ class UnrealCvSearch_base(gym.Env):
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
                 docker = False,
-                resolution = (120,120)
+                resolution = (320,240)
                 ):
 
      setting = self.load_env_setting(setting_file)
