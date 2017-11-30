@@ -9,23 +9,9 @@ from gym_unrealcv.envs.navigation import reward, reset_point
 from gym_unrealcv.envs.navigation.visualization import show_info
 from gym_unrealcv.envs.navigation.interaction import Navigation
 from gym_unrealcv.envs.utils import env_unreal
-from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
 
 '''
-It is a general env for searching target object.
-
-State : raw color image and depth (640x480) 
-Action:  (linear velocity ,angle velocity , trigger) 
-Done : Collision or get target place or False trigger three times.
-Task: Learn to avoid obstacle and search for a target object in a room, 
-      you can select the target name according to the Recommend object list as below
-
-Recommend object list in RealisticRendering
- 'SM_CoffeeTable_14', 'Couch_13','SM_Couch_1seat_5','Statue_48','SM_TV_5', 'SM_DeskLamp_5'
- 'SM_Plant_7', 'SM_Plant_8', 'SM_Door_37', 'SM_Door_39', 'SM_Door_41'
-
-Recommend object list in Arch1
-'BP_door_001_C_0','BP_door_002_C_0'
+Find target without trigger
 '''
 
 class UnrealCvSearch_topview(gym.Env):
@@ -94,7 +80,7 @@ class UnrealCvSearch_topview(gym.Env):
      self.trigger_count  = 0
      current_pose = self.unrealcv.get_pose(self.cam_id)
      current_pose[2] = self.height
-     self.unrealcv.set_location(self.cam_id,[current_pose[0],current_pose[1],current_pose[2]])
+     self.unrealcv.set_location(self.cam_id,current_pose[:3])
 
 
      self.trajectory = []
@@ -178,7 +164,6 @@ class UnrealCvSearch_topview(gym.Env):
                 info['Reward'] = 10
                 print ('get location')
 
-
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
@@ -202,7 +187,7 @@ class UnrealCvSearch_topview(gym.Env):
            print 'Reach Max Steps'
 
         # save the trajectory
-        self.trajectory.append(info['Pose'])
+        self.trajectory.append(info['Pose'][:6])
         info['Trajectory'] = self.trajectory
 
         if info['Done'] and len(self.trajectory) > 5 and not self.test:
@@ -218,8 +203,10 @@ class UnrealCvSearch_topview(gym.Env):
        while collision:
            current_pose = self.reset_module.select_resetpoint()
            self.unrealcv.set_location(self.cam_id, current_pose[:3])
-           self.unrealcv.set_rotation(self.cam_id, [0, current_pose[3], self.pitch])
-           collision = self.unrealcv.move_2d(self.cam_id,0,10)
+           self.unrealcv.set_rotation(self.cam_id, current_pose[-3:])
+           collision = self.unrealcv.move_2d(self.cam_id,0,50)
+
+       self.unrealcv.move_2d(self.cam_id, 0, -50)
 
        self.random_scene()
 
@@ -296,6 +283,8 @@ class UnrealCvSearch_topview(gym.Env):
        num = ['One', 'Two', 'Three', 'Four', 'Five','Six']
        for i in num:
            self.unrealcv.keyboard(i)
+
+       # random place the target object
        for i in self.target_list:
            z1 = 60
            while z1 > 50:
