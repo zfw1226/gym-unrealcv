@@ -1,6 +1,7 @@
-You can config the common arguments of the environment in [the register file](../gym_unrealcv/__init__.py) and [the json files](../gym_unrealcv/envs/setting).
+This tutorial will show you how to configure and modify the environments without coding.
+You can configure most of the common-used arguments about the environment in [the register file](../gym_unrealcv/__init__.py) and [the json files](../gym_unrealcv/envs/setting).
 
-In the register file, a specific environment is registered with id, 
+In the register file, a specific environment is registered with env_id, 
 entry_point and a set of arguments, shown as below.
 ```buildoutcfg
 register(
@@ -17,7 +18,8 @@ register(
     max_episode_steps = 1000000 
 )
 ```
-In this case, you can config the type of observation, action, reward, the resetting mode and if using docker to run the environemnt.
+In this case, you can configure the type of observation, action, reward, the resetting mode and if using docker to run the environemnt. 
+The comment indicates the candidate variable.
 
 Besides, more details of the environment is in the `setting_file`, a json file in `/gym_unrealcv/envs/setting`. 
 For example, [search_rr_door41.json](../gym_unrealcv/envs/setting/search_rr_door41.json) with comments is shown as below:
@@ -25,7 +27,7 @@ For example, [search_rr_door41.json](../gym_unrealcv/envs/setting/search_rr_door
 ```buildoutcfg
 {
 	"env_name": "RealisticRendering",
-	# path to the binary of unreal binary, it must 
+	# path to the binary of unreal binary, it must be under "gym_unrealcv/envs/UnrealEnv"
 	"env_bin": "RealisticRendering_RL_3.10/RealisticRendering/Binaries/Linux/RealisticRendering",
 	"cam_id": 0,
 	"height": 40, # height of camera (cm)

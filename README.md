@@ -78,10 +78,10 @@ After that, if all goes well，a predefined gym environment ```Search-RrDoorDisc
 And then you will see that your agent is moving around the realistic room randomly.
 
 ## Modify the pre-defined environment
-You can follow this [tutorial](doc/config_env.md) to modify the configuration the pre-defined environment.
+You can follow this [modify_env_tutorial](doc/config_env.md) to modify the configuration the pre-defined environment.
 
 ## Add a new unreal environment
-You can follow this [tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
+You can follow this [add_new_env_tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
 
 ## Training a reinforcement learning agent
 Besides, we also provide examples, such as [DQN](doc/dqn.md) and [DDPG](doc/ddpg.md), to demonstrate how to train agent in gym-unrealcv.
