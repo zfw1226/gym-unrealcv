@@ -55,10 +55,10 @@ To run environments based on ArchinteriorsVol2Scene1, you need run script [Arch1
 sh Arch1.sh
 ```
 
-There are two ways to launch the unreal environment in gym-unrealcv. 
-One depends on [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker), 
-another one launching the env binary directly.
-The ```docker-based``` way promise more stable unrealcv connection and support to run the env parallelly. 
+There are two ways to launch the unreal environment in gym-unrealcv, called ```docker-based``` and ```docker-free```.
+The ```docker-based``` way depends on [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
+The ```docker-free``` way launches the env binary directly.
+The ```docker-based``` way promise more stable unrealcv connection and support to run the env parallelly.
 On the contrast, the ```docker-free``` way only support running an unreal environment in the same time.
 So the ```docker-based``` way is highly recommended to get better experience.
 You can learn to install and use the ```docker-based``` way in this [page](doc/run_docker.md).
