@@ -1,6 +1,6 @@
 {
 	"env_name": "RealisticRendering",
-	"env_bin": "RealisticRendering-Win-0.3.10/RealisticRendering/WindowsNoEditor/RealisticRendering/Binaries/Win64/RealisticRendering.exe",
+	"env_bin": "RealisticRendering_RL_3.10/RealisticRendering/Binaries/Linux/RealisticRendering",
 	"cam_id": 0,
 	"height": 40,
 	"pitch": 0,
