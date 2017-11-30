@@ -18,6 +18,7 @@ from example.utils import preprocessing, io_util
 if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
+    env.rendering = SHOW
     assert env.action_type == 'continuous'
     ACTION_SIZE = env.action_space.shape[0]
     ACTION_HIGH = env.action_space.high
@@ -113,8 +114,6 @@ if __name__ == '__main__':
                     observation = newObservation
 
                 #print 'step time:' + str(time.time() - start_req)
-                if SHOW:
-                    io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
                 #io_util.save_trajectory(info, TRA_DIR, epoch)
