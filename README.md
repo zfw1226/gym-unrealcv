@@ -38,7 +38,7 @@ cd gym-unrealcv
 pip install -e . 
 ```
 While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), unrealcv, numpy and matplotlib are installed.
-Besides, opencv is required to be installed additionally. 
+`Opencv` is required to be installed additionally. 
 If you use ```anaconda```,you can run
 ```buildoutcfg
 conda update conda
@@ -46,14 +46,15 @@ conda install --channel menpo opencv
 ```
 
 ## Prepare Unreal Environment
-You need prepare an unreal environment to run the demo as below. You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
+You need prepare an unreal environment to run the demo envirnment. 
+You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
 ```buildoutcfg
 sh RealisiticRendering.sh
 ```
-To run environments based on ArchinteriorsVol2Scene1, you need run script [Arch1.sh](Arch1.sh) to get the ArchinteriorsVol2Scene1 binary.
-```buildoutcfg
-sh Arch1.sh
-```
+or manually download the `RealisticRendering` env from this [link](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip), 
+then unzip and move it to the [UnrealEnv](../gym-unrealcv/gym_unrealcv/envs/UnrealEnv) folder.
+
+**Note that you can download more environments from [UnrealCV Model Zoo](http://docs.unrealcv.org/en/master/reference/model_zoo.html).**
 
 There are two ways to launch the unreal environment in gym-unrealcv, called ```docker-based``` and ```docker-free```.
 The ```docker-based``` way depends on [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
@@ -77,13 +78,15 @@ It will take a few minutes for the image to pull if you runs environment based o
 After that, if all goes well，a predefined gym environment ```Search-RrDoorDiscrete-v0``` will be launched.
 And then you will see that your agent is moving around the realistic room randomly.
 
-## Modify the pre-defined environment
-You can follow this [modify_env_tutorial](doc/config_env.md) to modify the configuration the pre-defined environment.
+# Tutorials
+We provide a set of tutorials to help you get start with gym-unrealcv.
+###1. Modify the pre-defined environment
+You can follow the [modify_env_tutorial](doc/config_env.md) to modify the configuration of the pre-defined environment.
 
-## Add a new unreal environment
-You can follow this [add_new_env_tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
+###2. Add a new unreal environment
+You can follow the [add_new_env_tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
 
-## Training a reinforcement learning agent
+###3. Training a reinforcement learning agent
 Besides, we also provide examples, such as [DQN](doc/dqn.md) and [DDPG](doc/ddpg.md), to demonstrate how to train agent in gym-unrealcv.
  
 ## Cite
