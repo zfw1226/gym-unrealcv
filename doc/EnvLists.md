@@ -1,9 +1,9 @@
 #Env list of Gym-UnrealCV
-Based on two virtual worlds([RealisticRendering](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip) and [ArchinteriorsVol2Scene1](https://s3-us-west-1.amazonaws.com/unreal-rl/ArchinteriorsVol2Scene1.zip)),
-we provide a set of predefined gym environments for task that learn to object searching and obstacle avoidance simultaneously.
+Based on two virtual worlds([RealisticRendering](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip) and [ArchinteriorsVol2Scene1](http://cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip)),
+we provide a set of pre-defined gym environments for task that learn to object searching and obstacle avoidance simultaneously.
 The action spaces are various from discrete to continuous and the observation spaces are various from depth image to RGB-D image.
 
-The details about these environments are shown as below:
+The details about these environments are shown in [the register file](../gym_unrealcv/__init__.py). We summarize the environments as below:
 ##Training set
 - **Search-RrDoorDiscrete-v0**
 - **Search-RrDoorContinuous-v0**
@@ -27,4 +27,4 @@ The details about these environments are shown as below:
 The difference between the ```training set``` and the ```testing set``` is
 the way to generate the starting position.
 - In the training set, the agent will reset from a waypoint which is generated and selected by the waypoint module according to historical trajectory.
-- In the testing set, the agent will reset from a set of pre-recorded positions randomly.
+- In the testing set, the agent will reset from a set of pre-recorded test points randomly.
