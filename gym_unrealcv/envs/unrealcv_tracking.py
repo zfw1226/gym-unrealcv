@@ -1,7 +1,6 @@
 import math
 import os
 import time
-
 import gym
 import numpy as np
 from gym import spaces
@@ -26,18 +25,15 @@ class UnrealCvTracking_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_quadcopter.json',
                 reset_type = 'random',       # random
-                test = True,               # if True will use the test_xy as start point
                 action_type = 'discrete',  # 'discrete', 'continuous'
                 observation_type = 'color', # 'color', 'depth', 'rgbd'
                 reward_type = 'distance', # distance
-
                 docker = False,
-                resolution=(120, 120)
+                resolution=(84, 84)
                 ):
 
      print setting_file
      setting = self.load_env_setting(setting_file)
-     self.test = test
      self.docker = docker
      self.reset_type = reset_type
      self.roll = 0
@@ -158,9 +154,6 @@ class UnrealCvTracking_base(gym.Env):
    def _reset(self, ):
        self.C_reward = 0
 
-       if self.test:
-           self.unrealcv.keyboard('R') #reset target object
-
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
        # random hide and show objects
        if 'random' in self.reset_type:
@@ -177,9 +170,9 @@ class UnrealCvTracking_base(gym.Env):
                self.show_list.append(x)
                self.unrealcv.show_obj(x)
            #self.unrealcv.show_objects(to_show)
-           time.sleep(0.5 * (1 + random.random()))
-       else:
-           time.sleep(0.5)
+           time.sleep(0.5 * random.random())
+
+       time.sleep(0.5)
 
        cam_pos = self.target_pos
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
