@@ -26,4 +26,4 @@ And Then, [docker-py](https://github.com/docker/docker-py) a python library for 
 pip install docker>= 2.2
 ```
 
-**To use ``nvidia-docker``, you need modify variable ``use_docker`` to ``True``in [gym_unrealcv/__init__.py](./gym_unrealcv/__init__.py)**
+**To use ``nvidia-docker``, you need modify variable ``use_docker`` to ``True``in [gym_unrealcv/__init__.py](../gym_unrealcv/__init__.py)**

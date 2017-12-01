@@ -76,13 +76,12 @@ class UnrealCvTracking_base(gym.Env):
      self.rendering = False
 
      # init augment env
-     if 'random' in self.reset_type:
+     if 'random' in self.reset_type or 'hide' in self.reset_type:
          self.show_list = self.objects_env
-         self.hiden_list = random.sample(self.objects_env, 15)
-
+         self.hiden_list = random.sample(self.objects_env, min(15,len(self.objects_env)))
          for x in self.hiden_list:
             self.show_list.remove(x)
-
+            self.unrealcv.hide_obj(x)
 
    def _render(self, mode='human', close=False):
        self.rendering = True

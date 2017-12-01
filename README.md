@@ -52,7 +52,7 @@ You can do it by running the script [RealisticRendering.sh](RealisticRendering.s
 sh RealisiticRendering.sh
 ```
 or manually download the `RealisticRendering` env from this [link](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip), 
-then unzip and move it to the [UnrealEnv](../gym-unrealcv/gym_unrealcv/envs/UnrealEnv) folder.
+then unzip and move it to the [UnrealEnv](gym_unrealcv/envs/UnrealEnv) directory.
 
 **Note that you can download more environments from [UnrealCV Model Zoo](http://docs.unrealcv.org/en/master/reference/model_zoo.html).**
 
@@ -78,6 +78,7 @@ It will take a few minutes for the image to pull if you runs environment based o
 After that, if all goes well，a pre-defined gym environment ```Search-RrDoorDiscrete-v0``` will be launched.
 And then you will see that your agent is moving around the realistic room randomly.
 
+We list the pre-defined environments in this [page](doc/EnvLists.md), for object searching and active object tracking. 
 # Tutorials
 We provide a set of tutorials to help you get started with Gym-UnrealCV.
 ### 1. Modify the pre-defined environment
