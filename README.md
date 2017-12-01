@@ -80,13 +80,13 @@ And then you will see that your agent is moving around the realistic room random
 
 # Tutorials
 We provide a set of tutorials to help you get started with Gym-UnrealCV.
-###1. Modify the pre-defined environment
+### 1. Modify the pre-defined environment
 You can follow the [modify_env_tutorial](doc/config_env.md) to modify the configuration of the pre-defined environment.
 
-###2. Add a new unreal environment
+### 2. Add a new unreal environment
 You can follow the [add_new_env_tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
 
-###3. Training a reinforcement learning agent
+### 3.   Training a reinforcement learning agent
 Besides, we also provide examples, such as [DQN](doc/dqn.md) and [DDPG](doc/ddpg.md), to demonstrate how to train agent in gym-unrealcv.
  
 ## Cite

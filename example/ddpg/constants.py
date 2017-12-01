@@ -1,9 +1,9 @@
-ENV_NAME = 'Tracking-Continuous-v0'
+ENV_NAME = 'Search-RrDoorDiscrete-v0'
 
 CONTINUE = False
 RESTART_EP = 4000
 TRAIN = True
-SHOW = True
+SHOW = False
 MAP = False
 
 
@@ -28,7 +28,7 @@ FINAL_EPSILON = 0.1  # final value of epsilon
 TEST_INTERVAL_EPOCHS = 1000
 SAVE_INTERVAL_EPOCHS = 500
 
-LOG_NAME_SAVE = 'log-tracking-v0'
+LOG_NAME_SAVE = 'log'
 MONITOR_DIR = LOG_NAME_SAVE + '/monitor/' #the path to save monitor file
 MODEL_DIR = LOG_NAME_SAVE + '/model' # the path to save deep model
 PARAM_DIR = LOG_NAME_SAVE + '/param' # the path to save the parameters

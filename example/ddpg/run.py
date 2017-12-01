@@ -1,14 +1,9 @@
 import gym
 import gym_unrealcv
-import time
 from distutils.dir_util import copy_tree
 import os
 import json
-import random
-import numpy as np
-import cv2
 from constants import *
-import keras.backend as K
 from ddpg import DDPG
 from gym import wrappers
 import time
@@ -102,9 +97,9 @@ if __name__ == '__main__':
                         Agent.learnOnMiniBatch(BATCH_SIZE)
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        elif stepCounter % (MAX_EXPLORE_STEPS * 1.5) == 0:
-                            explorationRate = 0.99
-                            print 'Reset Exploration Rate'
+                        #elif stepCounter % (MAX_EXPLORE_STEPS * 1.5) == 0:
+                        #    explorationRate = 0.99
+                        #    print 'Reset Exploration Rate'
                 #test
                 else:
                     action = Agent.actor.model.predict(observation)
