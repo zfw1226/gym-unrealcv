@@ -8,36 +8,35 @@ import numpy as np
 from gym import spaces
 from gym_unrealcv.envs.robotarm.visualization import show_info
 from gym_unrealcv.envs.utils import env_unreal
-from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
-
+from gym_unrealcv.envs.robotarm.interaction import Robotarm
 
 class UnrealCvRobotArm_base(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.json',
                 reset_type = 'keyboard',    # testpoint, waypoint,
-                test = True,                # if True will use the test_xy as start point
                 action_type = 'discrete',   # 'discrete', 'continuous'
                 observation_type = 'color', # 'color', 'depth', 'rgbd'
                 reward_type = 'move', # distance, move, move_distance
                 docker = False,
+                resolution=(84, 84)
                 ):
 
      setting = self.load_env_setting(setting_file)
-     self.test = test
      self.docker = docker
      self.reset_type = reset_type
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
-     env_ip,env_port = self.unreal.start(docker)
+     env_ip, env_port = self.unreal.start(docker,resolution)
 
 
      # connect UnrealCV
-     self.unrealcv = UnrealCv(cam_id=self.cam_id,
-                              port= env_port,
-                              ip=env_ip,
-                              targets=self.target_list,
-                              env=self.unreal.path2env)
+     self.unrealcv =Robotarm(cam_id=self.cam_id,
+                             port= env_port,
+                             ip=env_ip,
+                             targets= self.target_list,
+                             env=self.unreal.path2env,
+                             resolution= resolution)
 
     # define action type
      self.action_type = action_type
@@ -58,24 +57,7 @@ class UnrealCvRobotArm_base(gym.Env):
     # define observation space,
     # color, depth, rgbd...
      self.observation_type = observation_type
-     assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd' or self.observation_type == 'measured'
-     if self.observation_type == 'color':
-         state = self.unrealcv.read_image(self.cam_id,'lit')
-         self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
-     elif self.observation_type == 'depth':
-         state = self.unrealcv.read_depth(self.cam_id)
-         self.observation_space = spaces.Box(low=0, high=10, shape=state.shape)
-     elif self.observation_type == 'rgbd':
-         state = self.unrealcv.get_rgbd(self.cam_id)
-         s_high = state
-         s_high[:,:,-1] = 10.0
-         s_high[:,:,:-1] = 255
-         s_low = np.zeros(state.shape)
-         self.observation_space = spaces.Box(low=s_low, high=s_high)
-     elif self.observation_type == 'measured':
-         s_high = [85,  80,  90,  95,  120, 200, 300, 360, 250,  400, 360] # arm_pose, grip_position, target_position
-         s_low = [ 0, -90, -60, -55, -120, -400, -150,  0, -350, -150,  40]
-         self.observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
+     self.observation_space = self.unrealcv.define_observation(self.cam_id,observation_type)
 
      # define reward type
      # distance, bbox, bbox_distance,
@@ -91,7 +73,7 @@ class UnrealCvRobotArm_base(gym.Env):
             Maxstep=False,
             Reward=0.0,
             Action = action,
-            Bbox =self.bboxes,
+            Bbox =None,
             ArmPose = [],
             GripPosition = [],
             Steps= self.count_steps+1,
@@ -123,26 +105,23 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_steps += 1
         info['Done'] = False
 
-
-        info['TargetPose'] = self.unrealcv.get_object_pos(self.target_list[0])
+        info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[0])
         info['GripPosition'] = self.unrealcv.get_grip_position().tolist()
+        info['ArmPose'] = self.unrealcv.get_arm_pose().tolist()
 
         # Get reward
         msg = self.unrealcv.read_message()
         # 'hit ground' 'ReachmaxM2' 'ReachminM2'
         if len(msg) > 0:
-            print msg
             info['Collision'] = True
             self.count_collision += 1
             info['Done'] = False
-            info['Reward'] = -1
             if self.count_collision > 3:
                 info['Done'] = True
             self.target_pose = info['TargetPose']
 
         else:
             info['Reward'] = 0
-            #target_pose_current = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
             if self.get_distance(self.target_pose,info['TargetPose']) > 0.1:
                 if self.count_steps > 1:
                     info['Done'] = True
@@ -160,29 +139,11 @@ class UnrealCvRobotArm_base(gym.Env):
 
 
         # Get observation
-        if self.observation_type == 'color':
-            state = info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-            info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-        elif self.observation_type == 'depth':
-            state = info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-        elif self.observation_type == 'rgbd':
-            info['Color'] = self.unrealcv.read_image(self.cam_id, 'lit')
-            info['Depth'] = self.unrealcv.read_depth(self.cam_id)
-            state = np.append(info['Color'], info['Depth'], axis=2)
-        elif self.observation_type == 'measured':
-            self.arm_pose = np.array(self.unrealcv.get_arm_pose())
-            state = np.append(self.arm_pose, [np.array(self.grip_position), self.target_pose])
+        state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
         # bbox
-        object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
-        self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
-        info['Bbox'] = self.bboxes
-
-        info['ArmPose'] = self.unrealcv.get_arm_pose().tolist()
-
-        self.arm_pose = np.array(info['ArmPose'])
-        #info['ArmPose'] = (self.arm_pose - self.pose_low)/(self.pose_high-self.pose_low)
-        #print info['Pose']
+        #object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
+        #self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
 
         # limit the max steps of every episode
         if self.count_steps > self.max_steps:
@@ -193,45 +154,28 @@ class UnrealCvRobotArm_base(gym.Env):
         if self.rendering:
             show_info(info)
 
-
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
 
        # set start position
-       self.unrealcv.set_position(cam_id=self.cam_id, x=self.camera_pose[0][0], y=self.camera_pose[0][1],z=self.camera_pose[0][2])
-       self.unrealcv.set_rotation(cam_id=self.cam_arm_id, roll=self.camera_pose[0][3], yaw=self.camera_pose[0][4],pitch=self.camera_pose[0][5])
+       self.unrealcv.set_location(self.cam_id, self.camera_pose[0][:3])
+       self.unrealcv.set_rotation(self.cam_arm_id, self.camera_pose[0][-3:])
 
        # for reset point generation and selection
        if self.reset_type == 'keyboard':
-           self.reset_env_keyboard()
+           self.unrealcv.reset_env_keyboard()
 
 
-       if self.observation_type == 'color':
-           state = self.unrealcv.read_image(self.cam_id, 'lit')
-       elif self.observation_type == 'depth':
-           state = self.unrealcv.read_depth(self.cam_id)
-       elif self.observation_type == 'rgbd':
-           state = self.unrealcv.get_rgbd(self.cam_id)
-       elif self.observation_type == 'measured':
-           self.unrealcv.message = []
-           self.arm_pose = np.array(self.unrealcv.get_arm_pose())
-           self.target_pose = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
-           self.grip_position = np.array(self.unrealcv.get_grip_position())
-           state = np.append(self.arm_pose, [self.grip_position, self.target_pose])
+       self.unrealcv.get_arm_pose()
+       self.unrealcv.get_grip_position()
+       self.target_pose = np.array(self.unrealcv.get_obj_location(self.target_list[0]))
+       state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
        self.count_steps = 0
        self.count_collision = 0
        self.count_ground = 0
 
-       self.bboxes = None
-       if self.observation_type != 'measured':
-           self.unrealcv.message = []
-           self.target_pose = np.array(self.unrealcv.get_object_pos(self.target_list[0]))
-           self.grip_position = np.array(self.unrealcv.get_grip_position())
-           object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
-           self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
-
-       self.distance_last = self.get_distance(self.target_pose, self.grip_position)
+       self.distance_last = self.get_distance(self.target_pose, self.unrealcv.arm['grip'])
 
        self.unrealcv.message = []
 
@@ -282,14 +226,3 @@ class UnrealCvRobotArm_base(gym.Env):
        import gym_unrealcv
        gympath = os.path.dirname(gym_unrealcv.__file__)
        return os.path.join(gympath, 'envs/setting', filename)
-
-
-   def reset_env_keyboard(self):
-       self.unrealcv.keyboard('R')  # reset arm pose
-       time.sleep(0.1)
-       self.unrealcv.keyboard('RightBracket') # random light and ball position
-       num = ['One','Two','Three','Four','Five']
-       self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
-
-
-
