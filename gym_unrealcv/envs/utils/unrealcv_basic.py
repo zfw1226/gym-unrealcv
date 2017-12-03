@@ -46,24 +46,15 @@ class UnrealCv(object):
         #client.request('vrun setres 160x120w')# this will set the resolution of object_mask
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0],h=resolution[1]))  # this will set the resolution of object_mask
         time.sleep(5)
-        self.get_pose(cam_id,'hard')
-        #self.client.message_handler = self.message_handler
+        #self.get_pose(cam_id,'hard')
+        self.get_rotation(cam_id,'hard')
+        self.get_location(cam_id,'hard')
+        self.client.message_handler = self.message_handler
 
     def message_handler(self,message):
 
         msg = message
-        #filter for pose
-        if 'Currentpose' in msg:
-            pose_str = msg[12:].split()
-            self.arm['pose'] = np.array(pose_str,dtype=np.float16)
-            self.arm['flag_pose'] = True
-            #print 'get arm pose:{}'.format(self.arm['pose'])
-        elif 'GripLocation' in msg:
-            pose_str = msg[13:].split()
-            self.arm['grip'] = np.array(pose_str, dtype=np.float16)
-            self.arm['flag_grip'] = True
-        elif message != 'move':
-            self.message.append(message)
+        #self.message.append(msg)
 
     def read_message(self):
         msg = self.message
@@ -156,7 +147,6 @@ class UnrealCv(object):
             pose = None
             while pose is None:
                 pose = self.client.request(cmd.format(cam_id=cam_id))
-
             pose = [float(i) for i in pose.split()]
             self.cam[cam_id]['location'] = pose[:3]
             self.cam[cam_id]['rotation'] = pose[-3:]
@@ -185,13 +175,16 @@ class UnrealCv(object):
         self.cam[cam_id]['rotation'] = rot
 
 
-    def get_rotation(self,cam_id):
-        cmd = 'vget /camera/{cam_id}/rotation'
-        rotation = None
-        while rotation is None:
-            rotation = self.client.request(cmd.format(cam_id=cam_id))
-        self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
-        return self.cam[cam_id]['rotation']
+    def get_rotation(self,cam_id,type='hard'):
+        if type == 'soft':
+            return self.cam[cam_id]['location']
+        if type == 'hard':
+            cmd = 'vget /camera/{cam_id}/rotation'
+            rotation = None
+            while rotation is None:
+                rotation = self.client.request(cmd.format(cam_id=cam_id))
+            self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
+            return self.cam[cam_id]['rotation']
 
 
     def moveto(self,cam_id, loc):
