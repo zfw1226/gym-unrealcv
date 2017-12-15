@@ -15,7 +15,7 @@ class ResetPoint():
         self.collision_th = setting['collision_th']
 
         if self.reset_type == 'testpoint':
-            print setting['test_xy']
+            #print setting['test_xy']
             for x,y in setting['test_xy']:
                 pose = [x,y,setting['height'],0]
                 self.new_waypoint(pose, 1000)
@@ -87,12 +87,12 @@ class ResetPoint():
                 dis2others > self.waypoint_th):
                 self.waypoints[waypoint_id]['pose'] = P
                 self.waypoints[waypoint_id]['dis2collision'] = dis2collision
-                print 'update waypoint'
+                #print 'update waypoint'
 
             # if the point is far from other existing waypoints and collision points, insert it to the waypoints list
             if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
                 self.new_waypoint(P, dis2collision)
-                print 'add new waypoint'
+                #print 'add new waypoint'
 
         return len(self.waypoints)
 

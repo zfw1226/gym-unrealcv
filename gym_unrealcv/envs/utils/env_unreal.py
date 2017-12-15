@@ -19,16 +19,16 @@ class RunUnreal():
         if docker :
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
-            print 'Running nvidia-docker env'
+            print ('Running nvidia-docker env')
         else:
             self.pid = []
             self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc,args=(self.path2binary,))
             self.env.start()
             env_ip = '127.0.0.1'
-            print 'Running docker-free env'
+            print ('Running docker-free env')
 
-        print 'Please wait for a while to launch env......'
+        print ('Please wait for a while to launch env......')
         time.sleep(10)
         return env_ip
 

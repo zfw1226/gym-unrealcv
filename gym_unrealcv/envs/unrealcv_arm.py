@@ -13,7 +13,7 @@ from gym_unrealcv.envs.utils.unrealcv_cmd import UnrealCv
 
 class UnrealCvRobotArm_base(gym.Env):
    def __init__(self,
-                setting_file = 'search_rr_plant78.json',
+                setting_file = 'robotarm_v3.json',
                 reset_type = 'keyboard',    # testpoint, waypoint,
                 test = True,                # if True will use the test_xy as start point
                 action_type = 'discrete',   # 'discrete', 'continuous'
@@ -104,7 +104,8 @@ class UnrealCvRobotArm_base(gym.Env):
 
         # take a action
         if self.action_type == 'discrete':
-            duration = max(0.05, 0.2 + 0.1 * np.random.randn())
+            #duration = max(0.05, 0.2 + 0.1 * np.random.randn())
+            duration = 0.05
             self.unrealcv.keyboard(self.discrete_actions[action], duration=duration)
 
         elif self.action_type == 'continuous':
@@ -130,7 +131,7 @@ class UnrealCvRobotArm_base(gym.Env):
         msg = self.unrealcv.read_message()
         # 'hit ground' 'ReachmaxM2' 'ReachminM2'
         if len(msg) > 0:
-            print msg
+            print (msg)
             info['Collision'] = True
             self.count_collision += 1
             info['Done'] = False
@@ -147,7 +148,7 @@ class UnrealCvRobotArm_base(gym.Env):
                     info['Done'] = True
                     if 'move' in self.reward_type:
                         info['Reward'] = 10
-                        print 'move ball'
+                        print ('move ball')
                 self.target_pose = info['TargetPose']
 
             if 'distance' in self.reward_type:
@@ -262,7 +263,7 @@ class UnrealCvRobotArm_base(gym.Env):
            import yaml
            setting = yaml.load(f)
        else:
-           print 'unknown type'
+           print ('unknown type')
 
        #print setting
        self.cam_id = setting['cam_view_id']
@@ -286,9 +287,10 @@ class UnrealCvRobotArm_base(gym.Env):
    def reset_env_keyboard(self):
        self.unrealcv.keyboard('R')  # reset arm pose
        time.sleep(0.1)
-       self.unrealcv.keyboard('RightBracket') # random light and ball position
-       num = ['One','Two','Three','Four','Five']
-       self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
+       self.unrealcv.keyboard('LeftBracket')
+     #  self.unrealcv.keyboard('RightBracket') # random light and ball position
+      # num = ['One','Two','Three','Four','Five']
+      # self.unrealcv.keyboard(num[random.randint(0,len(num)-1)])#  random material
 
 
 
