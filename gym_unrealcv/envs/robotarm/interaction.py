@@ -51,6 +51,10 @@ class Robotarm(UnrealCv):
         self.good_msgs = []
         self.bad_msgs = []
 
+    def set_arm_pose(self,pose):
+        cmd = 'vexec armBP_1159 setpos {grip} {M3} {M2} {M1} {M0}'
+        return self.client.request(cmd.format(M0=pose[0],M1=pose[1],M2=pose[2],M3=pose[3],grip=pose[4]))
+
     def get_arm_pose(self):
 
         self.keyboard('C')
