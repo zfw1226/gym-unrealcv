@@ -1,17 +1,17 @@
 {
-	"env_name": "RealisticRendering",
-	"env_bin": "RealisticRendering_RL_3.10/RealisticRendering/Binaries/Linux/RealisticRendering",
+	"env_name": "forest",
+	"env_bin": "forest_v0/tree/Binaries/Linux/tree",
 	"cam_id": 0,
-	"height": 40,
-	"pitch": 0,
-	"maxsteps": 100,
+	"height": -700,
+	"pitch": -15,
+	"maxsteps": 1000,
 	"trigger_th": 0.6,
 	"reward_th": 0.1,
 	"reward_factor": 10,
 	"collision_th": 50,
 	"waypoint_th": 200,
 	"targets": [
-		"SM_Door_39"
+        "target"
 	],
 	"test_xy": [
 		[-106.195, 437.424],
@@ -21,13 +21,13 @@
 		[-23.558, -187.354],
 		[-80.312, 254.579 ]
 	],
+	"reset_area":[0,3000,-2000,-8000],
 	"discrete_actions": [
-		[50, 0, 0],
-		[30, 15, 0],
-		[30, -15, 0],
-		[15, 30, 0],
-		[15, -30, 0],
-		[0, 0, 1]
+		[40,   0, 0],
+		[20,  10, 0],
+		[20, -10, 0],
+		[10,  20, 0],
+		[10, -20, 0]
 	],
 	"continous_actions": {
 		"high": [100, 45, 1],

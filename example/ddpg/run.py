@@ -1,14 +1,9 @@
 import gym
 import gym_unrealcv
-import time
 from distutils.dir_util import copy_tree
 import os
 import json
-import random
-import numpy as np
-import cv2
 from constants import *
-import keras.backend as K
 from ddpg import DDPG
 from gym import wrappers
 import time
@@ -18,6 +13,7 @@ from example.utils import preprocessing, io_util
 if __name__ == '__main__':
 
     env = gym.make(ENV_NAME)
+    env.rendering = SHOW
     assert env.action_type == 'continuous'
     ACTION_SIZE = env.action_space.shape[0]
     ACTION_HIGH = env.action_space.high
@@ -101,9 +97,9 @@ if __name__ == '__main__':
                         Agent.learnOnMiniBatch(BATCH_SIZE)
                         if explorationRate > FINAL_EPSILON and stepCounter > LEARN_START_STEP:
                             explorationRate -= (INITIAL_EPSILON - FINAL_EPSILON) / MAX_EXPLORE_STEPS
-                        elif stepCounter % (MAX_EXPLORE_STEPS * 1.5) == 0:
-                            explorationRate = 0.99
-                            print 'Reset Exploration Rate'
+                        #elif stepCounter % (MAX_EXPLORE_STEPS * 1.5) == 0:
+                        #    explorationRate = 0.99
+                        #    print 'Reset Exploration Rate'
                 #test
                 else:
                     action = Agent.actor.model.predict(observation)
@@ -113,8 +109,6 @@ if __name__ == '__main__':
                     observation = newObservation
 
                 #print 'step time:' + str(time.time() - start_req)
-                if SHOW:
-                    io_util.show_info(info)
                 if MAP:
                     io_util.live_plot(info)
                 #io_util.save_trajectory(info, TRA_DIR, epoch)

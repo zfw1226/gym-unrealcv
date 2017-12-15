@@ -16,6 +16,8 @@ except ImportError:
 ####TO DO#######
 ###the observation in memory replay only save the image dir instead of feature####
 ###do not delet the image right away, save them and only detet it when buffer is filled totally.
+
+
 class UnrealCv:
     def __init__(self, port = 9000, cam_id = 0,
                  ip = '127.0.0.1' , targets = None,
@@ -66,7 +68,8 @@ class UnrealCv:
     def init_unrealcv(self):
         client.connect()
         self.check_connection()
-        client.request('vrun setres 320x240w')# this will set the resolution of object_mask
+        #client.request('vrun setres 160x120w')# this will set the resolution of object_mask
+        client.request('vrun setres 640x480w')  # this will set the resolution of object_mask
         time.sleep(5)
         self.get_position(self.cam['id'])
         self.get_rotation(self.cam['id'])
@@ -259,6 +262,14 @@ class UnrealCv:
         setcolor = 'vset /object/'+object+'/color {r} {g} {b}'
         client.request(setcolor.format(r=r, g=g, b=b))
 
+    def set_object_location(self, object, x,y,z):
+        setlocation = 'vset /object/'+object+'/location {x} {y} {z}'
+        client.request(setlocation.format(x=x,y=y,z=z))
+
+    def set_object_rotation(self, object, roll,yaw,pitch):
+        setlocation = 'vset /object/'+object+'/rotation {pitch} {yaw} {roll}'
+        client.request(setlocation.format(roll=roll,yaw=yaw,pitch=pitch))
+
     def get_mask(self,object_mask,object):
         r,g,b = self.color_dict[object]
         lower_range = np.array([b-3,g-3,r-3])
@@ -328,13 +339,29 @@ class UnrealCv:
     def get_pos(self):
         return self.cam['position']
 
-    def get_pose(self):
-        pos = self.cam['position'][:]
-        pos.append(self.cam['rotation'][1])
-        return pos
+    def get_pose(self,type='soft'):
+        if type == 'soft':
+            pos = self.cam['position'][:]
+            pos.append(self.cam['rotation'][1])
+            return pos
+        if type == 'hard':
+            position = self.get_position(self.cam_id)
+            rotation = self.get_rotation(self.cam_id)
+            position.append(rotation[1])
+            return position
+
 
     def get_height(self):
         return self.cam['position'][2]
+
+    def hide_objects(self,objects):
+        for obj in objects:
+            client.request('vset /object/{obj}/hide'.format(obj=obj))
+
+    def show_objects(self, objects):
+        for obj in objects:
+            client.request('vset /object/{obj}/show'.format(obj=obj))
+
 
 
 

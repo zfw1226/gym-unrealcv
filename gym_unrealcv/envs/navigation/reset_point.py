@@ -4,7 +4,6 @@ import math
 import numpy as np
 class ResetPoint():
     def __init__(self, setting, type, test, init_pose):
-        self.test = test
         self.reset_type = type
         #self.testpoints = setting['test_xy']
         self.waypoints = []
@@ -13,7 +12,8 @@ class ResetPoint():
         self.yaw_id = 0
         self.waypoint_th = setting['waypoint_th']
         self.collision_th = setting['collision_th']
-
+        self.height = setting['height']
+        self.pitch = setting['pitch']
         if self.reset_type == 'testpoint':
             #print setting['test_xy']
             for x,y in setting['test_xy']:
@@ -21,28 +21,40 @@ class ResetPoint():
                 self.new_waypoint(pose, 1000)
         elif self.reset_type == 'waypoint':
             self.new_waypoint(init_pose, 1000)
+        elif self.reset_type == 'random':
+            self.reset_area = setting['reset_area']
 
     def select_resetpoint(self):
-        if  self.test:
-            current_pose = self.reset_for_testing()
-        else :
-            current_pose = self.reset_for_training()
+        if  'random' in self.reset_type:
+            current_pose = self.reset_random()
+        elif 'testpoint' in self.reset_type:
+            current_pose = self.reset_testpoint()
+        elif 'waypoint' in self.reset_type:
+            current_pose = self.reset_waypoint()
         return current_pose
 
-    def reset_for_testing(self):
+    def reset_random(self):
+        x = random.uniform(self.reset_area[0], self.reset_area[1])
+        y = random.uniform(self.reset_area[2], self.reset_area[3])
+        z =  self.height
+        yaw = random.randint(0, 360)
+
+        return [x,y,z, 0, yaw, self.pitch]
+
+    def reset_testpoint(self):
         x, y, z, yaw = self.waypoints[self.start_id]['pose']
         yaw = self.yaw_id * 45
         self.yaw_id += 1
         if self.yaw_id >= 8:
             self.start_id = (self.start_id + 1) % len(self.waypoints)
             self.yaw_id = self.yaw_id % 8
-        return [x, y, z, yaw]
+        return [x, y, z, 0, yaw, self.pitch]
 
-    def reset_for_training(self):
+    def reset_waypoint(self):
         # reset from waypoints generated in exploration
-        x, y, z, yaw = self.select_waypoint_times()
+        x, y, z, pitch, yaw, roll = self.select_waypoint_times()
         yaw = random.randint(0, 360)
-        return [x, y, z, yaw]
+        return [x, y, z, roll, yaw, self.pitch]
 
     def select_waypoint_times(self):
 
@@ -78,10 +90,11 @@ class ResetPoint():
     def update_waypoint(self, trajectory):
 
         for P in trajectory:
-            dis2waypoint, waypoint_id, dis2others = self.get_dis2waypoints(P) # searching for closed waypoint
-            dis2collision = self.get_dis2collision(P)
+            dis2waypoint, waypoint_id, dis2others = self.get_dis2waypoints(P[:3]) # searching for the closed waypoint
+            dis2collision = self.get_dis2collision(P[:3])
 
             # update waypoint
+
             if (dis2waypoint < self.waypoint_th / 4 and
                 dis2collision > self.waypoints[waypoint_id]['dis2collision'] and
                 dis2others > self.waypoint_th):
@@ -90,6 +103,7 @@ class ResetPoint():
                 #print 'update waypoint'
 
             # if the point is far from other existing waypoints and collision points, insert it to the waypoints list
+
             if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
                 self.new_waypoint(P, dis2collision)
                 #print 'add new waypoint'

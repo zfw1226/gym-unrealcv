@@ -1,8 +1,9 @@
 {
 	"env_name": "RealisticRendering",
-	"env_bin": "RealisticRendering_RL/RealisticRendering/Binaries/Linux/RealisticRendering",
+	"env_bin": "RealisticRendering_RL_3.10/RealisticRendering/Binaries/Linux/RealisticRendering",
 	"cam_id": 0,
 	"height": 40,
+  	"pitch": 0,
 	"maxsteps": 100,
 	"trigger_th": 0.6,
 	"reward_th": 0.2,

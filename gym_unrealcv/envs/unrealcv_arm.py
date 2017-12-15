@@ -29,11 +29,12 @@ class UnrealCvRobotArm_base(gym.Env):
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
-     env_ip = self.unreal.start(docker)
+     env_ip,env_port = self.unreal.start(docker)
+
 
      # connect UnrealCV
      self.unrealcv = UnrealCv(cam_id=self.cam_id,
-                              port= 9000,
+                              port= env_port,
                               ip=env_ip,
                               targets=self.target_list,
                               env=self.unreal.path2env)
