@@ -1,15 +1,15 @@
 {
 	"env_name": "RobotArm-OWI",
-	"env_bin": "RobotArm_OWI_v0.4/MyProject/Binaries/Linux/MyProject",
+	"env_bin": "RobotArm_OWI_v0.6/MyProject/Binaries/Linux/MyProject",
 	"cam_view_id": 0,
 	"cam_arm_id": 1,
-	"maxsteps": 100,
+	"maxsteps": 500,
 	"reward_th": 0.01,
 	"collision_th": 20,
 	"waypoint_th": 100,
 	"reward_factor": 10,
 	"camera_pose": [
-		[420,0,150,0,180,0]
+		[-75,-260,200,0,90,350]
 	],
 	"targets":["Sphere15_Blueprint"],
 	"discrete_actions": [

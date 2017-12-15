@@ -37,7 +37,7 @@ class UnrealCv(object):
         self.init_unrealcv(cam_id, resolution)
         self.pitch = 0 #-30
 
-        self.message = []
+
 
 
     def init_unrealcv(self,cam_id, resolution=(160,120)):
@@ -46,29 +46,14 @@ class UnrealCv(object):
         #client.request('vrun setres 160x120w')# this will set the resolution of object_mask
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0],h=resolution[1]))  # this will set the resolution of object_mask
         time.sleep(5)
-        self.get_pose(cam_id,'hard')
-        #self.client.message_handler = self.message_handler
+        #self.get_pose(cam_id,'hard')
+        self.get_rotation(cam_id,'hard')
+        self.get_location(cam_id,'hard')
+        self.client.message_handler = self.message_handler
 
     def message_handler(self,message):
 
         msg = message
-        #filter for pose
-        if 'Currentpose' in msg:
-            pose_str = msg[12:].split()
-            self.arm['pose'] = np.array(pose_str,dtype=np.float16)
-            self.arm['flag_pose'] = True
-            #print 'get arm pose:{}'.format(self.arm['pose'])
-        elif 'GripLocation' in msg:
-            pose_str = msg[13:].split()
-            self.arm['grip'] = np.array(pose_str, dtype=np.float16)
-            self.arm['flag_grip'] = True
-        elif message != 'move':
-            self.message.append(message)
-
-    def read_message(self):
-        msg = self.message
-        self.message = []
-        return msg
 
 
     def check_connection(self):
@@ -91,7 +76,9 @@ class UnrealCv(object):
             # mode: direct, file
             if mode == 'direct':
                 cmd = 'vget /camera/{cam_id}/{viewmode} png'
-                res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
+                res = None
+                while res is None:
+                    res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
                 image_rgb = self.read_png(res)
                 image_rgb = image_rgb[:,:,:-1]
                 image = image_rgb[:,:,::-1]
@@ -156,7 +143,6 @@ class UnrealCv(object):
             pose = None
             while pose is None:
                 pose = self.client.request(cmd.format(cam_id=cam_id))
-
             pose = [float(i) for i in pose.split()]
             self.cam[cam_id]['location'] = pose[:3]
             self.cam[cam_id]['rotation'] = pose[-3:]
@@ -185,13 +171,16 @@ class UnrealCv(object):
         self.cam[cam_id]['rotation'] = rot
 
 
-    def get_rotation(self,cam_id):
-        cmd = 'vget /camera/{cam_id}/rotation'
-        rotation = None
-        while rotation is None:
-            rotation = self.client.request(cmd.format(cam_id=cam_id))
-        self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
-        return self.cam[cam_id]['rotation']
+    def get_rotation(self,cam_id,type='hard'):
+        if type == 'soft':
+            return self.cam[cam_id]['location']
+        if type == 'hard':
+            cmd = 'vget /camera/{cam_id}/rotation'
+            rotation = None
+            while rotation is None:
+                rotation = self.client.request(cmd.format(cam_id=cam_id))
+            self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
+            return self.cam[cam_id]['rotation']
 
 
     def moveto(self,cam_id, loc):
@@ -301,11 +290,16 @@ class UnrealCv(object):
         return color_dict
 
     def get_obj_location(self,object):
-        location = self.client.request('vget /object/{obj}/location'.format(obj = object))
+        location = None
+        while location is None:
+            location = self.client.request('vget /object/{obj}/location'.format(obj=object))
+
         return [float(i) for i in location.split()]
 
     def get_obj_rotation(self,object):
-        rotation = self.client.request('vget /object/{obj}/location'.format(obj = object))
+        rotation = None
+        while rotation is None:
+            rotation = self.client.request('vget /object/{obj}/location'.format(obj = object))
         return [float(i) for i in rotation.split()]
 
     def build_pose_dic(self,objects):
