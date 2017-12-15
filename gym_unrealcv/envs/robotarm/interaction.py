@@ -10,8 +10,7 @@ class Robotarm(UnrealCv):
                 pose = np.zeros(5),
                 flag_pose = False,
                 grip = np.zeros(3),
-                flag_grip = False
-
+                flag_grip = False,
         )
 
         super(Robotarm, self).__init__(env=env, port = port,ip = ip , cam_id=cam_id,resolution=resolution)
@@ -23,9 +22,10 @@ class Robotarm(UnrealCv):
             self.targets = targets
             self.color_dict = self.build_color_dic(self.targets)
 
-    def message_handler(self,message):
+        self.bad_msgs = []
+        self.good_msgs = []
+    def message_handler(self,msg):
 
-        msg = message
         #filter for pose
         if 'Currentpose' in msg:
             pose_str = msg[12:].split()
@@ -35,8 +35,21 @@ class Robotarm(UnrealCv):
             pose_str = msg[13:].split()
             self.arm['grip'] = np.array(pose_str, dtype=np.float16)
             self.arm['flag_grip'] = True
-        elif message != 'move':
-            self.message.append(msg)
+        elif msg == 'move':
+            self.good_msgs.append(msg)
+        else:
+            self.bad_msgs.append(msg)
+
+    def read_message(self):
+
+        good_msgs = self.good_msgs
+        bad_msgs = self.bad_msgs
+        self.empty_msgs_buffer()
+        return good_msgs, bad_msgs
+
+    def empty_msgs_buffer(self):
+        self.good_msgs = []
+        self.bad_msgs = []
 
     def get_arm_pose(self):
 
@@ -102,6 +115,7 @@ class Robotarm(UnrealCv):
     def reset_env_keyboard(self):
         self.keyboard('R')  # reset arm pose
         time.sleep(0.1)
+        self.keyboard('LeftBracket')
         self.keyboard('RightBracket')  # random light and ball position
-        num = ['One', 'Two', 'Three', 'Four', 'Five']
-        self.keyboard(num[random.randint(0, len(num) - 1)])  # random material
+        #num = ['One', 'Two', 'Three', 'Four', 'Five']
+        #self.keyboard(num[random.randint(0, len(num) - 1)])  # random material

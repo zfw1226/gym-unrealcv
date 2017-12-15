@@ -18,7 +18,7 @@ class UnrealCvRobotArm_base(gym.Env):
                 observation_type = 'color', # 'color', 'depth', 'rgbd'
                 reward_type = 'move', # distance, move, move_distance
                 docker = False,
-                resolution=(84, 84)
+                resolution=(160, 160)
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -64,6 +64,8 @@ class UnrealCvRobotArm_base(gym.Env):
      self.reward_type = reward_type
      self.rendering = False
 
+     self.unrealcv.keyboard('One')
+
 
 
    def _step(self, action):
@@ -83,7 +85,7 @@ class UnrealCvRobotArm_base(gym.Env):
             Depth = None,
         )
 
-        self.unrealcv.message = []
+        self.unrealcv.empty_msgs_buffer()
 
         # take a action
         if self.action_type == 'discrete':
@@ -108,34 +110,29 @@ class UnrealCvRobotArm_base(gym.Env):
         info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[0])
         info['GripPosition'] = self.unrealcv.get_grip_position().tolist()
         info['ArmPose'] = self.unrealcv.get_arm_pose().tolist()
-
+        distance = self.get_distance(info['TargetPose'], info['GripPosition'])
         # Get reward
-        msg = self.unrealcv.read_message()
+        good_msgs, bad_msgs= self.unrealcv.read_message()
         # 'hit ground' 'ReachmaxM2' 'ReachminM2'
-        if len(msg) > 0:
+        if len(bad_msgs) > 0:
             info['Collision'] = True
+            info['Reward'] = -1
             self.count_collision += 1
-            info['Done'] = False
             if self.count_collision > 3:
                 info['Done'] = True
-            self.target_pose = info['TargetPose']
-
         else:
             info['Reward'] = 0
-            if self.get_distance(self.target_pose,info['TargetPose']) > 0.1:
-                if self.count_steps > 1:
+            if distance < 40 or len(good_msgs) > 0:
+                if self.count_steps > 2:
                     info['Done'] = True
                     if 'move' in self.reward_type:
                         info['Reward'] = 10
                         print 'move ball'
-                self.target_pose = info['TargetPose']
 
             if 'distance' in self.reward_type:
-                self.grip_position = np.array(info['GripPosition'])
-                distance = self.get_distance(self.target_pose,self.grip_position)
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
-                info['Reward'] = info['Reward'] + distance_delt / 100.0
+                info['Reward'] += distance_delt / 100.0
 
 
         # Get observation
@@ -159,7 +156,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
        # set start position
        self.unrealcv.set_location(self.cam_id, self.camera_pose[0][:3])
-       self.unrealcv.set_rotation(self.cam_arm_id, self.camera_pose[0][-3:])
+       self.unrealcv.set_rotation(self.cam_id, self.camera_pose[0][-3:])
 
        # for reset point generation and selection
        if self.reset_type == 'keyboard':
@@ -173,11 +170,10 @@ class UnrealCvRobotArm_base(gym.Env):
 
        self.count_steps = 0
        self.count_collision = 0
-       self.count_ground = 0
 
        self.distance_last = self.get_distance(self.target_pose, self.unrealcv.arm['grip'])
 
-       self.unrealcv.message = []
+       self.unrealcv.empty_msgs_buffer()
 
        return state
 

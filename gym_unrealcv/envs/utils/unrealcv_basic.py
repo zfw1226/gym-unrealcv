@@ -37,7 +37,7 @@ class UnrealCv(object):
         self.init_unrealcv(cam_id, resolution)
         self.pitch = 0 #-30
 
-        self.message = []
+
 
 
     def init_unrealcv(self,cam_id, resolution=(160,120)):
@@ -54,12 +54,6 @@ class UnrealCv(object):
     def message_handler(self,message):
 
         msg = message
-        #self.message.append(msg)
-
-    def read_message(self):
-        msg = self.message
-        self.message = []
-        return msg
 
 
     def check_connection(self):
@@ -82,7 +76,9 @@ class UnrealCv(object):
             # mode: direct, file
             if mode == 'direct':
                 cmd = 'vget /camera/{cam_id}/{viewmode} png'
-                res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
+                res = None
+                while res is None:
+                    res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
                 image_rgb = self.read_png(res)
                 image_rgb = image_rgb[:,:,:-1]
                 image = image_rgb[:,:,::-1]
@@ -294,11 +290,16 @@ class UnrealCv(object):
         return color_dict
 
     def get_obj_location(self,object):
-        location = self.client.request('vget /object/{obj}/location'.format(obj = object))
+        location = None
+        while location is None:
+            location = self.client.request('vget /object/{obj}/location'.format(obj=object))
+
         return [float(i) for i in location.split()]
 
     def get_obj_rotation(self,object):
-        rotation = self.client.request('vget /object/{obj}/location'.format(obj = object))
+        rotation = None
+        while rotation is None:
+            rotation = self.client.request('vget /object/{obj}/location'.format(obj = object))
         return [float(i) for i in rotation.split()]
 
     def build_pose_dic(self,objects):

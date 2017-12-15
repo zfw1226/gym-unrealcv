@@ -248,7 +248,7 @@ register(
 register(
     id='RobotArm-Discrete-v0',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v2.json',
+    kwargs = {'setting_file' : 'robotarm_v3.json',
               'reset_type': 'keyboard',
               'action_type' : 'discrete',
               'observation_type': 'color',
