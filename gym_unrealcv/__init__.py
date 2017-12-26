@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 
@@ -305,6 +305,19 @@ register(
     kwargs = {'setting_file' : 'tracking_v0.4_A.json',
               'reset_type': 'static_hide',
               'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-City2MalcomPath2StaticContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_A.json',
+              'reset_type': 'static_hide',
+              'action_type' : 'continuous',
               'observation_type': 'color',
               'reward_type':  'distance',
               'docker': use_docker,
