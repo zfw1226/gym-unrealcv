@@ -115,7 +115,7 @@ class UnrealCvTracking_base(gym.Env):
 
         info['Pose'] = self.unrealcv.get_pose(self.cam_id)
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-        info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-1]
+        info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-2]
         if info['Direction'] < -180:
             info['Direction'] += 360
         elif info['Direction'] > 180:
