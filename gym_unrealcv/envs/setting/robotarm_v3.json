@@ -1,31 +1,33 @@
 {
 	"env_name": "RobotArm-OWI",
-	"env_bin": "RobotArm_OWI_v0.6/MyProject/Binaries/Linux/MyProject",
+	"env_bin": "arm_v1.1/MyProject/Binaries/Linux/MyProject",
 	"cam_view_id": 0,
 	"cam_arm_id": 1,
-	"maxsteps": 500,
+	"maxsteps": 1000,
 	"reward_th": 0.01,
 	"collision_th": 20,
 	"waypoint_th": 100,
 	"reward_factor": 10,
 	"camera_pose": [
-		[-75,-260,200,0,90,350]
+		[-76,-350,120,0,90,-10]
 	],
-	"targets":["Sphere15_Blueprint"],
+	"targets":["Ball0"],
 	"discrete_actions": [
-		"Y",
-		"H",
-		"U",
-		"J",
-		"I",
-		"K"
+		[ 3, 0, 0, 0, 0],
+		[-3, 0, 0, 0, 0],
+		[ 0, 3, 0, 0, 0],
+		[ 0,-3, 0, 0, 0],
+		[ 0, 0, 5, 0, 0],
+		[ 0, 0,-5, 0, 0],
+		[ 0, 0, 0, 5, 0],
+		[ 0, 0, 0,-5, 0]
 	],
 	"continous_actions": {
-		"high": [ 0.1,  0.1,  0.1],
-		"low":  [-0.1, -0.1, -0.1]
+		"high": [ 10,  10,  10, 10],
+		"low":  [-10, -10, -10, -10]
 	},
 	"pose_range": {
-		"high": [ 80,  90,  95],
-		"low":  [-90, -60, -55]
+		"high": [ 130,  60,  170, 50, 70],
+		"low":  [-130, -90, -60, -50, 0]
 	}
 }
