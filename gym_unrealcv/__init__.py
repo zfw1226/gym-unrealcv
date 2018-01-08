@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 
@@ -261,10 +261,10 @@ register(
 register(
     id='RobotArm-Discrete-v1',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v2.json',
+    kwargs = {'setting_file' : 'robotarm_v3.json',
               'reset_type': 'keyboard',
               'action_type' : 'discrete',
-              'observation_type': 'measured',
+              'observation_type': 'color',
               'reward_type': 'move_distance',
               'docker': use_docker
               },
@@ -272,12 +272,25 @@ register(
 )
 
 register(
-    id='RobotArm-Continuous-v0',
+    id='RobotArm-Continuous-v1',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v2.json',
+    kwargs = {'setting_file' : 'robotarm_v3.json',
               'reset_type': 'keyboard',
               'action_type' : 'continuous',
               'observation_type': 'color',
+              'reward_type': 'move_distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='RobotArm-Continuous-v2',
+    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+    kwargs = {'setting_file' : 'robotarm_v3.json',
+              'reset_type': 'keyboard',
+              'action_type' : 'continuous',
+              'observation_type': 'measured',
               'reward_type': 'move_distance',
               'docker': use_docker
               },

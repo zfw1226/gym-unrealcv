@@ -78,7 +78,9 @@ class Robotarm(UnrealCv):
 
     def get_arm_state(self):
         cmd = 'vbp armBP querysetpos'
-        result = self.client.request(cmd)
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
         result = result.split()
         state = []
         for i in range(2,15,2):
@@ -91,14 +93,15 @@ class Robotarm(UnrealCv):
 
 
     def get_grip_position(self):
-        self.keyboard('F')
-        start_time = time.time()
-        while self.arm['flag_grip']==False:
-            delt_time = time.time() - start_time
-            if delt_time > 0.5:  # time out
-                print 'time out'
-                break
-        self.arm['flag_grip'] = False
+        cmd = 'vbp armBP getgrip'
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
+        result = result.split()
+        position = []
+        for i in range(2,7,2):
+            position.append(float(result[i][1:-2]))
+        self.arm['grip'] = np.array(position)
         return self.arm['grip']
 
     def define_observation(self,cam_id, observation_type):
@@ -116,8 +119,8 @@ class Robotarm(UnrealCv):
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high)
         elif observation_type == 'measured':
-            s_high = [85, 80, 90, 95, 120, 200, 300, 360, 250, 400, 360]  # arm_pose, grip_position, target_position
-            s_low = [0, -90, -60, -55, -120, -400, -150, 0, -350, -150, 40]
+            s_high = [130,  60,  170, 50, 70,  200,  300, 360, 250, 400, 360]  # arm_pose, grip_position, target_position
+            s_low = [-130, -90, -60, -50,  0, -400, -150, 0, -350, -150, 40]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
@@ -131,7 +134,6 @@ class Robotarm(UnrealCv):
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'measured':
-            self.message = []
             arm_pose = self.arm['pose'].copy()
             self.target_pose = np.array(self.get_obj_location(self.targets[0]))
             state = np.concatenate((arm_pose, self.arm['grip'], self.target_pose))
@@ -141,6 +143,7 @@ class Robotarm(UnrealCv):
     def reset_env_keyboard(self):
         #self.keyboard('R')  # reset arm pose
         self.set_arm_pose([0,0,0,0,0])
+        self.set_material('Ball0', rgb=[1,0.2,0.2], prop=np.random.random(3))
         #self.keyboard('LeftBracket')   # random ball position
         self.keyboard('RightBracket')  # random light
         time.sleep(1)

@@ -1,9 +1,9 @@
 {
 	"env_name": "RobotArm-OWI",
-	"env_bin": "arm_v1.1/MyProject/Binaries/Linux/MyProject",
+	"env_bin": "arm_v1.2/MyProject/Binaries/Linux/MyProject",
 	"cam_view_id": 0,
 	"cam_arm_id": 1,
-	"maxsteps": 1000,
+	"maxsteps": 100,
 	"reward_th": 0.01,
 	"collision_th": 20,
 	"waypoint_th": 100,
@@ -23,8 +23,8 @@
 		[ 0, 0, 0,-5, 0]
 	],
 	"continous_actions": {
-		"high": [ 10,  10,  10, 10],
-		"low":  [-10, -10, -10, -10]
+		"high": [ 5,  5,  5, 5],
+		"low":  [-5, -5, -5, -5]
 	},
 	"pose_range": {
 		"high": [ 130,  60,  170, 50, 70],
