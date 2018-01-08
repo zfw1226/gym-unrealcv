@@ -128,7 +128,7 @@ class UnrealCvRobotArm_base(gym.Env):
             if 'distance' in self.reward_type:
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
-                info['Reward'] = max(distance/100.0 , 1) * distance_delt / 10.0
+                info['Reward'] = min(distance/100.0 , 1) * distance_delt / 10.0
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
