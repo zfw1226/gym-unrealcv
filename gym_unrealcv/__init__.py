@@ -325,6 +325,19 @@ register(
     max_episode_steps = 1000000
 )
 
+register(
+    id='Tracking-City2MalcomPath2StaticContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_A.json',
+              'reset_type': 'static_hide',
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
 #B
 register(
     id='Tracking-B-v0',
@@ -400,6 +413,19 @@ register(
     kwargs = {'setting_file' : 'tracking_v0.4_F.json',
               'reset_type': 'random',
               'action_type' : 'discrete',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-City1StefaniPath1RandomContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_F.json',
+              'reset_type': 'random',
+              'action_type' : 'continuous',
               'observation_type': 'color',
               'reward_type':  'distance',
               'docker': use_docker,

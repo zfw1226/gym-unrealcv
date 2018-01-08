@@ -32,7 +32,6 @@ class UnrealCvTracking_base(gym.Env):
                 resolution=(84, 84)
                 ):
 
-     print setting_file
      setting = self.load_env_setting(setting_file)
      self.docker = docker
      self.reset_type = reset_type
@@ -65,7 +64,7 @@ class UnrealCvTracking_base(gym.Env):
     # color, depth, rgbd,...
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
-     self.observation_shape = self.unrealcv.define_observation(self.cam_id,self.observation_type)
+     self.observation_space = self.unrealcv.define_observation(self.cam_id,self.observation_type)
 
      # define reward type
      # distance, bbox, bbox_distance,
@@ -115,7 +114,7 @@ class UnrealCvTracking_base(gym.Env):
 
         info['Pose'] = self.unrealcv.get_pose(self.cam_id)
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-        info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-1]
+        info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-2]
         if info['Direction'] < -180:
             info['Direction'] += 360
         elif info['Direction'] > 180:
@@ -130,6 +129,7 @@ class UnrealCvTracking_base(gym.Env):
 
         if info['Distance'] > self.max_distance or abs(info['Direction'])> self.max_direction:
         #if self.C_reward<-450: # for evaluation
+
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
