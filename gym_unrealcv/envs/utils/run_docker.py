@@ -19,7 +19,7 @@ class RunDocker():
 
         path2binary = os.path.join(self.path2env,ENV_BIN)
         if not os.path.exists(path2binary):
-            print 'Did not find unreal environment, Please move your binary file to env/UnrealEnv'
+            print ('Did not find unreal environment, Please move your binary file to env/UnrealEnv')
             sys.exit()
 
         docker_cmd = 'nvidia-docker run  -d -it  --env="DISPLAY=:0.0"     --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"     --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw"    {IMAGE} '
@@ -27,7 +27,7 @@ class RunDocker():
         cmd = docker_cmd.format(ENV_DIR_HOST=self.path2env, ENV_DIR_DOCKER=ENV_DIR_DOCKER, IMAGE=self.image) + \
               run_cmd.format(ENV_DIR_DOCKER=ENV_DIR_DOCKER, ENV_DIR_BIN_DOCKER = os.path.join(ENV_DIR_DOCKER,ENV_BIN))
 
-        print cmd
+        print (cmd)
         os.system(cmd)
         self.container = self.docker_client.containers.list()
 
@@ -55,10 +55,10 @@ class RunDocker():
                 Found_Img = True
         # Download image
         if Found_Img == False:
-            print 'Do not found images,Downloading'
+            print ('Do not found images,Downloading')
             self.docker_client.images.pull(target_images)
         else:
-            print 'Found images'
+            print ('Found images')
 
 
 

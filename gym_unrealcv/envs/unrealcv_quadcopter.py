@@ -183,7 +183,7 @@ class UnrealCvQuadcopter_base(gym.Env):
                 info['Done'] = True
                 if info['Reward'] > 0 and self.test == False:
                     self.reset_module.success_waypoint(self.count_steps)
-                print 'Trigger Terminal!'
+                print ('Trigger Terminal!')
         # if collision occurs, the episode is done and reward is -1
         else :
             # get reward
@@ -216,7 +216,7 @@ class UnrealCvQuadcopter_base(gym.Env):
         if self.count_steps > self.max_steps:
            info['Done'] = True
            info['Maxstep'] = True
-           print 'Reach Max Steps'
+           print ('Reach Max Steps')
 
         # save the trajectory
         self.trajectory.append(info['Pose'])
@@ -308,7 +308,7 @@ class UnrealCvQuadcopter_base(gym.Env):
            import yaml
            setting = yaml.load(f)
        else:
-           print 'unknown type'
+           print ('unknown type')
 
        #print setting
        self.cam_id = setting['cam_id']

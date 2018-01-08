@@ -14,11 +14,11 @@ class RandomAgent(object):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument("-e","--env_id", nargs='?', default='Search-RrMultiPlantsDiscreteTest-v0', help='Select the environment to run')
+    parser.add_argument("-e","--env_id", nargs='?', default='RobotArm-Discrete-v0', help='Select the environment to run')
     args = parser.parse_args()
     env = gym.make(args.env_id)
 
-    env.rendering = True
+    env.rendering = False
 
     # You provide the directory to write to (can be an existing
     # directory, including one with existing data -- all monitor files

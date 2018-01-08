@@ -5,9 +5,8 @@ import math
 import time
 import os
 import re
-import StringIO
+from io import BytesIO
 import PIL.Image
-
 
 
 ####TO DO#######
@@ -36,11 +35,12 @@ class UnrealCv(object):
 
         self.init_unrealcv(cam_id, resolution)
         self.pitch = 0 #-30
+        self.resolution = resolution
 
 
 
 
-    def init_unrealcv(self,cam_id, resolution=(160,120)):
+    def init_unrealcv(self,cam_id, resolution=(320,240)):
         self.client.connect()
         self.check_connection()
         #client.request('vrun setres 160x120w')# this will set the resolution of object_mask
@@ -70,7 +70,7 @@ class UnrealCv(object):
         objects = objects.split()
         return objects
 
-    def read_image(self,cam_id , viewmode, show=False, mode = 'direct'):
+    def read_image(self,cam_id , viewmode, mode = 'direct'):
             # cam_id:0 1 2 ...
             # viewmode:lit,  =normal, depth, object_mask
             # mode: direct, file
@@ -79,9 +79,9 @@ class UnrealCv(object):
                 res = None
                 while res is None:
                     res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
-                image_rgb = self.read_png(res)
-                image_rgb = image_rgb[:,:,:-1]
-                image = image_rgb[:,:,::-1]
+                image_rgb = self.decode_png(res)
+                image_rgb = image_rgb[:,:,:-1] # delete alpha channel
+                image = image_rgb[:,:,::-1] # transpose channel order
             elif mode == 'file':
                 cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}{ip}.png'
                 if self.docker:
@@ -90,23 +90,38 @@ class UnrealCv(object):
                 else :
                     img_dirs = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 image = cv2.imread(img_dirs)
+            elif mode=='fast':
+                cmd = 'vget /sensor/{cam_id}/{viewmode} bmp'
+                res = None
+                while res is None:
+                    res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
+                image_rgba = self.decode_bmp(res)
+                image = image_rgba[:, :, :-1] # delete alpha channel
 
             return image
 
-    def read_depth(self, cam_id):
-        cmd = 'vget /camera/{cam_id}/depth npy'
+    def read_depth(self, cam_id, mode='old'):
+        if mode == 'fast':
+            cmd ='vget /sensor/{cam_id}/depth npy'
+        elif mode == 'old':
+            cmd = 'vget /camera/{cam_id}/depth npy'
         res = self.client.request(cmd.format(cam_id=cam_id))
+        depth = np.fromstring(res, np.float32)
+        depth = depth[-self.resolution[1] * self.resolution[0]:]
+        depth = depth.reshape(self.resolution[1], self.resolution[0],1)
+        #depth[depth>100.0] = 0
+        return depth
 
-        depth = np.load(StringIO.StringIO(res))
-        depth[depth>100.0] = 0
-        #self.show_img(depth,'depth')
-        #return depth
-        return np.expand_dims(depth,axis=-1)
-
-    def read_png(self,res):
-        img = PIL.Image.open(StringIO.StringIO(res))
+    def decode_png(self,res):
+        img = PIL.Image.open(BytesIO(res))
         return np.asarray(img)
 
+    def decode_bmp(self,res, channel=4):
+        img = np.fromstring(res, dtype=np.uint8)
+        img=img[-self.resolution[1]*self.resolution[0]*channel:]
+        img=img.reshape(self.resolution[1],self.resolution[0],channel)
+
+        return img
 
     def convert2planedepth(self,PointDepth, f=320):
         H = PointDepth.shape[0]
@@ -293,7 +308,6 @@ class UnrealCv(object):
         location = None
         while location is None:
             location = self.client.request('vget /object/{obj}/location'.format(obj=object))
-
         return [float(i) for i in location.split()]
 
     def get_obj_rotation(self,object):

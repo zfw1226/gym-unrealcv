@@ -15,10 +15,10 @@ class UnrealCvRobotArm_base(gym.Env):
                 setting_file = 'search_rr_plant78.json',
                 reset_type = 'keyboard',    # testpoint, waypoint,
                 action_type = 'discrete',   # 'discrete', 'continuous'
-                observation_type = 'color', # 'color', 'depth', 'rgbd'
+                observation_type = 'color', # 'color', 'depth', 'rgbd' . 'measure'
                 reward_type = 'move', # distance, move, move_distance
                 docker = False,
-                resolution=(160, 160)
+                resolution=(640, 480)
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -32,6 +32,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
      # connect UnrealCV
      self.unrealcv =Robotarm(cam_id=self.cam_id,
+                             pose_range=self.pose_range,
                              port= env_port,
                              ip=env_ip,
                              targets= self.target_list,
@@ -64,7 +65,6 @@ class UnrealCvRobotArm_base(gym.Env):
      self.reward_type = reward_type
      self.rendering = False
 
-     self.unrealcv.keyboard('One')
 
 
 
@@ -89,51 +89,46 @@ class UnrealCvRobotArm_base(gym.Env):
 
         # take a action
         if self.action_type == 'discrete':
-            duration = max(0.05, 0.2 + 0.1 * np.random.randn())
-            self.unrealcv.keyboard(self.discrete_actions[action], duration=duration)
+            arm_state = self.unrealcv.move_arm(self.discrete_actions[action])
 
         elif self.action_type == 'continuous':
-            for i in range(len(action)):
-                if abs(action[i]) < 0.05:
-                    continue
-                if action[i] > 0:
-                    self.unrealcv.keyboard(self.discrete_actions[i*2],duration=max(action[i],0.5))
-                else:
-                    self.unrealcv.keyboard(self.discrete_actions[i*2 + 1],duration=max(abs(action[i]),0.5))
-            duration = abs(np.array(abs(action))).max()
-
-        time.sleep(duration)
+            arm_state = self.unrealcv.move_arm(np.append(action,0))
 
         self.count_steps += 1
         info['Done'] = False
 
         info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[0])
         info['GripPosition'] = self.unrealcv.get_grip_position().tolist()
-        info['ArmPose'] = self.unrealcv.get_arm_pose().tolist()
+        info['ArmPose'] = self.unrealcv.arm['pose'].tolist()
         distance = self.get_distance(info['TargetPose'], info['GripPosition'])
-        # Get reward
-        good_msgs, bad_msgs= self.unrealcv.read_message()
-        # 'hit ground' 'ReachmaxM2' 'ReachminM2'
-        if len(bad_msgs) > 0:
+
+        # reward function
+        if arm_state[6] == True: # reach target
+            info['Done'] = True
+            if 'move' in self.reward_type:
+                info['Reward'] = 100
+                print 'move ball'
+        elif arm_state[0] + arm_state[1]*~arm_state[2] + arm_state[3]*~arm_state[4] + arm_state[5] > 0: # detect collision
             info['Collision'] = True
+            info['Reward'] = -10
+            info['Done'] = True
+            '''
+            self.count_collision += 1
+            if self.count_collision >= 2:
+                info['Done'] = True
+            '''
+        elif arm_state[7] : # reach pose limitation
             info['Reward'] = -1
             self.count_collision += 1
-            if self.count_collision > 3:
+            if self.count_collision >= 10:
                 info['Done'] = True
-        else:
-            info['Reward'] = 0
-            if distance < 40 or len(good_msgs) > 0:
-                if self.count_steps > 2:
-                    info['Done'] = True
-                    if 'move' in self.reward_type:
-                        info['Reward'] = 10
-                        print 'move ball'
+        else: # others
+            info['Reward'] = -0.1
 
             if 'distance' in self.reward_type:
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
-                info['Reward'] += distance_delt / 100.0
-
+                info['Reward'] = max(distance/100.0 , 1) * distance_delt / 10.0
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
@@ -163,16 +158,16 @@ class UnrealCvRobotArm_base(gym.Env):
            self.unrealcv.reset_env_keyboard()
 
 
-       self.unrealcv.get_arm_pose()
-       self.unrealcv.get_grip_position()
+
+       #self.unrealcv.get_grip_position()
        self.target_pose = np.array(self.unrealcv.get_obj_location(self.target_list[0]))
        state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
        self.count_steps = 0
        self.count_collision = 0
 
-       self.distance_last = self.get_distance(self.target_pose, self.unrealcv.arm['grip'])
-
+       self.distance_last = self.get_distance(self.target_pose, self.unrealcv.get_grip_position())
+       self.unrealcv.set_arm_pose(self.unrealcv.get_arm_pose())
        self.unrealcv.empty_msgs_buffer()
 
        return state
