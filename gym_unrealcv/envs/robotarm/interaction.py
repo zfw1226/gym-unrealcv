@@ -9,7 +9,7 @@ class Robotarm(UnrealCv):
                  ip = '127.0.0.1',resolution=(160,120)):
         self.arm = dict(
                 pose = np.zeros(5),
-                state= np.zeros(7), # ground, left, left_in, right, right_in, body, reach
+                state= np.zeros(8), # ground, left, left_in, right, right_in, body, reach
                 grip = np.zeros(3),
                 high = np.array(pose_range['high']),
                 low = np.array(pose_range['low']),
@@ -57,7 +57,7 @@ class Robotarm(UnrealCv):
             limit = True
             pose_tmp = out_max * self.arm['high'] + out_min* self.arm['low'] + ~(out_min+out_max)*pose_tmp
             #print pose_tmp
-
+        #pose_tmp[-1] = action[-1]
         self.set_arm_pose(pose_tmp)
         state = self.get_arm_state()
         state.append(limit)
@@ -83,7 +83,7 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         state = []
-        for i in range(2,15,2):
+        for i in range(2,17,2):
             if result[i][1:5] == 'true':
                 state.append(True)
             else:
@@ -104,13 +104,26 @@ class Robotarm(UnrealCv):
         self.arm['grip'] = np.array(position)
         return self.arm['grip']
 
+
+    def get_QR_pose(self):
+        cmd = 'vbp armBP getQR'
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
+        result = result.split()
+        QRpose = []
+        #print result
+        for i in range(2,9,2): #x,y,z,pitch
+            QRpose.append(float(result[i][1:-2]))
+        return QRpose
+
     def define_observation(self,cam_id, observation_type):
         if observation_type == 'color':
             state = self.read_image(cam_id, 'lit','fast')
-            observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+            observation_space = spaces.Box(low=0, high=255., shape=state.shape)
         elif observation_type == 'depth':
             state = self.read_depth(cam_id)
-            observation_space = spaces.Box(low=0, high=100, shape=state.shape)
+            observation_space = spaces.Box(low=0, high=1, shape=state.shape)
         elif observation_type == 'rgbd':
             state = self.get_rgbd(cam_id)
             s_high = state
@@ -119,12 +132,12 @@ class Robotarm(UnrealCv):
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high)
         elif observation_type == 'measured':
-            s_high = [130,  60,  170, 50, 70,  200,  300, 360, 250, 400, 360]  # arm_pose, grip_position, target_position
-            s_low = [-130, -90, -60, -50,  0, -400, -150, 0, -350, -150, 40]
+            s_high = [130,  60,  90, 45, 70,  200,  300, 360, 250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
+            s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
-    def get_observation(self,cam_id, observation_type):
+    def get_observation(self,cam_id, observation_type, target_pose, action=np.zeros(4)):
         if observation_type == 'color':
             self.img_color = state = self.read_image(cam_id, 'lit','fast')
         elif observation_type == 'depth':
@@ -135,8 +148,8 @@ class Robotarm(UnrealCv):
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'measured':
             arm_pose = self.arm['pose'].copy()
-            self.target_pose = np.array(self.get_obj_location(self.targets[0]))
-            state = np.concatenate((arm_pose, self.arm['grip'], self.target_pose))
+            self.target_pose = np.array(target_pose)
+            state = np.concatenate((arm_pose, self.arm['grip'], self.target_pose, action))
             # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
         return state
 
@@ -144,10 +157,16 @@ class Robotarm(UnrealCv):
         #self.keyboard('R')  # reset arm pose
         self.set_arm_pose([0,0,0,0,0])
         self.set_material('Ball0', rgb=[1,0.2,0.2], prop=np.random.random(3))
-        #self.keyboard('LeftBracket')   # random ball position
+
         self.keyboard('RightBracket')  # random light
-        time.sleep(1)
-        self.keyboard('LeftBracket')  # random ball position
+        #time.sleep(1)
+        '''
+        while True:
+            self.keyboard('LeftBracket')  # random ball position
+            if not self.check_inbox():
+                break
+        '''
+
 
     def random_material(self):
         self.set_material('Ball0',rgb=np.random.random(3),prop=np.random.random(3))
@@ -159,10 +178,20 @@ class Robotarm(UnrealCv):
         self.set_arm_material('black', rgb=np.random.random(3), prop=np.random.random(3))
 
     def attach_ball(self):
-        return self.client.request('vbp armBP catch')
+        res = self.client.request('vbp armBP catch')
+        res = res.split()
+        if res[2][1:7] == 'unable':
+            return False
+        else:
+            return True
 
     def detach_ball(self):
-        return self.client.request('vbp armBP loose')
+        res = self.client.request('vbp armBP loose')
+        res = res.split()
+        if res[2][1:3] == 'ok':
+            return True
+        else:
+            return False
 
     def set_material(self,target, rgb=(1,1,1), prop = (1,1,1)): # Ball0 wall1/2/3/4
         cmd = 'vbp {target} setmaterial {r} {g} {b} {metallic} {specular} {roughness}'
@@ -172,3 +201,22 @@ class Robotarm(UnrealCv):
         cmd = 'vbp armBP setarm{target} {r} {g} {b} {metallic} {specular} {roughness}'
         return self.client.request(cmd.format(target = target, r=rgb[0], g=rgb[1], b=rgb[2], metallic=prop[0], specular=prop[1], roughness=prop[2]))
 
+    def reset_obj(self,target,area):
+        # reset target in an area randomly
+        x = random.uniform(area[0], area[1])
+        y = random.uniform(area[2], area[3])
+        z = random.uniform(area[4], area[5])
+        self.set_object_rotation(target, [0, 0, 0])
+        self.set_object_location(target, [x, y, z])
+        return [x,y,z]
+
+    def check_inbox(self):
+        cmd = 'vbp destboxBP query'
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        res = res.split()
+        if res[2][1:5] == 'true':
+            return True
+        else:
+            return False
