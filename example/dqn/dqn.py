@@ -61,19 +61,21 @@ class DeepQ:
             input_shape = ( self.img_rows, self.img_cols, self.img_channels)
 
         model = Sequential()
-        model.add(Convolution2D(32, 3, 3,border_mode='same', input_shape = input_shape))
+        model.add(Convolution2D(32, 8, 8,border_mode='same', input_shape = input_shape))
         model.add(Activation('relu'))
-        model.add(Convolution2D(32, 3, 3, border_mode='same'))
+        model.add(Convolution2D(32, 8, 8, border_mode='same'))
+        model.add(Activation('relu'))
+
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.25))
+
+        model.add(Convolution2D(32, 4, 4, border_mode='same'))
+        model.add(Activation('relu'))
+        model.add(Convolution2D(32, 4, 4, border_mode='same'))
         model.add(Activation('relu'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.25))
 
-        model.add(Convolution2D(64, 3, 3, border_mode='same'))
-        model.add(Activation('relu'))
-        model.add(Convolution2D(64, 3, 3, border_mode='same'))
-        model.add(Activation('relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Dropout(0.25))
         model.add(Flatten())
 
 
@@ -135,7 +137,7 @@ class DeepQ:
 
 
     def learnOnMiniBatch(self, miniBatchSize,):
-
+        #t0 = time.time()
         self.count_steps += 1
 
         state_batch,action_batch,reward_batch,newState_batch,isFinal_batch\
@@ -160,13 +162,13 @@ class DeepQ:
 
         for i,action in enumerate(action_batch):
             Y_batch[i][action] = Y_sample_batch[i]
-
-        self.model.fit(X_batch, Y_batch, validation_split=0.0, batch_size = miniBatchSize, nb_epoch=1, verbose = 0)
-
+        #t1 = time.time()
+        #self.model.fit(X_batch, Y_batch, batch_size = miniBatchSize)
+        self.model.train_on_batch(X_batch, Y_batch)
         if self.useTargetNetwork and self.count_steps % 1000 == 0:
             self.updateTargetNetwork()
 
-
+        #print time.time() - t0, time.time() -t1
     def saveModel(self, path):
         if self.useTargetNetwork:
             self.targetModel.save(path)
