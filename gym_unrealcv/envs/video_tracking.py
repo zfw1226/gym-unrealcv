@@ -7,14 +7,14 @@ from matplotlib import pyplot as plt
 class VideoTracking_base(gym.Env):
     def __init__(self,
                  dataset_root='/data/zfw/VOTchallenge',
-                 year = 'vot2015',
-                 seq = 'crossing', # gymnastics, woman, sunshade, iceskater jogging
+                 year = 'vot2013',
+                 seq = 'woman', # gymnastics, woman, sunshade, iceskater jogging
                  setting_file = 'tracking_v0.4_F.json',
                  ):
         self.dataset_dir = os.path.join(dataset_root,year,seq)
         self.img_list = os.listdir(self.dataset_dir)
         self.load_env_setting(setting_file)
-        self.name = os.path.join(year,seq)
+        self.name = year + '_' + seq
         self.skip_step = 1
         self.img_list.sort()
         self.action_space = spaces.Discrete(len(self.discrete_actions))
@@ -45,7 +45,7 @@ class VideoTracking_base(gym.Env):
                         y_sum += float(xy[i+1])
                     self.x_center.append(x_sum / 4)
                     self.y_center.append(y_sum / 4)
-                    self.size.append(abs(float(xy[5])-float(xy[1]))  * abs(float(xy[0])- float(xy[2])))
+                    self.size.append(abs(float(xy[5])-float(xy[1]))  * abs(float(xy[0])- float(xy[4])))
 
         self.truth = []
 
@@ -95,8 +95,9 @@ class VideoTracking_base(gym.Env):
         else:
             color = 'c'
 
+        plt.scatter(self.x_center[self.img_id] - (w0+ w1)/2, action, c=color, alpha=0.4, s=25,marker = 'o')
 
-        plt.scatter(self.x_center[self.img_id], self.size[self.img_id]/100.0, c=color, alpha=0.4, s=25,marker = 'o')
+        #plt.scatter(self.x_center[self.img_id] - (w0+ w1)/2, self.size[self.img_id]/100.0, c=color, alpha=0.4, s=25,marker = 'o')
 
         if self.img_id >= self.max_steps:
             done = True
