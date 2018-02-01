@@ -69,9 +69,24 @@ class UnrealCvSearch_base(gym.Env):
 
      # define observation space,
      # color, depth, rgbd,...
+
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
-     self.observation_shape = self.unrealcv.define_observation(self.cam_id,self.observation_type)
+     if observation_type == 'color':
+         state = self.unrealcv.read_image(self.cam_id, 'lit')
+         self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+     elif observation_type == 'depth':
+         state = self.read_depth(self.cam_id)
+         self.observation_space = spaces.Box(low=0, high=100, shape=state.shape)
+     elif observation_type == 'rgbd':
+         state = self.get_rgbd(self.cam_id)
+         s_high = state
+         s_high[:, :, -1] = 100.0  # max_depth
+         s_high[:, :, :-1] = 255  # max_rgb
+         s_low = np.zeros(state.shape)
+         self.observation_space = spaces.Box(low=s_low, high=s_high)
+     
+     #self.observation_shape = self.unrealcv.define_observation(self.cam_id,self.observation_type)
 
      # define reward type
      # distance, bbox, bbox_distance,
