@@ -18,13 +18,14 @@ class UnrealCvRobotArm_base(gym.Env):
                 observation_type = 'color', # 'color', 'depth', 'rgbd' . 'measure'
                 reward_type = 'move', # distance, move, move_distance
                 docker = False,
-                resolution=(640, 480)
+                resolution=(640, 480),
+                use_attach = False
                 ):
 
      setting = self.load_env_setting(setting_file)
      self.docker = docker
      self.reset_type = reset_type
-
+     self.use_attach = use_attach
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
      env_ip, env_port = self.unreal.start(docker,resolution)
@@ -55,8 +56,8 @@ class UnrealCvRobotArm_base(gym.Env):
      self.count_steps = 0
 
 
-    # define observation space,
-    # color, depth, rgbd...
+     # define observation space,
+     # color, depth, rgbd...
      self.observation_type = observation_type
      self.observation_space = self.unrealcv.define_observation(self.cam_id,observation_type)
 
@@ -64,6 +65,8 @@ class UnrealCvRobotArm_base(gym.Env):
      # distance, bbox, bbox_distance,
      self.reward_type = reward_type
      self.rendering = False
+     self.attached = False
+     self.unrealcv.set_fov(60)
 
 
 
@@ -83,55 +86,82 @@ class UnrealCvRobotArm_base(gym.Env):
             TargetPose = self.target_pose,
             Color = None,
             Depth = None,
+            QRPose = None
         )
-
-        self.unrealcv.empty_msgs_buffer()
 
         # take a action
         if self.action_type == 'discrete':
             arm_state = self.unrealcv.move_arm(self.discrete_actions[action])
 
         elif self.action_type == 'continuous':
-            arm_state = self.unrealcv.move_arm(np.append(action,0))
+            arm_state = self.unrealcv.move_arm(np.append(action, 0))
+
+
 
         self.count_steps += 1
         info['Done'] = False
 
-        info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[0])
-        info['GripPosition'] = self.unrealcv.get_grip_position().tolist()
+        info['GripPosition'] = self.unrealcv.get_grip_position().tolist() # for reward
         info['ArmPose'] = self.unrealcv.arm['pose'].tolist()
-        distance = self.get_distance(info['TargetPose'], info['GripPosition'])
+        info['QRPose'] = self.unrealcv.get_QR_pose() # for observation
+        if self.attached == False:
+            info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[0])
+            distance = self.get_distance(info['TargetPose'], info['GripPosition'])
+        else:
+            info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[1])
+            info['TargetPose'][2] = 80
+            distance = self.get_distance(info['TargetPose'], info['GripPosition'],2)
+            if distance > 500:
+                info['TargetPose'] = self.unrealcv.reset_obj(self.target_list[1],self.box_area)
+                info['TargetPose'][2] = 80
+                distance = self.get_distance(info['TargetPose'], info['GripPosition'],3)
 
         # reward function
-        if arm_state[6] == True: # reach target
+        if distance < 15 and self.attached == True: #when moving object to target place
             info['Done'] = True
-            if 'move' in self.reward_type:
+            info['Reward'] = 100
+            # show detach ball
+            '''
+            self.unrealcv.detach_ball()
+            self.attached = False
+            time.sleep(2)
+            '''
+
+        elif self.attached == False and arm_state[6] == True: # reach target
+
+            if self.use_attach:
+                if self.unrealcv.attach_ball() and 'move' in self.reward_type:
+                        info['Reward'] = 100
+                        self.attached = True
+                        time.sleep(1)
+                        self.unrealcv.get_arm_pose()
+
+                        info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[1])
+                        info['TargetPose'][2] = 80 
+                        print 'move ball'
+            else:
+                info['Done'] = True
                 info['Reward'] = 100
-                print 'move ball'
-        elif arm_state[0] + arm_state[1]*~arm_state[2] + arm_state[3]*~arm_state[4] + arm_state[5] > 0: # detect collision
+
+        elif arm_state[0] + arm_state[1]*~arm_state[2] + arm_state[3]*~arm_state[4] + arm_state[5] + arm_state[7] > 0 == False: # detect collision
             info['Collision'] = True
             info['Reward'] = -10
             info['Done'] = True
-            '''
-            self.count_collision += 1
-            if self.count_collision >= 2:
-                info['Done'] = True
-            '''
-        elif arm_state[7] : # reach pose limitation
+
+        elif arm_state[-1] : # reach pose limitation
             info['Reward'] = -1
             self.count_collision += 1
-            if self.count_collision >= 10:
+            if self.count_collision >= 5:
                 info['Done'] = True
         else: # others
             info['Reward'] = -0.1
-
             if 'distance' in self.reward_type:
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
-                info['Reward'] = min(distance/100.0 , 1) * distance_delt / 10.0
+                info['Reward'] = distance_delt / 10.0
 
         # Get observation
-        state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
+        state = self.unrealcv.get_observation(self.cam_id, self.observation_type, info['TargetPose'], action)
 
         # bbox
         #object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
@@ -145,26 +175,44 @@ class UnrealCvRobotArm_base(gym.Env):
 
         if self.rendering:
             show_info(info)
-
         return state, info['Reward'], info['Done'], info
-   def _reset(self, ):
+   def _reset(self ):
 
        # set start position
        self.unrealcv.set_location(self.cam_id, self.camera_pose[0][:3])
        self.unrealcv.set_rotation(self.cam_id, self.camera_pose[0][-3:])
 
+
        # for reset point generation and selection
+       if self.attached:
+           self.unrealcv.detach_ball()
+           self.attached = False
+
        if self.reset_type == 'keyboard':
-           self.unrealcv.reset_env_keyboard()
+           #self.unrealcv.reset_env_keyboard()
+           self.unrealcv.set_arm_pose([0, 0, 0, 0, 0])
+           self.unrealcv.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
+
+           self.unrealcv.keyboard('RightBracket')  # random light
+           time.sleep(1)
+           #self.unrealcv.reset_obj(self.target_list[1], self.box_area)
+           while True:
+               self.unrealcv.keyboard('LeftBracket')  # random ball position
+               if not self.unrealcv.check_inbox():
+                   break
+
+
 
 
 
        #self.unrealcv.get_grip_position()
-       self.target_pose = np.array(self.unrealcv.get_obj_location(self.target_list[0]))
-       state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
+       self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
+       #self.target_pose = np.array(self.unrealcv.get_obj_location(self.target_list[0]))
+       state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.target_pose)
 
        self.count_steps = 0
        self.count_collision = 0
+
 
        self.distance_last = self.get_distance(self.target_pose, self.unrealcv.get_grip_position())
        self.unrealcv.set_arm_pose(self.unrealcv.get_arm_pose())
@@ -181,10 +229,10 @@ class UnrealCvRobotArm_base(gym.Env):
        return len(self.action)
 
 
-   def get_distance(self,target,current):
+   def get_distance(self,target,current,n=3):
 
-       error = abs(np.array(target)[:3] - np.array(current)[:3])# only x and y
-       distance = math.sqrt(sum(error * error))
+       error = np.array(target) - np.array(current)# only x and y
+       distance = np.linalg.norm(error[:n])
        return distance
 
 
@@ -209,6 +257,8 @@ class UnrealCvRobotArm_base(gym.Env):
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
        self.pose_range = setting['pose_range']
+       self.box_area = setting['box_area']
+       self.ball_area = setting['ball_area']
 
        return setting
 
