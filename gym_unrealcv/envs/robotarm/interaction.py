@@ -13,6 +13,7 @@ class Robotarm(UnrealCv):
                 grip = np.zeros(3),
                 high = np.array(pose_range['high']),
                 low = np.array(pose_range['low']),
+                QR = np.zeros(4),
                 flag_grip = False,
         )
 
@@ -115,6 +116,7 @@ class Robotarm(UnrealCv):
         #print result
         for i in range(2,9,2): #x,y,z,pitch
             QRpose.append(float(result[i][1:-2]))
+        self.arm['QR'] = QRpose
         return QRpose
 
     def define_observation(self,cam_id, observation_type):
@@ -135,6 +137,10 @@ class Robotarm(UnrealCv):
             s_high = [130,  60,  90, 45, 70,  200,  300, 360, 250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
+        elif observation_type == 'measured_real':
+            s_high = [ 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
+            s_low = [ -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
+            observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
     def get_observation(self,cam_id, observation_type, target_pose, action=np.zeros(4)):
@@ -147,10 +153,12 @@ class Robotarm(UnrealCv):
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'measured':
-            arm_pose = self.arm['pose'].copy()
             self.target_pose = np.array(target_pose)
-            state = np.concatenate((arm_pose, self.arm['grip'], self.target_pose, action))
+            state = np.concatenate((self.arm['pose'], self.arm['grip'], self.target_pose, action))
             # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
+        elif  observation_type == 'measured_real':
+            self.target_pose = np.array(target_pose)
+            state = np.concatenate((self.arm['QR'], self.target_pose, action))
         return state
 
     def reset_env_keyboard(self):
