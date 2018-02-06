@@ -49,7 +49,7 @@ conda install --channel menpo opencv
 You need prepare an unreal environment to run the demo envirnment. 
 You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
 ```buildoutcfg
-sh RealisiticRendering.sh
+sh RealisticRendering.sh
 ```
 or manually download the `RealisticRendering` env from this [link](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip), 
 then unzip and move it to the [UnrealEnv](gym_unrealcv/envs/UnrealEnv) directory.
