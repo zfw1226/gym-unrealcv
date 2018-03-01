@@ -21,7 +21,7 @@ class RunUnreal():
             import gym_unrealcv.envs.utils.run_docker
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN= self.env_bin)
-            print 'Running nvidia-docker env'
+            print ('Running nvidia-docker env')
         else:
             env_ip = '127.0.0.1'
             while not self.isPortFree(env_ip, port):
@@ -31,10 +31,9 @@ class RunUnreal():
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc,args=(self.path2binary,))
             self.env.start()
+            print ('Running docker-free env')
 
-            print 'Running docker-free env'
-
-        print 'Please wait for a while to launch env......'
+        print ('Please wait for a while to launch env......')
         time.sleep(5)
         return env_ip,port
 
@@ -74,7 +73,7 @@ class RunUnreal():
             s=f.read()
             ss = s.split('\n')
         with open(ini_path, 'w') as f:
-            print ss[1]
+            print (ss[1])
             ss[1] = 'Port={port}'.format(port = port)
             d = '\n'
             s_new = d.join(ss)
@@ -100,9 +99,9 @@ class RunUnreal():
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             sock.bind((ip, port))
-        except Exception, e:
+        except Exception as e:
             sock.close()
-            print e
+            print (e)
             return False
         sock.close()
         return True

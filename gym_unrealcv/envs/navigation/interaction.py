@@ -34,9 +34,11 @@ class Navigation(UnrealCv):
         if observation_type == 'color':
             state = self.read_image(cam_id, 'lit')
             observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+
         elif observation_type == 'depth':
             state = self.read_depth(cam_id)
             observation_space = spaces.Box(low=0, high=100, shape=state.shape)
+
         elif observation_type == 'rgbd':
             state = self.get_rgbd(cam_id)
             s_high = state

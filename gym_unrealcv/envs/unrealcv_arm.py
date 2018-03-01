@@ -137,8 +137,8 @@ class UnrealCvRobotArm_base(gym.Env):
                         self.unrealcv.get_arm_pose()
 
                         info['TargetPose'] = self.unrealcv.get_obj_location(self.target_list[1])
-                        info['TargetPose'][2] = 80 
-                        print 'move ball'
+                        info['TargetPose'][2] = 80
+                        print ('move ball')
             else:
                 info['Done'] = True
                 info['Reward'] = 100
@@ -162,7 +162,6 @@ class UnrealCvRobotArm_base(gym.Env):
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, info['TargetPose'], action)
-
         # bbox
         #object_mask = self.unrealcv.read_image(cam_id=self.cam_id, viewmode='object_mask')
         #self.bboxes = self.unrealcv.get_bboxes(object_mask=object_mask, objects=self.target_list)
@@ -246,7 +245,7 @@ class UnrealCvRobotArm_base(gym.Env):
            import yaml
            setting = yaml.load(f)
        else:
-           print 'unknown type'
+           print ('unknown type')
 
        #print setting
        self.cam_id = setting['cam_view_id']

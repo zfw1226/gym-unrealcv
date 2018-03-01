@@ -30,7 +30,7 @@ class Robotarm(UnrealCv):
         self.bad_msgs = []
         self.good_msgs = []
     def message_handler(self,msg):
-        print 'receive msg'
+        print ('receive msg')
 
     def read_message(self):
         good_msgs = self.good_msgs
@@ -51,18 +51,17 @@ class Robotarm(UnrealCv):
         pose_tmp = self.arm['pose']+action
         out_max = pose_tmp > self.arm['high']
         out_min = pose_tmp < self.arm['low']
-        #print pose_tmp,out_max,out_max
+
         if out_max.sum() + out_min.sum() == 0:
             limit = False
         else:
             limit = True
             pose_tmp = out_max * self.arm['high'] + out_min* self.arm['low'] + ~(out_min+out_max)*pose_tmp
-            #print pose_tmp
+
         #pose_tmp[-1] = action[-1]
         self.set_arm_pose(pose_tmp)
         state = self.get_arm_state()
         state.append(limit)
-        #print state
         return state
 
     def get_arm_pose(self):
@@ -74,7 +73,6 @@ class Robotarm(UnrealCv):
             pose.append(float(result[i][1:-2]))
         pose.reverse()
         self.arm['pose'] = np.array(pose)
-        #print pose
         return self.arm['pose']
 
     def get_arm_state(self):
@@ -113,7 +111,6 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         QRpose = []
-        #print result
         for i in range(2,9,2): #x,y,z,pitch
             QRpose.append(float(result[i][1:-2]))
         self.arm['QR'] = QRpose
@@ -138,8 +135,8 @@ class Robotarm(UnrealCv):
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         elif observation_type == 'measured_real':
-            s_high = [ 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
-            s_low = [ -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
+            s_high = [ 130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
+            s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
@@ -158,7 +155,7 @@ class Robotarm(UnrealCv):
             # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
         elif  observation_type == 'measured_real':
             self.target_pose = np.array(target_pose)
-            state = np.concatenate((self.arm['QR'], self.target_pose, action))
+            state = np.concatenate((self.arm['pose'], self.arm['QR'], self.target_pose, action))
         return state
 
     def reset_env_keyboard(self):

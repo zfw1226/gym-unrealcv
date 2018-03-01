@@ -15,7 +15,7 @@ class VideoTracking_base(gym.Env):
         self.img_list = os.listdir(self.dataset_dir)
         self.load_env_setting(setting_file)
         self.name = year + '_' + seq
-        self.skip_step = 1
+        self.skip_step = 2
         self.img_list.sort()
         self.action_space = spaces.Discrete(len(self.discrete_actions))
         state = cv2.imread(os.path.join(self.dataset_dir,self.img_list[0]))
@@ -55,9 +55,11 @@ class VideoTracking_base(gym.Env):
 
         h0 = 0
         h1 = state.shape[0]
-        w0 = state.shape[1]/2 - (h1-h0)/2
-        w1 = state.shape[1]/2 + (h1-h0)/2
-        state = state[h0:h1,w0:w1]
+        #w0 = state.shape[1]/2 - (h1-h0)/2
+        w0 = 0
+        #w1 = state.shape[1]/2 + (h1-h0)/2
+        w1 = state.shape[1]
+        #state = state[h0:h1,w0:w1]
         height = state.shape[0]
         width = state.shape[1]
 
@@ -69,8 +71,8 @@ class VideoTracking_base(gym.Env):
         action_x = int(5 * width / 10)
         action_y = int(9 * height / 10)
         color = [(255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255), (255, 255, 255)]
-        color[action] = (0, 0, 255)
-        cv2.circle(cv_img, (action_x + int(width * 0.04), action_y - int(height * 0.2)), 8, color[0], -1)  # forward
+        color[max(action,1)] = (0, 0, 255)
+        #cv2.circle(cv_img, (action_x + int(width * 0.04), action_y - int(height * 0.2)), 8, color[0], -1)  # forward
         cv2.circle(cv_img, (action_x + int(width * 0.04), action_y - int(height * 0.15)), 8, color[1], -1)  # left
         cv2.circle(cv_img, (action_x + 10 + int(width * 0.04), action_y - int(height * 0.10)), 8, color[2], -1)  # right
         cv2.circle(cv_img, (action_x - 10 + int(width * 0.04), action_y - int(height * 0.10)), 8, color[3], -1)  # left
@@ -95,9 +97,9 @@ class VideoTracking_base(gym.Env):
         else:
             color = 'c'
 
-        plt.scatter(self.x_center[self.img_id] - (w0+ w1)/2, action, c=color, alpha=0.4, s=25,marker = 'o')
-
-        #plt.scatter(self.x_center[self.img_id] - (w0+ w1)/2, self.size[self.img_id]/100.0, c=color, alpha=0.4, s=25,marker = 'o')
+        #plt.scatter(self.x_center[self.img_id] - (w0+ w1)/2, action, c=color, alpha=0.4, s=25,marker = 'o')
+        if action >1 :
+            plt.scatter(self.x_center[self.img_id], self.size[self.img_id]/100.0, c=color, alpha=0.4, s=25,marker = 'o')
 
         if self.img_id >= self.max_steps:
             done = True
@@ -135,7 +137,7 @@ class VideoTracking_base(gym.Env):
             import yaml
             setting = yaml.load(f)
         else:
-            print 'unknown type'
+            print ('unknown type')
 
         # print setting
         self.cam_id = setting['cam_id']

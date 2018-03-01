@@ -17,7 +17,6 @@ class Reward():
         cos_factor = np.cos(direction_error)
         e_dis = self.dis_exp-dis2target_now*cos_factor
         e_dis_relative = e_dis / self.dis_exp
-
         reward = 1 - abs(e_dis_relative) - abs(direction_error/(np.pi/4))
         self.dis2target_last = dis2target_now
         #print reward,direction_error,dis2target_now

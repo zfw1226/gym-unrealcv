@@ -139,7 +139,7 @@ class UnrealCvTracking_base(gym.Env):
         if self.count_steps > self.max_steps:
            info['Done'] = True
            info['Maxstep'] = True
-           print 'Reach Max Steps'
+           print ('Reach Max Steps')
 
         # save the trajectory
         self.trajectory.append(info['Pose'])
@@ -176,12 +176,15 @@ class UnrealCvTracking_base(gym.Env):
        cam_pos = self.target_pos
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
        yaw = self.get_direction(self.target_pos, cam_pos)
+       #self.reward_function.dis_exp = 1.5 * self.get_distance(self.target_pos,cam_pos[:3])
+       #print self.reward_function.dis_exp
        # set pose
        self.unrealcv.set_location(self.cam_id, cam_pos)
        self.unrealcv.set_rotation(self.cam_id, [self.roll, yaw, self.pitch])
        current_pose = self.unrealcv.get_pose(self.cam_id,'soft')
 
        # get state
+       time.sleep(0.1)
        state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
        self.trajectory = []
@@ -226,9 +229,8 @@ class UnrealCvTracking_base(gym.Env):
            import yaml
            setting = yaml.load(f)
        else:
-           print 'unknown type'
+           print ('unknown type')
 
-       #print setting
        self.cam_id = setting['cam_id']
        self.target_list = setting['targets']
        self.max_steps = setting['max_steps']

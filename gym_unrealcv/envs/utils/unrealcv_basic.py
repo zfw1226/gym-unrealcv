@@ -58,7 +58,7 @@ class UnrealCv(object):
 
     def check_connection(self):
         while (self.client.isconnected() is False):
-            print 'UnrealCV server is not running. Please try again'
+            print ('UnrealCV server is not running. Please try again')
             self.client.connect()
 
     def show_img(self,img,title="raw_img"):
@@ -97,10 +97,11 @@ class UnrealCv(object):
                     res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
                 image_rgba = self.decode_bmp(res)
                 image = image_rgba[:, :, :-1] # delete alpha channel
-
+                #cv2.imshow('color',image)
+                #cv2.waitKey(10)
             return image
 
-    def read_depth(self, cam_id, mode='old'):
+    def read_depth(self, cam_id, mode='fast'):
         if mode == 'fast':
             cmd ='vget /sensor/{cam_id}/depth npy'
         elif mode == 'old':
@@ -109,7 +110,9 @@ class UnrealCv(object):
         depth = np.fromstring(res, np.float32)
         depth = depth[-self.resolution[1] * self.resolution[0]:]
         depth = depth.reshape(self.resolution[1], self.resolution[0],1)
-        #depth[depth>100.0] = 0
+        depth = depth/depth.max()
+        #cv2.imshow('depth',depth/depth.max())
+        #cv2.waitKey(10)
         return depth
 
     def decode_png(self,res):
@@ -275,7 +278,6 @@ class UnrealCv(object):
             x_max = pixelpointsCV2[:,:,0].max()
             y_min = pixelpointsCV2[:,:,1].min()
             y_max = pixelpointsCV2[:,:,1].max()
-            #print x_min, x_max ,y_min, y_max
             box = ((x_min/float(width),y_min/float(height)),#left top
                    (x_max/float(width),y_max/float(height)))#right down
         else:
@@ -337,3 +339,7 @@ class UnrealCv(object):
     def show_objects(self, objects):
         for obj in objects:
             self.show_obj(obj)
+
+    def set_fov(self,fov, cam_id = 0):
+        cmd = 'vset /sensor/{cam_id}/horizontal_fieldofview {FOV}'
+        self.client.request(cmd.format(cam_id=cam_id,FOV=fov))

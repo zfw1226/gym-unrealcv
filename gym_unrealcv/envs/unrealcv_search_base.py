@@ -85,7 +85,7 @@ class UnrealCvSearch_base(gym.Env):
          s_high[:, :, :-1] = 255  # max_rgb
          s_low = np.zeros(state.shape)
          self.observation_space = spaces.Box(low=s_low, high=s_high)
-     
+
      #self.observation_shape = self.unrealcv.define_observation(self.cam_id,self.observation_type)
 
      # define reward type
@@ -254,7 +254,7 @@ class UnrealCvSearch_base(gym.Env):
 
    def select_target_by_distance(self,current_pos, targets_pos):
        # find the nearest target, return distance and targetid
-       target_id = self.targets_pos.keys()[0]
+       target_id = list(self.targets_pos.keys())[0]
        distance_min = self.get_distance(targets_pos[target_id], current_pos)
        for key, target_pos in targets_pos.items():
            distance = self.get_distance(target_pos, current_pos)
@@ -292,7 +292,7 @@ class UnrealCvSearch_base(gym.Env):
            import yaml
            setting = yaml.load(f)
        else:
-           print 'unknown type'
+           print ('unknown type')
 
        self.cam_id = setting['cam_id']
        self.target_list = setting['targets']

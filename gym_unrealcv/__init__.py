@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 
@@ -258,10 +258,12 @@ register(
     max_episode_steps = 1000000
 )
 
+
+
 register(
     id='RobotArm-Discrete-v1',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v3.json',
+    kwargs = {'setting_file' : 'robotarm_v4.json',
               'reset_type': 'keyboard',
               'action_type' : 'discrete',
               'observation_type': 'color',
@@ -284,13 +286,41 @@ register(
     max_episode_steps = 1000000
 )
 
+
+
 register(
     id='RobotArm-Continuous-v2',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v3.json',
+    kwargs = {'setting_file' : 'robotarm_v4.json',
               'reset_type': 'keyboard',
               'action_type' : 'continuous',
               'observation_type': 'measured',
+              'reward_type': 'move_distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='RobotArm-Continuous-v3',
+    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+    kwargs = {'setting_file' : 'robotarm_v4.json',
+              'reset_type': 'keyboard',
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type': 'move_distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='RobotArm-Continuous-v4',
+    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+    kwargs = {'setting_file' : 'robotarm_v5.json',
+              'reset_type': 'keyboard',
+              'action_type' : 'continuous',
+              'observation_type': 'measured_real',
               'reward_type': 'move_distance',
               'docker': use_docker
               },
@@ -444,5 +474,25 @@ register(
               'reward_type':  'distance',
               'docker': use_docker,
               },
+    max_episode_steps = 1000000
+)
+
+register(
+    id='Tracking-City1StefaniPath2StaticContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+    kwargs = {'setting_file' : 'tracking_v0.4_G.json',
+              'reset_type': 'static',
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type':  'distance',
+              'docker': use_docker,
+              },
+    max_episode_steps = 1000000
+)
+
+
+register(
+    id='Tracking-Video-v0',
+    entry_point='gym_unrealcv.envs:VideoTracking_base',
     max_episode_steps = 1000000
 )
