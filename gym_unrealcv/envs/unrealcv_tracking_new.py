@@ -178,33 +178,17 @@ class UnrealCvTracking_base_random(gym.Env):
        if self.reset_type == 5: # layout
            self.unrealcv.random_layout(self.objects_env)
 
-       ''' 
-       if 'random' in self.reset_type:
-           self.unrealcv.random_env(self.background_list, self.imgs_list, 'img', self.light_list)
-           self.unrealcv.random_character(self.target_list[0],self.target_num)
-           distance = np.random.randint(150, 350)
-           direction = 2 * np.pi * np.random.sample(1)
-       else:
-       '''
-
-
 
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-
-       #direction = 2 * np.pi * np.random.sample(1)
        res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
        while res == False:
            self.target_pos = random.sample(self.safe_start, 1)[0]
            self.unrealcv.set_object_location(self.target_list[0], self.target_pos)  # [-600, 400 ,100]
            res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
        cam_pos_exp, yaw = res
-       #self.reward_function.dis_exp = 1.5 * self.get_distance(self.target_pos,cam_pos[:3])
-       #print self.reward_function.dis_exp
-       # set pose
-       #self.unrealcv.set_pose(self.cam_id, cam_pos+[self.roll, yaw, self.pitch])
 
        self.unrealcv.set_location(self.cam_id, cam_pos_exp) # moveto
-       #pose_now = self.unrealcv.get_location(self.cam_id)
+
        '''
        error = self.unrealcv.error_position(pose_now[:3], cam_pos_exp)
        if error>10:
