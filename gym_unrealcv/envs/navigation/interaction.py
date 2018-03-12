@@ -19,36 +19,71 @@ class Navigation(UnrealCv):
         self.img_depth = np.zeros(1)
 
 
-    def get_observation(self,cam_id, observation_type):
+    def get_observation(self,cam_id, observation_type, mode= 'direct'):
         if observation_type == 'color':
-            self.img_color = state = self.read_image(cam_id, 'lit')
+            self.img_color = state = self.read_image(cam_id, 'lit_fast', mode)
         elif observation_type == 'depth':
-            self.img_depth = state = self.read_depth(cam_id)
+            self.img_depth = state = self.read_depth(cam_id, mode)
         elif observation_type == 'rgbd':
-            self.img_color = self.read_image(cam_id, 'lit')
-            self.img_depth = self.read_depth(cam_id)
+            self.img_color = self.read_image(cam_id, 'lit', mode)
+            self.img_depth = self.read_depth(cam_id, mode)
             state = np.append(self.img_color, self.img_depth, axis=2)
         return state
 
-    def define_observation(self,cam_id, observation_type):
+    def define_observation(self,cam_id, observation_type, mode='direct'):
         if observation_type == 'color':
-            state = self.read_image(cam_id, 'lit')
+            state = self.read_image(cam_id, 'lit', mode)
+            #observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype = np.uint8) # for gym>=0.10
             observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
         elif observation_type == 'depth':
-            state = self.read_depth(cam_id)
+            state = self.read_depth(cam_id, mode)
             observation_space = spaces.Box(low=0, high=100, shape=state.shape)
 
         elif observation_type == 'rgbd':
-            state = self.get_rgbd(cam_id)
+            state = self.get_rgbd(cam_id, mode)
             s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
             s_high[:, :, :-1] = 255  # max_rgb
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high)
         return observation_space
+
     def open_door(self):
         self.keyboard('RightMouseButton')
         time.sleep(2)
         self.keyboard('RightMouseButton')  # close the door
-#nav = Navigation(env='test')
+
+    def set_texture(self, target, color=(1,1,1), param=(0,0,0), picpath=None, tiling=1, e_num=0): #[r, g, b, meta, spec, rough, tiling, picpath]
+        param = param / param.max()
+        color = color / color.max()
+        cmd = 'vbp {target} set_mat {e_num} {r} {g} {b} {meta} {spec} {rough} {tiling} {picpath}'
+        res=self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
+                               meta=param[0], spec=param[1], rough=param[2], tiling=tiling,
+                               picpath=picpath))
+
+
+    def set_light(self, target, direction, intensity, color): # param num out of range
+        cmd = 'vbp {target} set_light {row} {yaw} {pitch} {intensity} {r} {g} {b}'
+        color = color/color.max()
+        res=self.client.request(cmd.format(target=target, row=direction[0], yaw=direction[1],
+                                       pitch=direction[2], intensity=intensity,
+                                       r=color[0],g=color[1],b=color[2]))
+    def set_skylight(self, target, color, intensity ): # param num out of range
+        cmd = 'vbp {target} set_light {r} {g} {b} {intensity} '
+        color = color / color.max()
+        res = self.client.request(cmd.format(target=target, intensity=intensity,
+                                       r=color[0],g=color[1],b=color[2]))
+
+
+    def get_pose(self,cam_id, type='hard'):# pose = [x, y, z, roll, yaw, pitch]
+        if type == 'soft':
+            pose = self.cam[cam_id]['location']
+            pose.extend(self.cam[cam_id]['rotation'])
+            return pose
+
+        if type == 'hard':
+            self.cam[cam_id]['location'] = self.get_location(cam_id)
+            self.cam[cam_id]['rotation'] = self.get_rotation(cam_id)
+            pose = self.cam[cam_id]['location'] + self.cam[cam_id]['rotation']
+            return pose
