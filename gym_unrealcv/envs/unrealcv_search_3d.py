@@ -27,7 +27,7 @@ Recommend object list in Arch1
 'BP_door_001_C_0','BP_door_002_C_0'
 '''
 
-class UnrealCvSearch_base(gym.Env):
+class UnrealCvSearch_3d(gym.Env):
    def __init__(self,
                 setting_file = 'search_rr_plant78.json',
                 reset_type = 'waypoint',       # testpoint, waypoint,
@@ -37,7 +37,7 @@ class UnrealCvSearch_base(gym.Env):
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
                 docker = False,
-                resolution = (84,84)
+                resolution = (84, 84)
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -73,7 +73,7 @@ class UnrealCvSearch_base(gym.Env):
      self.observation_type = observation_type
      assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
      if observation_type == 'color':
-         state = self.unrealcv.read_image(self.cam_id, 'lit')
+         state = self.unrealcv.read_image(self.cam_id, 'lit_fast')
          self.observation_space = spaces.Box(low=0, high=255, shape=state.shape)
      elif observation_type == 'depth':
          state = self.unrealcv.read_depth(self.cam_id)
@@ -96,11 +96,10 @@ class UnrealCvSearch_base(gym.Env):
      # set start position
      self.trigger_count  = 0
      current_pose = self.unrealcv.get_pose(self.cam_id)
-     current_pose[2] = self.height
-     self.unrealcv.set_location(self.cam_id,current_pose[:3])
 
      self.count_steps = 0
      self.targets_pos = self.unrealcv.build_pose_dic(self.target_list)
+     #self.objects_pos = self.unrealcv.build_pose_dic(self.objects_list)
 
      # for reset point generation and selection
      self.reset_module = reset_point.ResetPoint(setting, reset_type, test, current_pose)
@@ -129,16 +128,16 @@ class UnrealCvSearch_base(gym.Env):
         action = np.squeeze(action)
         t0 = time.time()
         if self.action_type == 'discrete':
-            (velocity, angle, info['Trigger']) = self.discrete_actions[action]
+            (velocity, angle, height, pitch, info['Trigger']) = self.discrete_actions[action]
         else:
-            (velocity, angle, info['Trigger']) = action
+            (velocity, angle, height, pitch, info['Trigger']) = action
         self.count_steps += 1
         info['Done'] = False
 
         # take action
-        info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity)
+        info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity, height, pitch)
         info['Pose'] = self.unrealcv.get_pose(self.cam_id, 'soft')
-        t1 = time.time()
+
         # the robot think that it found the target object,the episode is done
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
@@ -149,18 +148,14 @@ class UnrealCvSearch_base(gym.Env):
                 object_mask = self.unrealcv.read_image(self.cam_id, 'object_mask')
                 boxes = self.unrealcv.get_bboxes(object_mask, self.target_list)
                 info['Reward'], info['Bbox'] = self.reward_function.reward_bbox(boxes)
-            else:
-                info['Reward'] = 0
 
-            if info['Reward'] > 0 or self.trigger_count > 3:
+            if info['Reward'] > 0:
                 info['Done'] = True
-                if info['Reward'] > 0 and self.test == False:
-                    self.reset_module.success_waypoint(self.count_steps)
-                    #print ('Find Target!')
+                #print ('Find Target!')
 
         else :
             # get reward
-            distance, self.target_id = self.select_target_by_distance(info['Pose'][:3],self.targets_pos)
+            distance, self.target_id = self.select_target_by_distance(info['Pose'][:3], self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
             info['Direction'] = self.get_direction(info['Pose'], self.targets_pos[self.target_id])
 
@@ -174,7 +169,7 @@ class UnrealCvSearch_base(gym.Env):
             if info['Collision']:
                 info['Reward'] = -1
                 info['Done'] = True
-                self.reset_module.update_dis2collision(info['Pose'])
+                #self.reset_module.update_dis2collision(info['Pose'])
                 #print ('Collision!!')
 
         # update observation
@@ -208,7 +203,7 @@ class UnrealCvSearch_base(gym.Env):
            current_pose = self.reset_module.select_resetpoint()
            self.unrealcv.set_pose(self.cam_id, current_pose)
            collision = self.unrealcv.move_2d(self.cam_id, 0, 100)
-       self.unrealcv.set_pose(self.cam_id,current_pose)
+       self.unrealcv.set_pose(self.cam_id, current_pose)
 
        state = self.unrealcv.get_observation(self.cam_id,self.observation_type)
 
@@ -244,13 +239,12 @@ class UnrealCvSearch_base(gym.Env):
 
            if 'target' in augment_env:
                for i in self.target_list:
-                   z1 = 60
-                   while z1 > 50:
-                       x = random.uniform(self.reset_area[0], self.reset_area[1])
-                       y = random.uniform(self.reset_area[2], self.reset_area[3])
-                       self.unrealcv.set_object_location(i, [x, y, 50])
-                       time.sleep(0.5)
-                       [x1, y1, z1] = self.unrealcv.get_obj_location(i)
+                   [x0, y0, z0] = self.unrealcv.get_obj_location(i)
+                   dx = random.uniform(-50, 50)
+                   dy = random.uniform(-50, 50)
+                   dz = random.uniform(0,100)
+                   self.unrealcv.set_object_location(i, [x0+dx, y0+dy, z0+dz ])
+                   time.sleep(0.1)
 
 
    def get_distance(self,target,current):
@@ -308,7 +302,7 @@ class UnrealCvSearch_base(gym.Env):
        self.trigger_th = setting['trigger_th']
        self.height = setting['height']
        self.pitch = setting['pitch']
-
+       #self.objects_list = setting['objects_list']
        self.discrete_actions = setting['discrete_actions']
        self.continous_actions = setting['continous_actions']
 

@@ -1,0 +1,35 @@
+{
+	"env_name": "RobotArm-OWI",
+	"env_bin": "arm_v1.5/MyProject/Binaries/Linux/MyProject",
+	"cam_view_id": 0,
+	"cam_arm_id": 1,
+	"maxsteps": 100,
+	"reward_th": 0.01,
+	"collision_th": 20,
+	"waypoint_th": 100,
+	"reward_factor": 10,
+	"camera_pose": [
+		[-76,-350,120,0,90,-10]
+	],
+	"targets":["Ball0", "destboxBP"],
+	"discrete_actions": [
+		[ 3, 0, 0, 0, 0],
+		[-3, 0, 0, 0, 0],
+		[ 0, 3, 0, 0, 0],
+		[ 0,-3, 0, 0, 0],
+		[ 0, 0, 5, 0, 0],
+		[ 0, 0,-5, 0, 0],
+		[ 0, 0, 0, 5, 0],
+		[ 0, 0, 0,-5, 0]
+	],
+	"continous_actions": {
+		"high": [ 5,  5,  5, 5],
+		"low":  [-5, -5, -5, -5]
+	},
+	"pose_range": {
+		"high": [ 130,  60,  170, 50, 70],
+		"low":  [-130, -90, -60, -50, 0]
+	},
+	"box_area":[-200, 50, 0, -100, 50, 51]
+
+}

@@ -75,6 +75,8 @@ class UnrealCvTracking_base_random(gym.Env):
 
 
      self.rendering = False
+     if self.reset_type == 0:  # spline
+         self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
      self.unrealcv.start_walking(self.target_list[0])
      self.count_close = 0
 
@@ -123,7 +125,7 @@ class UnrealCvTracking_base_random(gym.Env):
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
 
-        if info['Distance'] > self.max_distance or abs(info['Direction'])> self.max_direction or info['Collision']:
+        if info['Distance'] > self.max_distance or info['Distance'] < self.min_distance or abs(info['Direction'])> self.max_direction:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -155,6 +157,7 @@ class UnrealCvTracking_base_random(gym.Env):
        self.unrealcv.start_walking(self.target_list[0]) # stop moving
 
        if self.reset_type == 0:# spline
+           print ('reset')
            self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
            time.sleep(0.3)
 
@@ -166,14 +169,24 @@ class UnrealCvTracking_base_random(gym.Env):
                self.unrealcv.set_appearance(self.target_list[0], 7)
 
        if self.reset_type == 2 or self.reset_type ==3 or self.reset_type ==4 or self.reset_type == 5: # appearance
-           self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, num))
+           self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
 
        if self.reset_type == 3 or self.reset_type == 4 or self.reset_type == 5: # light
            for lit in self.light_list:
-               self.unrealcv.set_light(lit, 360 * np.random.sample(3), np.random.sample(1), np.random.sample(3))
+               if 'sky' in lit:
+                   self.unrealcv.set_skylight(lit, [1,1,1], np.random.uniform(0.5,2))
+               else:
+                   lit_direction = np.random.uniform(-1, 1, 3)
+                   if 'directional' in lit:
+                       lit_direction[0] = lit_direction[0] * 60
+                       lit_direction[1] = lit_direction[1] * 80
+                       lit_direction[2] = lit_direction[2] * 60
+                   else:
+                       lit_direction *= 180
+                   self.unrealcv.set_light(lit, lit_direction, np.random.uniform(1,4), np.random.uniform(0.1,1,3))
 
        if self.reset_type == 4 or  self.reset_type == 5: # texture
-           self.unrealcv.random_texture(self.background_list)
+           self.unrealcv.random_texture(self.background_list,self.imgs_list)
 
        if self.reset_type == 5: # layout
            self.unrealcv.random_layout(self.objects_env)
@@ -182,8 +195,11 @@ class UnrealCvTracking_base_random(gym.Env):
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
        res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
        while res == False:
-           self.target_pos = random.sample(self.safe_start, 1)[0]
-           self.unrealcv.set_object_location(self.target_list[0], self.target_pos)  # [-600, 400 ,100]
+           #self.target_pos = random.sample(self.safe_start, 1)[0]
+           #self.unrealcv.set_object_location(self.target_list[0], self.target_pos)  # [-600, 400 ,100]
+           self.unrealcv.reset_target(self.target_list[0])
+           time.sleep(0.1)
+           self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
            res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
        cam_pos_exp, yaw = res
 
@@ -204,7 +220,7 @@ class UnrealCvTracking_base_random(gym.Env):
        current_pose = self.unrealcv.get_pose(self.cam_id,'soft')
 
        # get state
-       time.sleep(0.2)
+       time.sleep(0.1)
        state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
 
        #import cv2

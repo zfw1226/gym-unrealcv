@@ -35,7 +35,7 @@ class ResetPoint():
     def reset_random(self):
         x = random.uniform(self.reset_area[0], self.reset_area[1])
         y = random.uniform(self.reset_area[2], self.reset_area[3])
-        z =  self.height
+        z = random.uniform(self.reset_area[4], self.reset_area[5])
         yaw = random.randint(0, 360)
 
         return [x,y,z, 0, yaw, self.pitch]
@@ -51,8 +51,8 @@ class ResetPoint():
 
     def reset_waypoint(self):
         # reset from waypoints generated in exploration
-        # x, y, z, pitch, yaw, roll = self.select_waypoint_times()
-        x, y, z, pitch, yaw, roll = self.select_waypoint_random()
+        x, y, z, pitch, yaw, roll = self.select_waypoint_times()
+        #x, y, z, pitch, yaw, roll = self.select_waypoint_random()
         yaw = random.randint(0, 360)
         return [x, y, z, roll, yaw, self.pitch]
 

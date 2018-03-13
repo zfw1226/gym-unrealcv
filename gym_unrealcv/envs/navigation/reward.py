@@ -18,10 +18,10 @@ class Reward():
             print ('Get ideal Target!!!')
         elif reward == 0:
             reward = -1
-            print ('Get Nothing')
+            #print ('Get Nothing')
         else:
             reward = 0
-            print ('Get small Target!!!')
+            #print ('Get small Target!!!')
 
         return reward, boxes
 

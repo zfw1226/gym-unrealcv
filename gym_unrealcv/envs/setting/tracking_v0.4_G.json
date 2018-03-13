@@ -3,7 +3,7 @@
 	"env_bin": "SplineCharacterG/SplineCharacterC/Binaries/Linux/SplineCharacterC",
 	"cam_id": 0,
 	"height": 40,
-	"max_steps": 3000,
+	"max_steps": 1000,
 	"max_distance": 400,
 	"max_direction": 90,
 	"exp_distance": 200,
@@ -20,8 +20,8 @@
 		[0,  0]
 	],
 	"continous_actions": {
-		"high": [50,  30],
-		"low":  [0,  -30]
+		"high": [40,  20],
+		"low":  [0,  -20]
 	},
 	"objects_list": [
 		"road_A_55", "road_B_58", "road_B2_61",

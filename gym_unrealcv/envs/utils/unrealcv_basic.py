@@ -25,7 +25,7 @@ class UnrealCv(object):
 
         self.envdir = env
         self.ip = ip
-
+        print (self.ip)
         self.cam = dict()
         for i in range(3):
             self.cam[i] = dict(
@@ -43,7 +43,6 @@ class UnrealCv(object):
     def init_unrealcv(self,cam_id, resolution=(320,240)):
         self.client.connect()
         self.check_connection()
-        #client.request('vrun setres 160x120w')# this will set the resolution of object_mask
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0],h=resolution[1]))  # this will set the resolution of object_mask
         time.sleep(5)
         #self.get_pose(cam_id,'hard')
@@ -82,6 +81,7 @@ class UnrealCv(object):
                 image_rgb = self.decode_png(res)
                 image_rgb = image_rgb[:,:,:-1] # delete alpha channel
                 image = image_rgb[:,:,::-1] # transpose channel order
+
             elif mode == 'file':
                 cmd = 'vget /camera/{cam_id}/{viewmode} {viewmode}{ip}.png'
                 if self.docker:
@@ -91,19 +91,19 @@ class UnrealCv(object):
                     img_dirs = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 image = cv2.imread(img_dirs)
             elif mode=='fast':
-                cmd = 'vget /sensor/{cam_id}/{viewmode} bmp'
+                cmd = 'vget /camera/{cam_id}/{viewmode} bmp'
                 res = None
                 while res is None:
                     res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))
                 image_rgba = self.decode_bmp(res)
                 image = image_rgba[:, :, :-1] # delete alpha channel
-                #cv2.imshow('color',image)
-                #cv2.waitKey(10)
+
+
             return image
 
     def read_depth(self, cam_id, mode='fast'):
         if mode == 'fast':
-            cmd ='vget /sensor/{cam_id}/depth npy'
+            cmd ='vget /camera/{cam_id}/depth npy'
         elif mode == 'old':
             cmd = 'vget /camera/{cam_id}/depth npy'
         res = self.client.request(cmd.format(cam_id=cam_id))
@@ -150,7 +150,6 @@ class UnrealCv(object):
         self.cam[cam_id]['rotation'] = pose[-3:]
 
     def get_pose(self,cam_id, type='hard'):# pose = [x, y, z, roll, yaw, pitch]
-
         if type == 'soft':
             pose = self.cam[cam_id]['location']
             pose.extend(self.cam[cam_id]['rotation'])
@@ -205,20 +204,22 @@ class UnrealCv(object):
         cmd = 'vset /camera/{cam_id}/moveto {x} {y} {z}'
         self.client.request(cmd.format(cam_id=cam_id, x=loc[0], y=loc[1], z=loc[2]))
 
-    def move_2d(self,cam_id, angle, length):
+    def move_2d(self,cam_id, angle, length, height=0, pitch=0):
 
         yaw_exp = (self.cam[cam_id]['rotation'][1] + angle) % 360
+        pitch_exp = (self.cam[cam_id]['rotation'][2] + pitch) % 360
         delt_x = length * math.cos(yaw_exp / 180.0 * math.pi)
         delt_y = length * math.sin(yaw_exp / 180.0 * math.pi)
 
         location_now = self.cam[cam_id]['location']
-        location_exp = [location_now[0] + delt_x, location_now[1]+delt_y,location_now[2]]
+        location_exp = [location_now[0] + delt_x, location_now[1]+delt_y,location_now[2]+height]
 
 
         self.moveto(cam_id, location_exp)
 
-        if angle != 0 :
-            self.set_rotation(cam_id, [0, yaw_exp, self.pitch])
+
+        if angle != 0 or pitch != 0 :
+            self.set_rotation(cam_id, [0, yaw_exp, pitch_exp])
 
         location_now = self.get_location(cam_id)
         error = self.error_position(location_now, location_exp)
@@ -227,6 +228,7 @@ class UnrealCv(object):
             return False
         else:
             return True
+
 
 
     def error_position(self,pos_now,pos_exp):
@@ -315,7 +317,7 @@ class UnrealCv(object):
     def get_obj_rotation(self,object):
         rotation = None
         while rotation is None:
-            rotation = self.client.request('vget /object/{obj}/location'.format(obj = object))
+            rotation = self.client.request('vget /object/{obj}/rotation'.format(obj = object))
         return [float(i) for i in rotation.split()]
 
     def build_pose_dic(self,objects):
@@ -341,5 +343,5 @@ class UnrealCv(object):
             self.show_obj(obj)
 
     def set_fov(self,fov, cam_id = 0):
-        cmd = 'vset /sensor/{cam_id}/horizontal_fieldofview {FOV}'
+        cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
         self.client.request(cmd.format(cam_id=cam_id,FOV=fov))

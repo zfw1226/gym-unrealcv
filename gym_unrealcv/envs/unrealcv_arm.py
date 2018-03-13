@@ -88,7 +88,7 @@ class UnrealCvRobotArm_base(gym.Env):
             Depth = None,
             QRPose = None
         )
-
+        action = np.squeeze(action)
         # take a action
         if self.action_type == 'discrete':
             arm_state = self.unrealcv.move_arm(self.discrete_actions[action])
@@ -175,6 +175,10 @@ class UnrealCvRobotArm_base(gym.Env):
         if self.rendering:
             show_info(info)
         return state, info['Reward'], info['Done'], info
+
+   def _seed(self, seed=None):
+       print('fake seed')
+
    def _reset(self ):
 
        # set start position

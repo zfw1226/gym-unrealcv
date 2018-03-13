@@ -32,9 +32,9 @@ class Tracking(Navigation):
         for id in sample_index:
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-            self.set_texture(target,np.random.uniform(0,1,3),np.random.uniform(0,1,3),img_dir, np.random.randint(1,4))
+            self.set_texture(target,(1,1,1),np.random.uniform(0,1,3),img_dir, np.random.randint(1,4))
 
-        self.set_texture('floor', np.random.uniform(0, 1, 3), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))],
+        self.set_texture('floor', (1,1,1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))],
                          np.random.randint(1, 4))
 
     def set_picture(self,target,dir):

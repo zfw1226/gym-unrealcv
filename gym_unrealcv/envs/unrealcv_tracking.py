@@ -10,7 +10,7 @@ from gym_unrealcv.envs.utils import env_unreal
 from gym_unrealcv.envs.navigation.interaction import Navigation
 import random
 
-'''
+''' 
 It is an env for active object tracking.
 
 State : raw color image and depth
@@ -101,7 +101,7 @@ class UnrealCvTracking_base(gym.Env):
             Color = None,
             Depth = None,
         )
-
+        action = np.squeeze(action)
         if self.action_type == 'discrete':
             # linear
             (velocity, angle) = self.discrete_actions[action]
@@ -197,6 +197,8 @@ class UnrealCvTracking_base(gym.Env):
        if self.docker:
            self.unreal.docker.close()
 
+   def _seed(self, seed=None):
+       print('fake seed')
 
    def _get_action_size(self):
        return len(self.action)
@@ -239,6 +241,7 @@ class UnrealCvTracking_base(gym.Env):
        self.max_distance = setting['max_distance']
        self.max_direction = setting['max_direction']
        self.objects_env = setting['objects_list']
+
 
        return setting
 

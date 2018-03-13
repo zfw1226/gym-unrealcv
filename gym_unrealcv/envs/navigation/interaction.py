@@ -56,7 +56,7 @@ class Navigation(UnrealCv):
 
     def set_texture(self, target, color=(1,1,1), param=(0,0,0), picpath=None, tiling=1, e_num=0): #[r, g, b, meta, spec, rough, tiling, picpath]
         param = param / param.max()
-        color = color / color.max()
+        #color = color / color.max()
         cmd = 'vbp {target} set_mat {e_num} {r} {g} {b} {meta} {spec} {rough} {tiling} {picpath}'
         res=self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
                                meta=param[0], spec=param[1], rough=param[2], tiling=tiling,
@@ -71,7 +71,7 @@ class Navigation(UnrealCv):
                                        r=color[0],g=color[1],b=color[2]))
     def set_skylight(self, target, color, intensity ): # param num out of range
         cmd = 'vbp {target} set_light {r} {g} {b} {intensity} '
-        color = color / color.max()
+        #color = color / color.max()
         res = self.client.request(cmd.format(target=target, intensity=intensity,
                                        r=color[0],g=color[1],b=color[2]))
 
