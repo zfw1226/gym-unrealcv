@@ -2,6 +2,7 @@ from gym_unrealcv.envs.navigation.interaction import Navigation
 import numpy as np
 import cv2
 import math
+import random
 class Tracking(Navigation):
     def __init__(self, env, cam_id = 0, port = 9000,
                  ip = '127.0.0.1', targets = None, resolution=(160,120)):
@@ -33,7 +34,6 @@ class Tracking(Navigation):
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
             self.set_texture(target,(1,1,1),np.random.uniform(0,1,3),img_dir, np.random.randint(1,4))
-
         self.set_texture('floor', (1,1,1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))],
                          np.random.randint(1, 4))
 
@@ -65,9 +65,11 @@ class Tracking(Navigation):
             res = self.client.request(cmd.format(target=target, acc=acc))
         return acc
 
-    def set_appearance(self, target, id):
-        #cmd = 'vbp {target} set_app {id}'
-        cmd = 'vbp {target} set_mixamoapp {id}'
+    def set_appearance(self, target, id, spline=False):
+        if spline:
+            cmd = 'vbp {target} set_app {id}'
+        else:
+            cmd = 'vbp {target} set_mixamoapp {id}'
         res = None
         while res is None:
             res = self.client.request(cmd.format(target=target, id=id))
@@ -137,7 +139,7 @@ class Tracking(Navigation):
             self.cam[cam_id]['location'] = [float(i) for i in location.split()]
             return self.cam[cam_id]['location']
 
-    def get_startpoint(self,target_pos, distance, reset_area):
+    def get_startpoint(self,target_pos, distance, reset_area, exp_height=170):
         count = 0
         while True: # searching a safe point
             direction = 2 * np.pi * np.random.sample(1)
@@ -146,7 +148,7 @@ class Tracking(Navigation):
             cam_pos_exp = target_pos
             x = dx + target_pos[0]
             y = dy + target_pos[1]
-            cam_pos_exp[2] = 150
+            cam_pos_exp[2] = exp_height
             yaw = float(direction / np.pi * 180 - 180)
             if reset_area[0]<x<reset_area[1]  and  reset_area[2]<y<reset_area[3]:
                 cam_pos_exp[0] = dx + target_pos[0]
@@ -163,4 +165,25 @@ class Tracking(Navigation):
         res=None
         while res is None:
             res = self.client.request(cmd.format(target=target))
+
+    def set_phy(self, object, state):
+        cmd = 'vbp {target} set_phy {state}'
+        res=None
+        while res is None:
+            res = self.client.request(cmd.format(target=object, state =state))
+
+    def simulate_physics(self, objects):
+        for obj in objects:
+            self.set_phy(obj, 1)
+
+    def random_layout(self,objects, reset_area):
+        sample_index = np.random.choice(len(objects), 5)
+        for id in sample_index:
+            object_loc = [0,0, 150]
+            object_loc[0] = np.random.uniform(reset_area[0], reset_area[1])
+            object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
+            self.set_object_location(objects[id],object_loc)
+
+
+
 
