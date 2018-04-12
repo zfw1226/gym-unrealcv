@@ -1,12 +1,14 @@
 {
 	"env_name": "RandomroomTracking",
 	"env_bin": "tracking_train/tracking/Binaries/Linux/tracking",
-    "imgs_dir": "/home/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv//textures",
+    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
 	"target_num": 10,
 	"cam_id": 0,
-	"height": 100,
+	"height": 220,
+	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
+	"min_distance": 80,
 	"max_direction": 90,
 	"exp_distance": 250,
 	"targets": [
@@ -23,6 +25,11 @@
 		[0, -10],
 		[0,  0]
 	],
+	"safe_start" :[
+	[  900,  -1400,  300],
+	[ -1800,  1400,  300]
+    ],
+	"reset_area" : [-1800, 900, -1400, 1400],
 	"continous_actions": {
 		"high": [80,  20],
 		"low":  [-80,  -20]

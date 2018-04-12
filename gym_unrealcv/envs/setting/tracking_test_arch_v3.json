@@ -1,7 +1,7 @@
 {
 	"env_name": "RandomroomTracking",
 	"env_bin": "arch3_tracking/ArchinteriorsVol2Scene3/Binaries/Linux/ArchinteriorsVol2Scene3",
-    "imgs_dir": "/home/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
+    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
 	"target_num": 10,
 	"cam_id": 0,
 	"height": 160,
