@@ -37,7 +37,7 @@ class UnrealCvSearch_3d(gym.Env):
                 observation_type = 'rgbd', # 'color', 'depth', 'rgbd'
                 reward_type = 'bbox', # distance, bbox, bbox_distance,
                 docker = False,
-                resolution = (84, 84)
+                resolution = (160, 120)
                 ):
 
      setting = self.load_env_setting(setting_file)
@@ -131,6 +131,7 @@ class UnrealCvSearch_3d(gym.Env):
             (velocity, angle, height, pitch, info['Trigger']) = self.discrete_actions[action]
         else:
             (velocity, angle, height, pitch, info['Trigger']) = action
+            pitch = 0
         self.count_steps += 1
         info['Done'] = False
 
@@ -158,16 +159,16 @@ class UnrealCvSearch_3d(gym.Env):
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3], self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
             info['Direction'] = self.get_direction(info['Pose'], self.targets_pos[self.target_id])
-
             # calculate reward according to the distance to target object
             if 'distance' in self.reward_type:
                 info['Reward'] = self.reward_function.reward_distance(distance)
+                #print (action,info['Reward'])
             else:
                 info['Reward'] = 0
 
             # if collision detected, the episode is done and reward is -1
             if info['Collision']:
-                info['Reward'] = -1
+                info['Reward'] = -10
                 info['Done'] = True
                 #self.reset_module.update_dis2collision(info['Pose'])
                 #print ('Collision!!')
@@ -249,7 +250,7 @@ class UnrealCvSearch_3d(gym.Env):
 
    def get_distance(self,target,current):
 
-       error = abs(np.array(target)[:2] - np.array(current)[:2])# only x and y
+       error = abs(np.array(target)[:3] - np.array(current)[:3])# x,y,z
        distance = math.sqrt(sum(error * error))
        return distance
 
