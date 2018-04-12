@@ -1,7 +1,7 @@
 {
 	"env_name": "RandomroomTracking",
 	"env_bin": "bproom_low/BW_room/Binaries/Linux/BW_room",
-    "imgs_dir": "/home/zfw/test_imgs",
+    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
 	"target_num": 5,
 	"cam_id": 0,
 	"height": 100,

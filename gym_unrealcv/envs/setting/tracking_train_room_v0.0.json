@@ -1,13 +1,14 @@
 {
 	"env_name": "RandomroomTracking",
 	"env_bin": "bwroom_setphy/BW_room/Binaries/Linux/BW_room",
-    "imgs_dir": "/home/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
+    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
 	"target_num": 10,
 	"cam_id": 0,
-	"height": 150,
+	"height": 130,
+	"pitch": -30,
 	"max_steps": 1000,
 	"max_distance": 300,
-	"min_distance": 80,
+	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 150,
 	"targets": [
@@ -38,7 +39,7 @@
 		"chair1", "chair10", "chair2", "chair3", "chair4", "chair5", "chair6", "chair7", "chair8", "chair9",
 		"curtain1", "curtain2",
 		"table1","table2", "table3",
-		"shelf", "sofa",  "tv", "tvstand", "carpet", "fridge", "lamp"
+		"sofa",  "tv", "tvstand", "carpet", "lamp"
 	],
     "backgrounds": [
 		"bed", "box1", "box2",
