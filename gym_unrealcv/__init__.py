@@ -19,6 +19,21 @@ register(
     max_episode_steps = 1000000
 )
 
+register(
+    id='Search-BProomContinuous-v0',
+    entry_point='gym_unrealcv.envs:UnrealCvSearch_3d',
+    kwargs = {'setting_file' : 'search_bproom.json',
+              'reset_type' : 'random',
+              'test': False,
+              'action_type' : 'continuous',
+              'observation_type': 'color',
+              'reward_type': 'bbox_distance',
+              'docker': use_docker
+              },
+    max_episode_steps = 1000000
+)
+
+
 # RrDoor41
 register(
     id='Search-RrDoorDiscrete-v0',
@@ -326,7 +341,7 @@ register(
               },
     max_episode_steps = 1000000
 )
-
+    
 register(
     id='RobotArm-Continuous-v4',
     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
@@ -547,7 +562,7 @@ register(
     id='Tracking-TrainContinuous-v2',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
     kwargs = {'setting_file' : 'tracking_train_random_v0.2.json',
-              'reset_type': 'random',
+              'reset_type': 1,
               'action_type' : 'continuous',
               'observation_type': 'color',
               'reward_type':  'distance',
