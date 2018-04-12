@@ -29,14 +29,15 @@ class UnrealCvTracking_base_random(gym.Env):
                 observation_type = 'color', # 'color', 'depth', 'rgbd'
                 reward_type = 'distance', # distance
                 docker = False,
-                resolution=(160, 120)
+                test = False,
+                resolution=(320, 240)
                 ):
 
      setting = self.load_env_setting(setting_file)
      self.docker = docker
      self.reset_type = reset_type
      self.roll = 0
-     self.pitch = -30
+     self.test = test
 
      # start unreal env
      self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
@@ -79,6 +80,17 @@ class UnrealCvTracking_base_random(gym.Env):
          self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
      self.unrealcv.start_walking(self.target_list[0])
      self.count_close = 0
+
+     if self.reset_type == 5:
+         self.unrealcv.simulate_physics(self.objects_env)
+
+     self.person_id = 0
+     if self.test:
+         self.reward_dic = dict()
+         self.ep_dic = dict()
+         for i in range(0,4):
+             self.reward_dic[i] = []
+             self.ep_dic[i] = []
 
 
    def _render(self, mode='human', close=False):
@@ -130,7 +142,7 @@ class UnrealCvTracking_base_random(gym.Env):
         else:
             self.count_close = 0
 
-        if  self.count_close > 10 :
+        if  self.count_close > 5 :
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
@@ -149,17 +161,28 @@ class UnrealCvTracking_base_random(gym.Env):
         if self.rendering:
             show_info(info,self.action_type)
 
+        if info['Done'] and self.test:
+            self.reward_dic[self.person_id].append(self.C_reward)
+            self.ep_dic[self.person_id].append(self.count_steps)
+            print ('reward', self.reward_dic)
+            print ('ep_len', self.ep_dic)
+
         self.C_reward += info['Reward']
         return state, info['Reward'], info['Done'], info
    def _reset(self, ):
        self.C_reward = 0
        self.count_close = 0
        self.unrealcv.start_walking(self.target_list[0]) # stop moving
-
+       np.random.seed()
        if self.reset_type == 0:# spline
-           print ('reset')
-           self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
+           #print ('reset')
+           #self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
+           
+           self.person_id = (self.person_id + 1) % 4
+           self.unrealcv.set_appearance(self.target_list[0],self.person_id+6,True)
+
            time.sleep(0.3)
+
 
        if self.reset_type >= 1 : # random walk
            self.unrealcv.set_speed(self.target_list[0],np.random.randint(50,150))
@@ -189,11 +212,11 @@ class UnrealCvTracking_base_random(gym.Env):
            self.unrealcv.random_texture(self.background_list,self.imgs_list)
 
        if self.reset_type == 5: # layout
-           self.unrealcv.random_layout(self.objects_env)
+           self.unrealcv.random_layout(self.objects_env, self.reset_area)
 
 
        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-       res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
+       res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
        while res == False:
            #self.target_pos = random.sample(self.safe_start, 1)[0]
            #self.unrealcv.set_object_location(self.target_list[0], self.target_pos)  # [-600, 400 ,100]
@@ -220,13 +243,8 @@ class UnrealCvTracking_base_random(gym.Env):
        current_pose = self.unrealcv.get_pose(self.cam_id,'soft')
 
        # get state
-       time.sleep(0.1)
+       time.sleep(0.5)
        state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
-
-       #import cv2
-       #cv2.imshow('reset', state)
-       #cv2.waitKey(10)
-
 
        self.trajectory = []
        self.trajectory.append(current_pose)
@@ -285,6 +303,8 @@ class UnrealCvTracking_base_random(gym.Env):
        self.max_distance = setting['max_distance']
        self.min_distance = setting['min_distance']
        self.max_direction = setting['max_direction']
+       self.height = setting['height']
+       self.pitch = setting['pitch']
        self.objects_env = setting['objects_list']
        self.reset_area = setting['reset_area']
        self.background_list = setting['backgrounds']
@@ -296,6 +316,7 @@ class UnrealCvTracking_base_random(gym.Env):
        self.safe_start = setting['safe_start']
        for i in range(len(self.imgs_list)):
            self.imgs_list[i] = os.path.join('/unreal/textures',self.imgs_list[i])
+
 
        return setting
 
