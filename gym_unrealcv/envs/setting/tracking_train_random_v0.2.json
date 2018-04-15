@@ -1,7 +1,7 @@
 {
 	"env_name": "RandomroomTracking",
 	"env_bin": "tracking_train/tracking/Binaries/Linux/tracking",
-    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
+    "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": 0,
 	"height": 220,
@@ -38,7 +38,7 @@
 		"Cube1", "Cube2", "Cube3", "Cube4"
 	],
     "backgrounds": [
-      "floor","wall1","wall2","wall3","wall4"
+      "FLOOR","wall1","wall2","wall3","wall4"
     ],
     "lights": [
       "light1", "light2", "light3", "light4"
