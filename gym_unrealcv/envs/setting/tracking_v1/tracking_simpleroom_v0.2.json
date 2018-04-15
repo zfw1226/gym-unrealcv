@@ -1,5 +1,5 @@
 {
-	"env_name": "RandomroomTracking",
+	"env_name": "SimpleRoomTracking",
 	"env_bin": "tracking_train/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
@@ -7,10 +7,10 @@
 	"height": 220,
 	"pitch": 0,
 	"max_steps": 1000,
-	"max_distance": 600,
+	"max_distance": 500,
 	"min_distance": 80,
 	"max_direction": 90,
-	"exp_distance": 250,
+	"exp_distance": 200,
 	"targets": [
         "targetbp"
 	],
