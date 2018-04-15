@@ -495,7 +495,7 @@ register(
 register(
     id='Tracking-TrainSimple-v1',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_train_random_v0.2.json',
+    kwargs={'setting_file': 'tracking_v1/tracking_simpleroom_v0.2.json',
             'reset_type': 1,
             'action_type': 'discrete',
             'observation_type': 'color',
@@ -508,7 +508,7 @@ register(
 register(
     id='Tracking-TrainSimple-v2',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_train_random_v0.2.json',
+    kwargs={'setting_file': 'tracking_v1/tracking_simpleroom_v0.2.json',
             'reset_type': 2,
             'action_type': 'discrete',
             'observation_type': 'color',
@@ -521,7 +521,7 @@ register(
 register(
     id='Tracking-TrainSimple-v3',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_train_random_v0.2.json',
+    kwargs={'setting_file': 'tracking_v1/tracking_simpleroom_v0.2.json',
             'reset_type': 3,
             'action_type': 'discrete',
             'observation_type': 'color',
@@ -534,7 +534,7 @@ register(
 register(
     id='Tracking-TrainSimple-v4',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_train_random_v0.2.json',
+    kwargs={'setting_file': 'tracking_v1/tracking_simpleroom_v0.2.json',
             'reset_type': 4,
             'action_type': 'discrete',
             'observation_type': 'color',
@@ -547,7 +547,7 @@ register(
 register(
     id='Tracking-TrainSimpleContinuous-v1',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs = {'setting_file': 'tracking_v1/tracking_train_random_v0.2.json',
+    kwargs = {'setting_file': 'tracking_v1/tracking_simpleroom_v0.2.json',
               'reset_type': 1,
               'action_type': 'continuous',
               'observation_type': 'color',
@@ -558,9 +558,9 @@ register(
 )
 
 register(
-    id='Tracking-TestDesert-v0',
+    id='Tracking-Desert-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file' : 'tracking_v1/tracking_test_desert_v0.1.json',
+    kwargs={'setting_file' : 'tracking_v1/tracking_desert_v0.1.json',
             'reset_type': 'static',
             'action_type' : 'continuous',
             'observation_type': 'color',
@@ -572,36 +572,10 @@ register(
 
 
 register(
-    id='Tracking-TrainUrban-v0',
+    id='Tracking-UrbanCity-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file' : 'tracking_v1/tracking_test_city_v0.1.json',
-            'reset_type': 'static',
-            'action_type' : 'continuous',
-            'observation_type': 'color',
-            'reward_type':  'distance',
-            'docker': use_docker,
-            },
-    max_episode_steps=1000000
-)
-
-register(
-    id='Tracking-TestUrban-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_test_city_v0.1.json',
+    kwargs={'setting_file': 'tracking_v1/tracking_urbancity_v0.1.json',
             'reset_type': 0,
-            'action_type': 'continuous',
-            'observation_type': 'color',
-            'reward_type':  'distance',
-            'docker': use_docker,
-            },
-    max_episode_steps=1000000
-)
-
-register(
-    id='Tracking-TestRoom-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_v1/tracking_test_room_v0.1.json',
-            'reset_type': 'static',
             'action_type': 'continuous',
             'observation_type': 'color',
             'reward_type':  'distance',
@@ -628,7 +602,7 @@ register(
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
     kwargs={'setting_file': 'tracking_v1/tracking_bproom_v0.0.json',
             'reset_type': 1,
-            'action_type': 'continuous',
+            'action_type': 'discrete',
             'observation_type': 'color',
             'reward_type':  'distance',
             'docker': use_docker,
@@ -691,7 +665,7 @@ register(
 register(
     id='Tracking-TestArch-v1',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_test_arch_v1.json',
+    kwargs={'setting_file': 'tracking_archroom_v1.json',
             'reset_type': 0,
             'action_type': 'continuous',
             'observation_type': 'color',
@@ -704,7 +678,7 @@ register(
 register(
     id='Tracking-TestArch-v2',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_test_arch_v2.json',
+    kwargs={'setting_file': 'tracking_archroom_v2.json',
             'reset_type': 0,
             'action_type': 'continuous',
             'observation_type': 'color',
@@ -717,7 +691,7 @@ register(
 register(
     id='Tracking-TestArch-v3',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_test_arch_v3.json',
+    kwargs={'setting_file': 'tracking_archroom_v3.json',
             'reset_type': 0,
             'action_type': 'continuous',
             'observation_type': 'color',
@@ -730,7 +704,7 @@ register(
 register(
     id='Tracking-TestArch-v4',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-    kwargs={'setting_file': 'tracking_test_arch_v4.json',
+    kwargs={'setting_file': 'tracking_archroom_v4.json',
             'reset_type': 0,
             'action_type': 'continuous',
             'observation_type': 'color',
