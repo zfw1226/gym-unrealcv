@@ -1,6 +1,6 @@
 {
 	"env_name": "BProom",
-	"env_bin": "bproom_low/BW_room/Binaries/Linux/BW_room",
+	"env_bin": "bwroom_setphy/BW_room/Binaries/Linux/BW_room",
 	"cam_id": 0,
 	"height": 42,
 	"pitch": -30,
@@ -11,7 +11,7 @@
 	"collision_th": 50,
 	"waypoint_th": 200,
 	"targets": [
-        "plant1"
+        "BW_curtain_03_95"
 	],
 	"reset_area":[-850, 250, 50, 250, 80, 180],
 	"discrete_actions": [
