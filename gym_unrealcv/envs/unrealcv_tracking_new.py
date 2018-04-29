@@ -25,15 +25,13 @@ class UnrealCvTracking_base_random(gym.Env):
                  setting_file,
                  reset_type,
                  action_type='discrete',  # 'discrete', 'continuous'
-                 observation_type='color', # 'color', 'depth', 'rgbd'
-                 reward_type='distance', # distance
+                 observation_type='color',  # 'color', 'depth', 'rgbd'
+                 reward_type='distance',  # distance
                  docker=False,
-                 test=False,
                  resolution=(160, 120)
                  ):
         self.docker = docker
         self.reset_type = reset_type
-        self.test = test
         self.roll = 0
 
         setting = self.load_env_setting(setting_file)
@@ -48,10 +46,10 @@ class UnrealCvTracking_base_random(gym.Env):
 
         # define action
         self.action_type = action_type
-        assert self.action_type == 'discrete' or self.action_type == 'continuous'
-        if self.action_type == 'discrete':
+        assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
+        if self.action_type == 'Discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
-        elif self.action_type == 'continuous':
+        elif self.action_type == 'Continuous':
             self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
                                            high=np.array(self.continous_actions['high']))
 
@@ -60,9 +58,8 @@ class UnrealCvTracking_base_random(gym.Env):
         # define observation space,
         # color, depth, rgbd,...
         self.observation_type = observation_type
-        assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
+        assert self.observation_type == 'Color' or self.observation_type == 'Depth' or self.observation_type == 'Rgbd'
         self.observation_space = self.unrealcv.define_observation(self.cam_id,self.observation_type, 'fast')
-
 
         self.unrealcv.pitch = self.pitch
         # define reward type
@@ -80,19 +77,12 @@ class UnrealCvTracking_base_random(gym.Env):
             self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
-        if self.test:
-            self.reward_dic = dict()
-            self.ep_dic = dict()
-            for i in range(0,4):
-                self.reward_dic[i] = []
-                self.ep_dic[i] = []
 
     def _step(self, action ):
         info = dict(
             Collision=False,
             Done=False,
             Trigger=0.0,
-            Maxstep=False,
             Reward=0.0,
             Action = action,
             Pose=[],
@@ -104,7 +94,7 @@ class UnrealCvTracking_base_random(gym.Env):
             Depth=None,
         )
         action = np.squeeze(action)
-        if self.action_type == 'discrete':
+        if self.action_type == 'Discrete':
             # linear
             (velocity, angle) = self.discrete_actions[action]
         else:
@@ -121,10 +111,12 @@ class UnrealCvTracking_base_random(gym.Env):
             info['Direction'] += 360
         elif info['Direction'] > 180:
             info['Direction'] -= 360
-        info['Distance'] = self.get_distance(self.target_pos,info['Pose'][:3])
+        info['Distance'] = self.get_distance(self.target_pos, info['Pose'][:3])
 
         # update observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
+        if self.inv_img:
+            state = 255 - state
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
 
@@ -133,30 +125,18 @@ class UnrealCvTracking_base_random(gym.Env):
         else:
             self.count_close = 0
 
-        if  self.count_close > 5:
+        if self.count_close > 10:
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
-            info['Reward'] = self.reward_function.reward_distance(info['Distance'],info['Direction'])
-
-        # limit the max steps of every episode
-        if self.count_steps > self.max_steps:
-           info['Done'] = True
-           info['Maxstep'] = True
-           print ('Reach Max Steps')
+            info['Reward'] = self.reward_function.reward_distance(info['Distance'], info['Direction'])
 
         # save the trajectory
         self.trajectory.append(info['Pose'])
         info['Trajectory'] = self.trajectory
 
         if self.rendering:
-            show_info(info,self.action_type)
-
-        if info['Done'] and self.test:
-            self.reward_dic[self.person_id].append(self.C_reward)
-            self.ep_dic[self.person_id].append(self.count_steps)
-            print ('reward', self.reward_dic)
-            print ('ep_len', self.ep_dic)
+            show_info(info, self.action_type)
 
         self.C_reward += info['Reward']
         return state, info['Reward'], info['Done'], info
@@ -169,26 +149,35 @@ class UnrealCvTracking_base_random(gym.Env):
 
         if self.reset_type == -1:
             self.person_id = (self.person_id + 1) % 4
-            self.unrealcv.set_appearance(self.target_list[0],self.person_id+6,True)
+            self.unrealcv.set_appearance(self.target_list[0], self.person_id+6, True)
 
         if self.reset_type == 0:  # spline
             self.unrealcv.client.request('vbp {target} reset'.format(target=self.target_list[0]))
-            time.sleep(0.3)
+            time.sleep(0.5)
 
-        if self.reset_type >= 1:  # random walk
-            self.unrealcv.set_speed(self.target_list[0],np.random.randint(50,150))
+        # movement
+        if self.reset_type >= 1:
+            self.unrealcv.set_speed(self.target_list[0], np.random.randint(50, 150))
             self.unrealcv.set_acceleration(self.target_list[0], np.random.randint(100, 300))
             self.unrealcv.set_maxdis2goal(self.target_list[0], np.random.randint(500, 3000))
             if self.reset_type == 1:
                 self.unrealcv.set_appearance(self.target_list[0], 7)
 
-        if self.reset_type == 2 or self.reset_type ==3 or self.reset_type ==4 or self.reset_type == 5: # appearance
-            self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
-
-        if self.reset_type == 3 or self.reset_type == 4 or self.reset_type == 5: # light
+        # appearance
+        if self.reset_type >= 2:
+            #  self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
+            #map_id = [0, 2, 3, 7, 8, 9]
+            map_id = [2, 3, 5, 6, 7, 9]
+            self.unrealcv.set_appearance(self.target_list[0], map_id[self.person_id % len(map_id)])
+            for i in range(5):
+                self.unrealcv.set_texture(self.target_list[0], (1, 1, 1), np.random.uniform(0, 1, 3),
+                                          self.textures_list[np.random.randint(0, len(self.textures_list))],
+                                          np.random.randint(2, 6), i)
+        # light
+        if self.reset_type == 3 or self.reset_type == 4 or self.reset_type == 5:
             for lit in self.light_list:
                 if 'sky' in lit:
-                    self.unrealcv.set_skylight(lit, [1,1,1], np.random.uniform(0.5,2))
+                    self.unrealcv.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5,2))
                 else:
                     lit_direction = np.random.uniform(-1, 1, 3)
                     if 'directional' in lit:
@@ -199,7 +188,8 @@ class UnrealCvTracking_base_random(gym.Env):
                         lit_direction *= 180
                     self.unrealcv.set_light(lit, lit_direction, np.random.uniform(1,4), np.random.uniform(0.1,1,3))
 
-        if self.reset_type == 4 or self.reset_type == 5:  # texture
+        # texture
+        if self.reset_type == 4 or self.reset_type == 5:
             self.unrealcv.random_texture(self.background_list, self.textures_list)
 
         if self.reset_type == 5:  # layout
@@ -213,7 +203,7 @@ class UnrealCvTracking_base_random(gym.Env):
             self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
             res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
         cam_pos_exp, yaw = res
-
+        cam_pos_exp[-1] = self.height
         self.unrealcv.set_location(self.cam_id, cam_pos_exp) # moveto
 
         '''
@@ -232,8 +222,10 @@ class UnrealCvTracking_base_random(gym.Env):
 
         # get state
         time.sleep(0.5)
+        self.inv_img = np.random.randint(0, 2) == 1
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
-
+        if self.inv_img:
+            state = 255 - state
         self.trajectory = []
         self.trajectory.append(current_pose)
         self.count_steps = 0
@@ -247,15 +239,17 @@ class UnrealCvTracking_base_random(gym.Env):
         if self.docker:
             self.unreal.docker.close()
 
+    def _render(self, mode='human', close=False):
+        self.rendering = True
+
     def _seed(self, seed=None):
-        print('fake seed')
+        self.person_id = seed
 
     def _get_action_size(self):
         return len(self.action)
 
     def get_distance(self, target, current):
-        error = abs(np.array(target)[:2] - np.array(current)[:2])# only x and y
-        distance = math.sqrt(sum(error * error))
+        distance = np.linalg.norm(np.array(target)[:2] - np.array(current)[:2])
         return distance
 
     def get_direction(self, target_pos, camera_pos):
@@ -282,7 +276,7 @@ class UnrealCvTracking_base_random(gym.Env):
 
         self.cam_id = setting['cam_id']
         self.target_list = setting['targets']
-        self.max_steps = setting['max_steps']
+        #self.max_steps = setting['max_steps']
         self.discrete_actions = setting['discrete_actions']
         self.continous_actions = setting['continous_actions']
         self.max_distance = setting['max_distance']
