@@ -23,33 +23,33 @@ class Navigation(UnrealCv):
 
         self.use_gym_10_api = distutils.version.LooseVersion(gym.__version__) >= distutils.version.LooseVersion('0.10.0')
 
-    def get_observation(self,cam_id, observation_type, mode= 'direct'):
-        if observation_type == 'color':
-            self.img_color = state = self.read_image(cam_id, 'lit_fast', mode)
-        elif observation_type == 'depth':
+    def get_observation(self, cam_id, observation_type, mode='direct'):
+        if observation_type == 'Color':
+            self.img_color = state = self.read_image(cam_id, 'lit', mode)
+        elif observation_type == 'Depth':
             self.img_depth = state = self.read_depth(cam_id, mode)
-        elif observation_type == 'rgbd':
+        elif observation_type == 'Rgbd':
             self.img_color = self.read_image(cam_id, 'lit', mode)
             self.img_depth = self.read_depth(cam_id, mode)
             state = np.append(self.img_color, self.img_depth, axis=2)
         return state
 
-    def define_observation(self,cam_id, observation_type, mode='direct'):
-        if observation_type == 'color':
+    def define_observation(self, cam_id, observation_type, mode='direct'):
+        if observation_type == 'Color':
             state = self.read_image(cam_id, 'lit', mode)
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
             else:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
-        elif observation_type == 'depth':
+        elif observation_type == 'Depth':
             state = self.read_depth(cam_id, mode)
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
             else:
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape)
 
-        elif observation_type == 'rgbd':
+        elif observation_type == 'Rgbd':
             state = self.get_rgbd(cam_id, mode)
             s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
@@ -71,7 +71,7 @@ class Navigation(UnrealCv):
         param = param / param.max()
         # color = color / color.max()
         cmd = 'vbp {target} set_mat {e_num} {r} {g} {b} {meta} {spec} {rough} {tiling} {picpath}'
-        res=self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
+        res = self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
                                meta=param[0], spec=param[1], rough=param[2], tiling=tiling,
                                picpath=picpath))
 

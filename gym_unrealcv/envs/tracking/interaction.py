@@ -23,9 +23,9 @@ class Tracking(Navigation):
                 self.set_light(lit, 360*np.random.sample(3), np.random.sample(1), np.random.sample(3))
 
     def random_character(self, target, num): #apperance, speed, acceleration
-        self.set_speed(target, np.random.randint(60,160))
-        self.set_acceleration(target, np.random.randint(100,500))
-        self.set_maxdis2goal(target, np.random.randint(1000,3000))
+        self.set_speed(target, np.random.randint(60, 160))
+        self.set_acceleration(target, np.random.randint(100, 500))
+        self.set_maxdis2goal(target, np.random.randint(1000, 3000))
         self.set_appearance(target, np.random.randint(0, num))
 
     def random_texture(self, backgrounds, img_dirs):
@@ -33,11 +33,11 @@ class Tracking(Navigation):
         for id in sample_index:
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-            self.set_texture(target,(1,1,1),np.random.uniform(0,1,3),img_dir, np.random.randint(1,4))
-        self.set_texture('floor', (1,1,1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))],
-                         np.random.randint(1, 4))
+            #self.set_picture(target, img_dir)
+            self.set_texture(target, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
+        #self.set_texture('floor', (1, 1, 1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))], np.random.randint(1, 4))
 
-    def set_picture(self,target,dir):
+    def set_picture(self, target, dir):
         cmd = 'vbp {target} set_pic {dir}'
         res = self.client.request(cmd.format(target=target, dir=dir))
         #print (cmd.format(target=target, dir=dir))
@@ -46,12 +46,11 @@ class Tracking(Navigation):
     def set_color(self, target, param):
         cmd = 'vbp {target} set_color {r} {g} {b} {meta} {spec}'
         #cmd = 'vbp {target} setcolor {r} {g} {b} {meta} {spec} {rough}'
-        self.client.request(cmd.format(target=target, r=param[0], g=param[1], b=param[2], meta=param[3], spec=param[4], rough=param[5]))
+        self.client.request(cmd.format(target=target, r=param[0], g=param[1], b=param[2], meta=param[3], spec=param[4]))
         return param
 
-
     # functions for character setting
-    def set_speed(self,target, speed):
+    def set_speed(self, target, speed):
         cmd = 'vbp {target} set_speed {speed}'
         res = None
         while res is None:
@@ -91,8 +90,6 @@ class Tracking(Navigation):
             return True
         if 'false' in res:
             return False
-
-
 
     def get_pose(self,cam_id, type='hard'):# pose = [x, y, z, roll, yaw, pitch]
         if type == 'soft':
@@ -158,7 +155,6 @@ class Tracking(Navigation):
                 count += 1
                 if count > 5:
                     return False
-
 
     def reset_target(self,target):
         cmd = 'vbp {target} reset'
