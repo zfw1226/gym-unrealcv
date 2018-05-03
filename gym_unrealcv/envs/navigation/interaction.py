@@ -27,30 +27,28 @@ class Navigation(UnrealCv):
         if observation_type == 'Color':
             self.img_color = state = self.read_image(cam_id, 'lit', mode)
         elif observation_type == 'Depth':
-            self.img_depth = state = self.read_depth(cam_id, mode)
+            self.img_depth = state = self.read_depth(cam_id)
         elif observation_type == 'Rgbd':
             self.img_color = self.read_image(cam_id, 'lit', mode)
-            self.img_depth = self.read_depth(cam_id, mode)
+            self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
         return state
 
     def define_observation(self, cam_id, observation_type, mode='direct'):
+        state = self.get_observation(cam_id, observation_type, mode)
         if observation_type == 'Color':
-            state = self.read_image(cam_id, 'lit', mode)
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
             else:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape)
 
         elif observation_type == 'Depth':
-            state = self.read_depth(cam_id, mode)
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
             else:
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape)
 
         elif observation_type == 'Rgbd':
-            state = self.get_rgbd(cam_id, mode)
             s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
             s_high[:, :, :-1] = 255  # max_rgb
