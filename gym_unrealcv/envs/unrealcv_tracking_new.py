@@ -8,7 +8,7 @@ from gym_unrealcv.envs.tracking import reward
 from gym_unrealcv.envs.tracking.visualization import show_info
 from gym_unrealcv.envs.utils import env_unreal
 from gym_unrealcv.envs.tracking.interaction import Tracking
-import random
+import gym_unrealcv
 
 ''' 
 It is an env for active object tracking.
@@ -35,6 +35,33 @@ class UnrealCvTracking_base_random(gym.Env):
         self.roll = 0
 
         setting = self.load_env_setting(setting_file)
+        self.cam_id = setting['cam_id']
+        self.target_list = setting['targets']
+        self.discrete_actions = setting['discrete_actions']
+        self.continous_actions = setting['continous_actions']
+        self.max_distance = setting['max_distance']
+        self.min_distance = setting['min_distance']
+        self.max_direction = setting['max_direction']
+        self.height = setting['height']
+        self.pitch = setting['pitch']
+        self.objects_env = setting['objects_list']
+        self.reset_area = setting['reset_area']
+        self.background_list = setting['backgrounds']
+        self.light_list = setting['lights']
+        self.target_num = setting['target_num']
+        self.exp_distance = setting['exp_distance']
+        texture_dir = setting['imgs_dir']
+        gym_path = os.path.dirname(gym_unrealcv.__file__)
+        texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
+        self.textures_list = os.listdir(texture_dir)
+        self.safe_start = setting['safe_start']
+
+        for i in range(len(self.textures_list)):
+            if self.docker:
+                self.textures_list[i] = os.path.join('/unreal', setting['imgs_dir'], self.textures_list[i])
+            else:
+                self.textures_list[i] = os.path.join(texture_dir, self.textures_list[i])
+
 
         # start unreal env
         self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
@@ -59,7 +86,7 @@ class UnrealCvTracking_base_random(gym.Env):
         # color, depth, rgbd,...
         self.observation_type = observation_type
         assert self.observation_type == 'Color' or self.observation_type == 'Depth' or self.observation_type == 'Rgbd'
-        self.observation_space = self.unrealcv.define_observation(self.cam_id,self.observation_type, 'fast')
+        self.observation_space = self.unrealcv.define_observation(self.cam_id, self.observation_type, 'fast')
 
         self.unrealcv.pitch = self.pitch
         # define reward type
@@ -84,7 +111,7 @@ class UnrealCvTracking_base_random(gym.Env):
             Done=False,
             Trigger=0.0,
             Reward=0.0,
-            Action = action,
+            Action=action,
             Pose=[],
             Trajectory=self.trajectory,
             Steps=self.count_steps,
@@ -95,10 +122,13 @@ class UnrealCvTracking_base_random(gym.Env):
         )
         action = np.squeeze(action)
         if self.action_type == 'Discrete':
-            # linear
             (velocity, angle) = self.discrete_actions[action]
         else:
             (velocity, angle) = action
+
+        # add noise
+        angle = angle + np.random.normal(0, 2)
+        velocity = velocity + np.random.normal(0, 5)
 
         info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity)
 
@@ -111,7 +141,7 @@ class UnrealCvTracking_base_random(gym.Env):
             info['Direction'] += 360
         elif info['Direction'] > 180:
             info['Direction'] -= 360
-        info['Distance'] = self.get_distance(self.target_pos, info['Pose'][:3])
+        info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
         # update observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
@@ -129,7 +159,7 @@ class UnrealCvTracking_base_random(gym.Env):
             info['Done'] = True
             info['Reward'] = -1
         elif 'distance' in self.reward_type:
-            info['Reward'] = self.reward_function.reward_distance(info['Distance'], info['Direction'])
+            info['Reward'] = self.reward_function.reward_distance(info['Distance'], info['Direction'], self.exp_distance)
 
         # save the trajectory
         self.trajectory.append(info['Pose'])
@@ -146,6 +176,7 @@ class UnrealCvTracking_base_random(gym.Env):
         self.count_close = 0
         self.unrealcv.start_walking(self.target_list[0])  # stop moving
         np.random.seed()
+        #  self.exp_distance = np.random.randint(150, 250)
 
         if self.reset_type == -1:
             self.person_id = (self.person_id + 1) % 4
@@ -166,15 +197,15 @@ class UnrealCvTracking_base_random(gym.Env):
         # appearance
         if self.reset_type >= 2:
             #  self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
-            #map_id = [0, 2, 3, 7, 8, 9]
-            map_id = [2, 3, 5, 6, 7, 9]
+            #  map_id = [0, 2, 3, 7, 8, 9]
+            map_id = [2, 3, 6, 7, 9]
             self.unrealcv.set_appearance(self.target_list[0], map_id[self.person_id % len(map_id)])
             for i in range(5):
                 self.unrealcv.set_texture(self.target_list[0], (1, 1, 1), np.random.uniform(0, 1, 3),
                                           self.textures_list[np.random.randint(0, len(self.textures_list))],
                                           np.random.randint(2, 6), i)
         # light
-        if self.reset_type == 3 or self.reset_type == 4 or self.reset_type == 5:
+        if self.reset_type >= 3:
             for lit in self.light_list:
                 if 'sky' in lit:
                     self.unrealcv.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5,2))
@@ -189,10 +220,11 @@ class UnrealCvTracking_base_random(gym.Env):
                     self.unrealcv.set_light(lit, lit_direction, np.random.uniform(1,4), np.random.uniform(0.1,1,3))
 
         # texture
-        if self.reset_type == 4 or self.reset_type == 5:
+        if self.reset_type >= 4:
             self.unrealcv.random_texture(self.background_list, self.textures_list)
 
-        if self.reset_type == 5:  # layout
+        # layout
+        if self.reset_type >= 5:
             self.unrealcv.random_layout(self.objects_env, self.reset_area)
 
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
@@ -204,20 +236,8 @@ class UnrealCvTracking_base_random(gym.Env):
             res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
         cam_pos_exp, yaw = res
         cam_pos_exp[-1] = self.height
-        self.unrealcv.set_location(self.cam_id, cam_pos_exp) # moveto
-
-        '''
-        error = self.unrealcv.error_position(pose_now[:3], cam_pos_exp)
-        if error>10:
-           #self.target_pos = random.sample(self.safe_start,1)[0]
-           #self.unrealcv.set_object_location(self.target_list[0],self.target_pos) # [-600, 400 ,100]
-           #self.unrealcv.reset_target(self.target_list[0])
-           #self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-           cam_pos_exp, yaw = self.unrealcv.get_startpoint(self.target_pos,self.exp_distance, self.reset_area)
-           self.unrealcv.set_location(self.cam_id, cam_pos_exp)
-        '''
-
-        self.unrealcv.set_rotation(self.cam_id,[self.roll, yaw, self.pitch])
+        self.unrealcv.set_location(self.cam_id, cam_pos_exp)
+        self.unrealcv.set_rotation(self.cam_id, [self.roll, yaw, self.pitch])
         current_pose = self.unrealcv.get_pose(self.cam_id, 'soft')
 
         # get state
@@ -239,18 +259,14 @@ class UnrealCvTracking_base_random(gym.Env):
         if self.docker:
             self.unreal.docker.close()
 
-    def _render(self, mode='human', close=False):
-        self.rendering = True
+    def _render(self, mode='rgb_array', close=False):
+        return self.unrealcv.img_color
 
     def _seed(self, seed=None):
         self.person_id = seed
 
     def _get_action_size(self):
         return len(self.action)
-
-    def get_distance(self, target, current):
-        distance = np.linalg.norm(np.array(target)[:2] - np.array(current)[:2])
-        return distance
 
     def get_direction(self, target_pos, camera_pos):
         relative_pos = np.array(target_pos) - np.array(camera_pos)
@@ -262,7 +278,6 @@ class UnrealCvTracking_base_random(gym.Env):
         return direction
 
     def load_env_setting(self, filename):
-        import gym_unrealcv
         gym_path = os.path.dirname(gym_unrealcv.__file__)
         setting_path = os.path.join(gym_path, 'envs', 'setting', filename)
 
@@ -273,33 +288,6 @@ class UnrealCvTracking_base_random(gym.Env):
             setting = json.load(f)
         else:
             print ('unknown type')
-
-        self.cam_id = setting['cam_id']
-        self.target_list = setting['targets']
-        #self.max_steps = setting['max_steps']
-        self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
-        self.max_distance = setting['max_distance']
-        self.min_distance = setting['min_distance']
-        self.max_direction = setting['max_direction']
-        self.height = setting['height']
-        self.pitch = setting['pitch']
-        self.objects_env = setting['objects_list']
-        self.reset_area = setting['reset_area']
-        self.background_list = setting['backgrounds']
-        self.light_list = setting['lights']
-        self.target_num = setting['target_num']
-        self.exp_distance = setting['exp_distance']
-        texture_dir = setting['imgs_dir']
-        texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
-        self.textures_list = os.listdir(texture_dir)
-        self.safe_start = setting['safe_start']
-
-        for i in range(len(self.textures_list)):
-            if self.docker:
-                self.textures_list[i] = os.path.join('/unreal', setting['imgs_dir'], self.textures_list[i])
-            else:
-                self.textures_list[i] = os.path.join(texture_dir, self.textures_list[i])
 
         return setting
 
