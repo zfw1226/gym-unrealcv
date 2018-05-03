@@ -31,6 +31,14 @@ class UnrealCvTracking_base(gym.Env):
                  resolution=(160, 120)
                  ):
         setting = self.load_env_setting(setting_file)
+        self.cam_id = setting['cam_id']
+        self.target_list = setting['targets']
+        self.discrete_actions = setting['discrete_actions']
+        self.continous_actions = setting['continous_actions']
+        self.max_distance = setting['max_distance']
+        self.max_direction = setting['max_direction']
+        self.objects_env = setting['objects_list']
+
         self.docker = docker
         self.reset_type = reset_type
         self.roll = 0
@@ -51,8 +59,8 @@ class UnrealCvTracking_base(gym.Env):
         if self.action_type == 'discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
         elif self.action_type == 'continuous':
-            self.action_space = spaces.Box(low = np.array(self.continous_actions['low']),
-                                           high = np.array(self.continous_actions['high']))
+            self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
+                                           high=np.array(self.continous_actions['high']))
 
         self.count_steps = 0
 
@@ -77,8 +85,8 @@ class UnrealCvTracking_base(gym.Env):
                 self.show_list.remove(x)
                 self.unrealcv.hide_obj(x)
 
-    def _render(self, mode='human', close=False):
-        self.rendering = True
+    def _render(self, mode='rgb_array', close=False):
+        return self.unrealcv.img_color
 
     def _step(self, action ):
         info = dict(
@@ -114,7 +122,7 @@ class UnrealCvTracking_base(gym.Env):
         elif info['Direction'] > 180:
             info['Direction'] -= 360
 
-        info['Distance'] = self.get_distance(self.target_pos,info['Pose'][:3])
+        info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
         # update observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
@@ -150,13 +158,11 @@ class UnrealCvTracking_base(gym.Env):
                 self.show_list.remove(x)
                 self.hiden_list.append(x)
                 self.unrealcv.hide_obj(x)
-            # self.unrealcv.hide_objects(to_hiden)
             objs_to_show = random.sample(self.hiden_list[:-num_update],num_update)
             for x in objs_to_show:
                 self.hiden_list.remove(x)
                 self.show_list.append(x)
                 self.unrealcv.show_obj(x)
-            # self.unrealcv.show_objects(to_show)
             time.sleep(0.5 * random.random())
 
         time.sleep(0.5)
@@ -169,7 +175,7 @@ class UnrealCvTracking_base(gym.Env):
         # set pose
         self.unrealcv.set_location(self.cam_id, cam_pos)
         self.unrealcv.set_rotation(self.cam_id, [self.roll, yaw, self.pitch])
-        current_pose = self.unrealcv.get_pose(self.cam_id,'soft')
+        current_pose = self.unrealcv.get_pose(self.cam_id, 'soft')
 
         # get state
         time.sleep(0.1)
@@ -191,11 +197,6 @@ class UnrealCvTracking_base(gym.Env):
     def _get_action_size(self):
         return len(self.action)
 
-    def get_distance(self, target, current):
-        error = abs(np.array(target)[:2] - np.array(current)[:2])  # only x and y
-        distance = math.sqrt(sum(error * error))
-        return distance
-
     def get_direction(self, target_pos, camera_pos):
         relative_pos = np.array(target_pos) - np.array(camera_pos)
         if relative_pos[0] > 0:
@@ -207,21 +208,12 @@ class UnrealCvTracking_base(gym.Env):
 
     def load_env_setting(self, filename):
         f = open(self.get_settingpath(filename))
-        type = os.path.splitext(filename)[1]
-        if type == '.json':
+        filetype = os.path.splitext(filename)[1]
+        if filetype == '.json':
             import json
             setting = json.load(f)
         else:
             print ('unknown type')
-
-        self.cam_id = setting['cam_id']
-        self.target_list = setting['targets']
-        self.max_steps = setting['max_steps']
-        self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
-        self.max_distance = setting['max_distance']
-        self.max_direction = setting['max_direction']
-        self.objects_env = setting['objects_list']
 
         return setting
 
