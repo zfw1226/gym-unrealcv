@@ -213,18 +213,17 @@ class UnrealCvSearch_base(gym.Env):
                 distance_min = distance
         return distance_min, target_id
 
-    def get_direction(self,current_pose,target_pose):
+    def get_direction(self, current_pose, target_pose):
+        print current_pose
         y_delt = target_pose[1] - current_pose[1]
         x_delt = target_pose[0] - current_pose[0]
-        if x_delt == 0:
-            x_delt = 0.00001
-        angle_now = np.arctan(y_delt / x_delt) / np.pi * 180 - current_pose[-1]
-        if x_delt < 0:
-            angle_now += 180
-        if angle_now < 0:
-            angle_now += 360
-        if angle_now > 360:
+        angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
+
+        if angle_now > 180:
             angle_now -= 360
+        if angle_now < -180:
+            angle_now += 360
+
         return angle_now
 
     def load_env_setting(self, filename):
