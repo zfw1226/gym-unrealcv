@@ -22,7 +22,7 @@ class Tracking(Navigation):
             if np.random.sample(1) > 0.5:
                 self.set_light(lit, 360*np.random.sample(3), np.random.sample(1), np.random.sample(3))
 
-    def random_character(self, target, num): #apperance, speed, acceleration
+    def random_character(self, target, num):  # apperance, speed, acceleration
         self.set_speed(target, np.random.randint(60, 160))
         self.set_acceleration(target, np.random.randint(100, 500))
         self.set_maxdis2goal(target, np.random.randint(1000, 3000))
@@ -91,13 +91,13 @@ class Tracking(Navigation):
         if 'false' in res:
             return False
 
-    def get_pose(self,cam_id, type='hard'):# pose = [x, y, z, roll, yaw, pitch]
-        if type == 'soft':
+    def get_pose(self, cam_id, mode='hard'):  # pose = [x, y, z, roll, yaw, pitch]
+        if mode == 'soft':
             pose = self.cam[cam_id]['location']
             pose.extend(self.cam[cam_id]['rotation'])
             return pose
 
-        if type == 'hard':
+        if mode == 'hard':
             self.cam[cam_id]['location'] = self.get_location(cam_id)
             self.cam[cam_id]['rotation'] = self.get_rotation(cam_id)
             pose = self.cam[cam_id]['location'] + self.cam[cam_id]['rotation']
@@ -112,23 +112,22 @@ class Tracking(Navigation):
         location_now = self.cam[cam_id]['location']
         location_exp = [location_now[0] + delt_x, location_now[1]+delt_y,location_now[2]]
 
-        #self.set_location(cam_id, location_exp)
         self.moveto(cam_id, location_exp)
-        if angle != 0 :
+        if angle != 0:
             self.set_rotation(cam_id, [0, yaw_exp, self.pitch])
 
         location_now = self.get_location(cam_id)
-        error = self.error_position(location_now, location_exp)
+        error = self.get_distance(location_now, location_exp)
 
-        if (error < 10):
+        if error < 10:
             return False
         else:
             return True
 
-    def get_location_new(self,cam_id,type='hard'):
-        if type == 'soft':
+    def get_location_new(self,cam_id, mode='hard'):
+        if mode == 'soft':
             return self.cam[cam_id]['location']
-        if type == 'hard':
+        if mode == 'hard':
             cmd = 'vget /sensor/{cam_id}/location'
             location = None
             while location is None:
@@ -136,7 +135,7 @@ class Tracking(Navigation):
             self.cam[cam_id]['location'] = [float(i) for i in location.split()]
             return self.cam[cam_id]['location']
 
-    def get_startpoint(self,target_pos, distance, reset_area, exp_height=170):
+    def get_startpoint(self, target_pos, distance, reset_area, exp_height=170):
         count = 0
         while True: # searching a safe point
             direction = 2 * np.pi * np.random.sample(1)
@@ -147,7 +146,7 @@ class Tracking(Navigation):
             y = dy + target_pos[1]
             cam_pos_exp[2] = exp_height
             yaw = float(direction / np.pi * 180 - 180)
-            if reset_area[0]<x<reset_area[1]  and  reset_area[2]<y<reset_area[3]:
+            if reset_area[0] < x < reset_area[1] and reset_area[2] < y < reset_area[3]:
                 cam_pos_exp[0] = dx + target_pos[0]
                 cam_pos_exp[1] = dy + target_pos[1]
                 return [cam_pos_exp, yaw]
@@ -162,11 +161,11 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd.format(target=target))
 
-    def set_phy(self, object, state):
+    def set_phy(self, obj, state):
         cmd = 'vbp {target} set_phy {state}'
         res=None
         while res is None:
-            res = self.client.request(cmd.format(target=object, state =state))
+            res = self.client.request(cmd.format(target=obj, state =state))
 
     def simulate_physics(self, objects):
         for obj in objects:
@@ -178,7 +177,7 @@ class Tracking(Navigation):
             object_loc = [0,0, 150]
             object_loc[0] = np.random.uniform(reset_area[0], reset_area[1])
             object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
-            self.set_object_location(objects[id],object_loc)
+            self.set_object_location(objects[id], object_loc)
 
 
 
