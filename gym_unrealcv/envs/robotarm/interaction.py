@@ -115,43 +115,43 @@ class Robotarm(UnrealCv):
         return QRpose
 
     def define_observation(self, cam_id, observation_type):
-        if observation_type == 'color':
+        if observation_type == 'Color':
             state = self.read_image(cam_id, 'lit','fast')
             observation_space = spaces.Box(low=0, high=255., shape=state.shape)
-        elif observation_type == 'depth':
+        elif observation_type == 'Depth':
             state = self.read_depth(cam_id)
             observation_space = spaces.Box(low=0, high=1, shape=state.shape)
-        elif observation_type == 'rgbd':
+        elif observation_type == 'Rgbd':
             state = self.get_rgbd(cam_id)
             s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
             s_high[:, :, :-1] = 255  # max_rgb
             s_low = np.zeros(state.shape)
             observation_space = spaces.Box(low=s_low, high=s_high)
-        elif observation_type == 'measured':
+        elif observation_type == 'Measured':
             s_high = [130,  60,  90, 45, 70,  200,  300, 360, 250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
-        elif observation_type == 'measured_real':
+        elif observation_type == 'MeasuredQR':
             s_high = [ 130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
     def get_observation(self,cam_id, observation_type, target_pose, action=np.zeros(4)):
-        if observation_type == 'color':
+        if observation_type == 'Color':
             self.img_color = state = self.read_image(cam_id, 'lit','fast')
-        elif observation_type == 'depth':
+        elif observation_type == 'Depth':
             self.img_depth = state = self.read_depth(cam_id)
-        elif observation_type == 'rgbd':
+        elif observation_type == 'Rgbd':
             self.img_color = self.read_image(cam_id, 'lit','fast')
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
-        elif observation_type == 'measured':
+        elif observation_type == 'Measured':
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.arm['grip'], self.target_pose, action))
             # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
-        elif  observation_type == 'measured_real':
+        elif  observation_type == 'MeasuredQR':
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.arm['QR'], self.target_pose, action))
         return state
