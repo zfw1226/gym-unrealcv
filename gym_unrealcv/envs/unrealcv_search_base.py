@@ -122,7 +122,7 @@ class UnrealCvSearch_base(gym.Env):
         # the robot think that it found the target object,the episode is done
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
-        if info['Trigger'] > self.trigger_th :
+        if info['Trigger'] > self.trigger_th:
             self.trigger_count += 1
             # get reward
             if 'bbox' in self.reward_type:
@@ -136,7 +136,6 @@ class UnrealCvSearch_base(gym.Env):
                 info['Done'] = True
                 if info['Reward'] > 0 and self.reset_type == 'waypoint':
                     self.reset_module.success_waypoint(self.count_steps)
-
         else:
             # get reward
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3], self.targets_pos)
@@ -193,6 +192,8 @@ class UnrealCvSearch_base(gym.Env):
         return seed
 
     def _render(self, mode='rgb_array', close=False):
+        if close==True and self.docker:
+            self.unreal.docker.close()
         return self.unrealcv.img_color
 
     def _close(self):
@@ -214,16 +215,13 @@ class UnrealCvSearch_base(gym.Env):
         return distance_min, target_id
 
     def get_direction(self, current_pose, target_pose):
-        print current_pose
         y_delt = target_pose[1] - current_pose[1]
         x_delt = target_pose[0] - current_pose[0]
         angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
-
         if angle_now > 180:
             angle_now -= 360
         if angle_now < -180:
             angle_now += 360
-
         return angle_now
 
     def load_env_setting(self, filename):
