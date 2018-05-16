@@ -90,7 +90,6 @@ class Robotarm(UnrealCv):
         self.arm['state'] = state
         return state
 
-
     def get_grip_position(self):
         cmd = 'vbp armBP getgrip'
         result = None
@@ -103,7 +102,6 @@ class Robotarm(UnrealCv):
         self.arm['grip'] = np.array(position)
         return self.arm['grip']
 
-
     def get_QR_pose(self):
         cmd = 'vbp armBP getQR'
         result = None
@@ -111,12 +109,12 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         QRpose = []
-        for i in range(2,9,2): #x,y,z,pitch
+        for i in range(2, 9, 2): #x,y,z,pitch
             QRpose.append(float(result[i][1:-2]))
         self.arm['QR'] = QRpose
         return QRpose
 
-    def define_observation(self,cam_id, observation_type):
+    def define_observation(self, cam_id, observation_type):
         if observation_type == 'color':
             state = self.read_image(cam_id, 'lit','fast')
             observation_space = spaces.Box(low=0, high=255., shape=state.shape)
@@ -211,8 +209,8 @@ class Robotarm(UnrealCv):
         x = random.uniform(area[0], area[1])
         y = random.uniform(area[2], area[3])
         z = random.uniform(area[4], area[5])
-        self.set_object_rotation(target, [0, 0, 0])
-        self.set_object_location(target, [x, y, z])
+        self.set_obj_rotation(target, [0, 0, 0])
+        self.set_obj_location(target, [x, y, z])
         return [x,y,z]
 
     def check_inbox(self):
