@@ -1,5 +1,5 @@
 {
-	"env_name": "RandomroomTracking",
+	"env_name": "BpRoom",
 	"env_bin": "bwroom_setphy/BW_room/Binaries/Linux/BW_room",
     "imgs_dir": "textures",
 	"target_num": 10,
@@ -7,8 +7,8 @@
 	"height": 130,
 	"pitch": -30,
 	"max_steps": 1000,
-	"max_distance": 300,
-	"min_distance": 100,
+	"max_distance": 400,
+	"min_distance": 80,
 	"max_direction": 90,
 	"exp_distance": 150,
 	"targets": [
