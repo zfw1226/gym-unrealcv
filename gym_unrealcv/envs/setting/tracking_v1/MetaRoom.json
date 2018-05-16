@@ -1,5 +1,5 @@
 {
-	"env_name": "MetaRoomTracking",
+	"env_name": "MetaRoom",
 	"env_bin": "meta_tracking/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
@@ -10,7 +10,7 @@
 	"max_distance": 500,
 	"min_distance": 80,
 	"max_direction": 90,
-	"exp_distance": 150,
+	"exp_distance": 200,
 	"targets": [
         "targetbp"
 	],
