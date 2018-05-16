@@ -35,6 +35,7 @@ class UnrealCvTracking_base_random(gym.Env):
         self.roll = 0
 
         setting = self.load_env_setting(setting_file)
+        self.env_name = setting['env_name']
         self.cam_id = setting['cam_id']
         self.target_list = setting['targets']
         self.discrete_actions = setting['discrete_actions']
@@ -61,7 +62,6 @@ class UnrealCvTracking_base_random(gym.Env):
                 self.textures_list[i] = os.path.join('/unreal', setting['imgs_dir'], self.textures_list[i])
             else:
                 self.textures_list[i] = os.path.join(texture_dir, self.textures_list[i])
-
 
         # start unreal env
         self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
@@ -105,7 +105,7 @@ class UnrealCvTracking_base_random(gym.Env):
 
         self.person_id = 0
 
-    def _step(self, action ):
+    def _step(self, action):
         info = dict(
             Collision=False,
             Done=False,
@@ -127,8 +127,8 @@ class UnrealCvTracking_base_random(gym.Env):
             (velocity, angle) = action
 
         # add noise
-        angle = angle + np.random.normal(0, 2)
-        velocity = velocity + np.random.normal(0, 5)
+        # angle = angle + np.random.normal(0, 2)
+        # velocity = velocity + np.random.normal(0, 5)
 
         info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity)
 
@@ -136,7 +136,7 @@ class UnrealCvTracking_base_random(gym.Env):
 
         info['Pose'] = self.unrealcv.get_pose(self.cam_id)
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
-        info['Direction'] = self.get_direction(self.target_pos, info['Pose'][:3]) - info['Pose'][-2]
+        info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
         if info['Direction'] < -180:
             info['Direction'] += 360
         elif info['Direction'] > 180:
@@ -145,8 +145,7 @@ class UnrealCvTracking_base_random(gym.Env):
 
         # update observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
-        if self.inv_img:
-            state = 255 - state
+
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
 
@@ -157,19 +156,16 @@ class UnrealCvTracking_base_random(gym.Env):
 
         if self.count_close > 10:
             info['Done'] = True
-            info['Reward'] = -1
+            info['Reward'] = -1.0
         elif 'distance' in self.reward_type:
-            info['Reward'] = self.reward_function.reward_distance(info['Distance'], info['Direction'], self.exp_distance)
+            info['Reward'] = self.reward_function.reward_distance(info['Distance'], info['Direction'])
 
         # save the trajectory
         self.trajectory.append(info['Pose'])
         info['Trajectory'] = self.trajectory
 
-        if self.rendering:
-            show_info(info, self.action_type)
-
         self.C_reward += info['Reward']
-        return state, info['Reward'], info['Done'], info
+        return state, np.float(info['Reward']), info['Done'], info
 
     def _reset(self, ):
         self.C_reward = 0
@@ -194,16 +190,19 @@ class UnrealCvTracking_base_random(gym.Env):
             if self.reset_type == 1:
                 self.unrealcv.set_appearance(self.target_list[0], 7)
 
-        # appearance
+        # target appearance
         if self.reset_type >= 2:
-            #  self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
+            self.unrealcv.set_appearance(self.target_list[0], np.random.randint(0, self.target_num))
             #  map_id = [0, 2, 3, 7, 8, 9]
-            map_id = [2, 3, 6, 7, 9]
-            self.unrealcv.set_appearance(self.target_list[0], map_id[self.person_id % len(map_id)])
-            for i in range(5):
-                self.unrealcv.set_texture(self.target_list[0], (1, 1, 1), np.random.uniform(0, 1, 3),
-                                          self.textures_list[np.random.randint(0, len(self.textures_list))],
-                                          np.random.randint(2, 6), i)
+
+            if self.env_name == 'MetaRoom':  # random target texture
+                map_id = [2, 3, 6, 7, 9]
+                self.unrealcv.set_appearance(self.target_list[0], map_id[self.person_id % len(map_id)])
+                for i in range(5):
+                    self.unrealcv.set_texture(self.target_list[0], (1, 1, 1), np.random.uniform(0, 1, 3),
+                                              self.textures_list[np.random.randint(0, len(self.textures_list))],
+                                              np.random.randint(2, 6), i)
+
         # light
         if self.reset_type >= 3:
             for lit in self.light_list:
@@ -242,10 +241,9 @@ class UnrealCvTracking_base_random(gym.Env):
 
         # get state
         time.sleep(0.5)
-        self.inv_img = np.random.randint(0, 2) == 1
+
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
-        if self.inv_img:
-            state = 255 - state
+
         self.trajectory = []
         self.trajectory.append(current_pose)
         self.count_steps = 0
@@ -260,6 +258,8 @@ class UnrealCvTracking_base_random(gym.Env):
             self.unreal.docker.close()
 
     def _render(self, mode='rgb_array', close=False):
+        if close==True and self.docker:
+            self.unreal.docker.close()
         return self.unrealcv.img_color
 
     def _seed(self, seed=None):
@@ -268,14 +268,15 @@ class UnrealCvTracking_base_random(gym.Env):
     def _get_action_size(self):
         return len(self.action)
 
-    def get_direction(self, target_pos, camera_pos):
-        relative_pos = np.array(target_pos) - np.array(camera_pos)
-        if relative_pos[0] > 0:
-            direction = 180 * np.arctan(relative_pos[1] / relative_pos[0]) / np.pi
-        else:
-            direction = 180 + 180 * np.arctan(relative_pos[1] / min(relative_pos[0], -0.0001)) / np.pi
-
-        return direction
+    def get_direction(self, current_pose, target_pose):
+        y_delt = target_pose[1] - current_pose[1]
+        x_delt = target_pose[0] - current_pose[0]
+        angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
+        if angle_now > 180:
+            angle_now -= 360
+        if angle_now < -180:
+            angle_now += 360
+        return angle_now
 
     def load_env_setting(self, filename):
         gym_path = os.path.dirname(gym_unrealcv.__file__)
