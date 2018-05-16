@@ -41,6 +41,17 @@ class UnrealCvSearch_3d(gym.Env):
                  ):
 
         setting = self.load_env_setting(setting_file)
+
+        self.cam_id = setting['cam_id']
+        self.target_list = setting['targets']
+        self.max_steps = setting['maxsteps']
+        self.trigger_th = setting['trigger_th']
+        self.height = setting['height']
+        self.pitch = setting['pitch']
+        # self.objects_list = setting['objects_list']
+        self.discrete_actions = setting['discrete_actions']
+        self.continous_actions = setting['continous_actions']
+
         self.test = test
         self.docker = docker
         self.reset_type = reset_type
@@ -87,9 +98,7 @@ class UnrealCvSearch_3d(gym.Env):
         # for reset point generation and selection
         self.reset_module = reset_point.ResetPoint(setting, reset_type, test, current_pose)
 
-        self.rendering = False
-
-    def _step(self, action ):
+    def _step(self, action):
         info = dict(
             Collision=False,
             Done = False,
@@ -123,7 +132,7 @@ class UnrealCvSearch_3d(gym.Env):
         # the robot think that it found the target object,the episode is done
         # and get a reward by bounding box size
         # only three times false trigger allowed in every episode
-        if info['Trigger'] > self.trigger_th :
+        if info['Trigger'] > self.trigger_th:
             self.trigger_count += 1
             # get reward
             if 'bbox' in self.reward_type:
@@ -133,9 +142,7 @@ class UnrealCvSearch_3d(gym.Env):
 
             if info['Reward'] > 0:
                 info['Done'] = True
-                #print ('Find Target!')
-
-        else :
+        else:
             # get reward
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3], self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
@@ -143,7 +150,6 @@ class UnrealCvSearch_3d(gym.Env):
             # calculate reward according to the distance to target object
             if 'distance' in self.reward_type:
                 info['Reward'] = self.reward_function.reward_distance(distance)
-                #print (action,info['Reward'])
             else:
                 info['Reward'] = 0
 
@@ -151,8 +157,6 @@ class UnrealCvSearch_3d(gym.Env):
             if info['Collision']:
                 info['Reward'] = -10
                 info['Done'] = True
-                #self.reset_module.update_dis2collision(info['Pose'])
-                #print ('Collision!!')
 
         # update observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
@@ -160,16 +164,11 @@ class UnrealCvSearch_3d(gym.Env):
         info['Depth'] = self.unrealcv.img_depth
 
         # save the trajectory
-        '''
         self.trajectory.append(info['Pose'][:6])
         info['Trajectory'] = self.trajectory
-        if info['Done'] and len(self.trajectory) > 5 and not self.test:
-            self.reset_module.update_waypoint(info['Trajectory'])
-        '''
-        if self.rendering:
-            show_info(info)
 
         return state, info['Reward'], info['Done'], info
+
     def _reset(self, ):
         # augment environment
         self.random_scene(self.augment_env)
@@ -188,15 +187,17 @@ class UnrealCvSearch_3d(gym.Env):
         self.trajectory.append(current_pose)
         self.trigger_count = 0
         self.count_steps = 0
-        self.reward_function.dis2target_last, self.targetID_last = self.select_target_by_distance(current_pose,
-                                                                                                 self.targets_pos)
+        self.reward_function.dis2target_last, self.targetID_last =\
+            self.select_target_by_distance(current_pose, self.targets_pos)
         return state
 
     def _seed(self, seed=None):
         print('fake seed')
 
-    def _render(self, mode='human', close=False):
-        self.rendering = True
+    def _render(self, mode='rgb_array', close=False):
+        if close==True and self.docker:
+            self.unreal.docker.close()
+        return self.unrealcv.img_color
 
     def _close(self):
         if self.docker:
@@ -205,7 +206,7 @@ class UnrealCvSearch_3d(gym.Env):
     def _get_action_size(self):
         return len(self.action)
 
-    def random_scene(self,augment_env):
+    def random_scene(self, augment_env):
         if isinstance(augment_env, str):
             # change material
             if 'texture' in augment_env:
@@ -219,12 +220,11 @@ class UnrealCvSearch_3d(gym.Env):
                     dx = random.uniform(-50, 50)
                     dy = random.uniform(-50, 50)
                     dz = random.uniform(0,100)
-                    self.unrealcv.set_object_location(i, [x0+dx, y0+dy, z0+dz ])
+                    self.unrealcv.set_obj_location(i, [x0+dx, y0+dy, z0+dz ])
                     time.sleep(0.1)
 
-
     def get_distance(self,target,current):
-        error = abs(np.array(target)[:3] - np.array(current)[:3])# x,y,z
+        error = abs(np.array(target)[:3] - np.array(current)[:3])  # x,y,z
         distance = math.sqrt(sum(error * error))
         return distance
 
@@ -240,47 +240,27 @@ class UnrealCvSearch_3d(gym.Env):
 
         return distance_min,target_id
 
-    def get_direction(self,current_pose,target_pose):
+    def get_direction(self,current_pose, target_pose):
         y_delt = target_pose[1] - current_pose[1]
         x_delt = target_pose[0] - current_pose[0]
-        if x_delt == 0:
-            x_delt = 0.00001
-
-        angle_now = np.arctan(y_delt / x_delt) / 3.1415926 * 180 - current_pose[-1]
-
-        if x_delt < 0:
-            angle_now += 180
-        if angle_now < 0:
-            angle_now += 360
-        if angle_now > 360:
+        angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
+        if angle_now > 180:
             angle_now -= 360
+        if angle_now < -180:
+            angle_now += 360
 
         return angle_now
 
-    def load_env_setting(self,filename):
-        f = open(self.get_settingpath(filename))
+    def load_env_setting(self, filename):
+        import gym_unrealcv
+        gympath = os.path.dirname(gym_unrealcv.__file__)
+        gympath = os.path.join(gympath, 'envs/setting', filename)
+        f = open(gympath)
         filetype = os.path.splitext(filename)[1]
         if filetype == '.json':
             import json
             setting = json.load(f)
         else:
             print ('unknown type')
-
-        self.cam_id = setting['cam_id']
-        self.target_list = setting['targets']
-        self.max_steps = setting['maxsteps']
-        self.trigger_th = setting['trigger_th']
-        self.height = setting['height']
-        self.pitch = setting['pitch']
-        # self.objects_list = setting['objects_list']
-        self.discrete_actions = setting['discrete_actions']
-        self.continous_actions = setting['continous_actions']
-
-        return setting
-
-    def get_settingpath(self, filename):
-        import gym_unrealcv
-        gympath = os.path.dirname(gym_unrealcv.__file__)
-        return os.path.join(gympath, 'envs/setting', filename)
 
 
