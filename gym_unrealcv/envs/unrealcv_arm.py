@@ -14,13 +14,13 @@ from gym_unrealcv.envs.robotarm.interaction import Robotarm
 class UnrealCvRobotArm_base(gym.Env):
     def __init__(self,
                  setting_file,
-                 reset_type = 'keyboard',    # keyboard, bp
-                 action_type = 'discrete',   # 'discrete', 'continuous'
-                 observation_type = 'color', # 'color', 'depth', 'rgbd' . 'measure'
-                 reward_type = 'move', # distance, move, move_distance
-                 docker = False,
+                 reset_type='keyboard',    # keyboard, bp
+                 action_type='discrete',   # 'discrete', 'continuous'
+                 observation_type='color', # 'color', 'depth', 'rgbd' . 'measure'
+                 reward_type='move', # distance, move, move_distance
+                 docker=False,
                  resolution=(160, 120),
-                 use_attach = False
+                 use_attach=False
                  ):
 
         # load and process setting
@@ -55,7 +55,6 @@ class UnrealCvRobotArm_base(gym.Env):
 
         # define action type
         self.action_type = action_type
-        assert self.action_type == 'discrete' or self.action_type == 'continuous'
         if self.action_type == 'Discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
         elif self.action_type == 'Continuous':
@@ -97,10 +96,10 @@ class UnrealCvRobotArm_base(gym.Env):
         )
         action = np.squeeze(action)
         # take a action
-        if self.action_type == 'discrete':
+        if self.action_type == 'Discrete':
             arm_state = self.unrealcv.move_arm(self.discrete_actions[action])
 
-        elif self.action_type == 'continuous':
+        elif self.action_type == 'Continuous':
             arm_state = self.unrealcv.move_arm(np.append(action, 0))
 
         self.count_steps += 1
@@ -153,7 +152,7 @@ class UnrealCvRobotArm_base(gym.Env):
             info['Reward'] = -10
             info['Done'] = True
 
-        elif arm_state[-1] : # reach pose limitation
+        elif arm_state[-1]: # reach pose limitation
             info['Reward'] = -1
             self.count_collision += 1
             if self.count_collision >= 5:
@@ -178,7 +177,7 @@ class UnrealCvRobotArm_base(gym.Env):
     def _seed(self, seed=None):
         print('fake seed')
 
-    def _reset(self ):
+    def _reset(self):
 
         # set start position
         self.unrealcv.set_location(self.cam_id, self.camera_pose[0][:3])
@@ -220,7 +219,9 @@ class UnrealCvRobotArm_base(gym.Env):
             self.unreal.docker.close()
 
     def _render(self, mode='rgb_array', close=False):
-         return self.unrealcv.img_color
+        if close == True and self.docker:
+            self.unreal.docker.close()
+        return self.unrealcv.img_color
 
     def _get_action_size(self):
         return len(self.action)
