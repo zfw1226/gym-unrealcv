@@ -7,7 +7,7 @@ import sys
 class RunDocker():
     def __init__(self, path2env, IMAGE = 'zfw1226/unreal-gpu:v0.1',):
        self.docker_client = docker.from_env()
-       self.check_image(target_images = IMAGE)
+       self.check_image(target_images=IMAGE)
        os.system('xhost +')
        self.image = IMAGE
        self.path2env = path2env
@@ -22,7 +22,7 @@ class RunDocker():
             print ('Did not find unreal environment, Please move your binary file to env/UnrealEnv')
             sys.exit()
 
-        docker_cmd = 'nvidia-docker run  -d -it  --env="DISPLAY=:1.0"     --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"     --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw"    {IMAGE} '
+        docker_cmd = 'nvidia-docker run -d -it --env="DISPLAY=:0.0" --env="QT_X11_NO_MITSHM=1" --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" --volume="{ENV_DIR_HOST}:{ENV_DIR_DOCKER}:rw" {IMAGE} '
         run_cmd = 'bash -c "chown unrealcv {ENV_DIR_DOCKER} -R && su unrealcv -c {ENV_DIR_BIN_DOCKER}"'
         cmd = docker_cmd.format(ENV_DIR_HOST=self.path2env, ENV_DIR_DOCKER=ENV_DIR_DOCKER, IMAGE=self.image) + \
               run_cmd.format(ENV_DIR_DOCKER=ENV_DIR_DOCKER, ENV_DIR_BIN_DOCKER = os.path.join(ENV_DIR_DOCKER,ENV_BIN))
@@ -39,12 +39,12 @@ class RunDocker():
     def get_path2UnrealEnv(self):
         import gym_unrealcv
         gympath = os.path.dirname(gym_unrealcv.__file__)
-        return os.path.join(gympath,'envs/UnrealEnv')
+        return os.path.join(gympath, 'envs/UnrealEnv')
 
     def close(self):
-        self.container[0].remove(force = True)
+        self.container[0].remove(force=True)
 
-    def check_image(self,target_images='zfw1226/unreal-gpu:v0.1'):
+    def check_image(self, target_images='zfw1226/unreal-gpu:v0.1'):
 
         images = self.docker_client.images.list()
 
