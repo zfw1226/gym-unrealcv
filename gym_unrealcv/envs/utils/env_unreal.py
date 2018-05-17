@@ -15,7 +15,8 @@ class RunUnreal():
     def start(self, docker, resolution=(160, 160)):
         port = self.read_port(self.path2binary)
         self.write_resolution(self.path2binary, resolution)
-        if docker:
+        self.use_docker = docker
+        if self.use_docker:
             import gym_unrealcv.envs.utils.run_docker
             self.docker = gym_unrealcv.envs.utils.run_docker.RunDocker(self.path2env)
             env_ip = self.docker.start(ENV_BIN=self.env_bin)
@@ -44,10 +45,12 @@ class RunUnreal():
         cmd = 'exec nohup {path2env}'
         os.system(cmd.format(path2env=path2env))
 
-    def close_proc(self):
-        import signal
-        os.kill(self.env.pid+1, signal.SIGTERM)
-
+    def close(self):
+        if self.use_docker:
+            self.docker.close()
+        else:
+            import signal
+            os.kill(self.env.pid+1, signal.SIGTERM)
 
     def modify_permission(self, path):
         cmd = 'sudo chown {USER} {ENV_PATH} -R'
