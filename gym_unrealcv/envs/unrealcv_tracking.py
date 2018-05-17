@@ -55,10 +55,10 @@ class UnrealCvTracking_base(gym.Env):
 
         # define action
         self.action_type = action_type
-        assert self.action_type == 'discrete' or self.action_type == 'continuous'
-        if self.action_type == 'discrete':
+        assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
+        if self.action_type == 'Discrete':
             self.action_space = spaces.Discrete(len(self.discrete_actions))
-        elif self.action_type == 'continuous':
+        elif self.action_type == 'Continuous':
             self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
                                            high=np.array(self.continous_actions['high']))
 
@@ -67,7 +67,7 @@ class UnrealCvTracking_base(gym.Env):
         # define observation space,
         #  color, depth, rgbd,...
         self.observation_type = observation_type
-        assert self.observation_type == 'color' or self.observation_type == 'depth' or self.observation_type == 'rgbd'
+        assert self.observation_type == 'Color' or self.observation_type == 'Depth' or self.observation_type == 'Rgbd'
         self.observation_space = self.unrealcv.define_observation(self.cam_id, self.observation_type)
 
         # define reward type
@@ -78,7 +78,7 @@ class UnrealCvTracking_base(gym.Env):
         self.rendering = False
 
         # init augment env
-        if 'random' in self.reset_type or 'hide' in self.reset_type:
+        if 'random' in self.reset_type:
             self.show_list = self.objects_env
             self.hiden_list = random.sample(self.objects_env, min(15, len(self.objects_env)))
             for x in self.hiden_list:
@@ -104,7 +104,7 @@ class UnrealCvTracking_base(gym.Env):
             Depth=None,
         )
         action = np.squeeze(action)
-        if self.action_type == 'discrete':
+        if self.action_type == 'Discrete':
             # linear
             (velocity, angle) = self.discrete_actions[action]
         else:
