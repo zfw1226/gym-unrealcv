@@ -1,15 +1,16 @@
 {
-	"env_name": "RandomroomTracking",
+	"env_name": "Arch2",
 	"env_bin": "arch_v2/ArchinteriorsVol2Scene2/Binaries/Linux/ArchinteriorsVol2Scene2",
-    "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
+    "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": 0,
-	"height": 160,
+	"height": 90,
+	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 500,
 	"min_distance": 70,
 	"max_direction": 90,
-	"exp_distance": 150,
+	"exp_distance": 200,
 	"targets": [
         "splinecharacter"
 	],
