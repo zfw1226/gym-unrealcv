@@ -1,5 +1,5 @@
 {
-	"env_name": "RandomroomTracking",
+	"env_name": "Arch1",
 	"env_bin": "arch1_tracking/ArchinteriorsVol2Scene1/Binaries/Linux/ArchinteriorsVol2Scene1",
     "imgs_dir": "/data/zfw/codes/gym-unrealcv/gym_unrealcv/envs/UnrealEnv/textures",
 	"target_num": 10,
