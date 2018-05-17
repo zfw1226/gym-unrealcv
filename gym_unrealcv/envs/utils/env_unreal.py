@@ -2,7 +2,6 @@ import getpass
 import os
 import time
 from multiprocessing import Process
-import random
 
 # api for running unrealenv
 
@@ -14,7 +13,6 @@ class RunUnreal():
         self.path2binary = os.path.join(self.path2env, self.env_bin)
 
     def start(self, docker, resolution=(160, 160)):
-        time.sleep(10 * random.random())
         port = self.read_port(self.path2binary)
         self.write_resolution(self.path2binary, resolution)
         if docker:
@@ -27,11 +25,10 @@ class RunUnreal():
             while not self.isPortFree(env_ip, port):
                 port += 1
             self.write_port(self.path2binary, port)
-            self.pid = []
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc, args=(self.path2binary,))
             self.env.start()
-            print ('Running docker-free env')
+            print ('Running docker-free env, pid:{}'.format(self.env.pid))
 
         print ('Please wait for a while to launch env......')
         time.sleep(10)
@@ -43,10 +40,14 @@ class RunUnreal():
         return os.path.join(gympath, 'envs/UnrealEnv')
 
     def run_proc(self, path2env):
-        os.system('export Display=:0.0')
-        cmd = 'nohup {path2env}'
+        # os.system('export Display=:0.0')
+        cmd = 'exec nohup {path2env}'
         os.system(cmd.format(path2env=path2env))
-        self.pid.append(os.getpid())
+
+    def close_proc(self):
+        import signal
+        os.kill(self.env.pid+1, signal.SIGTERM)
+
 
     def modify_permission(self, path):
         cmd = 'sudo chown {USER} {ENV_PATH} -R'
