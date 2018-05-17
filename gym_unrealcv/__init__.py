@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 import logging
 logger = logging.getLogger(__name__)
-use_docker = True  # True: use nvidia docker   False: do not use nvidia-docker
+use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 
 def load_env_setting(filename):
