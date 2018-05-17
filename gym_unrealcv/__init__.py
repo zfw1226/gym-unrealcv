@@ -62,7 +62,7 @@ for env in ['RealisticRoom', 'Arch1', 'Arch2']:
 # Robot Arm
 # ------------------------------------------------------------------
 for action in ['Discrete', 'Continuous']:  # action type
-    for obs in ['Color', 'Depth', 'Rgbd', 'Measure', 'MeasureQR']:
+    for obs in ['Color', 'Depth', 'Rgbd', 'Measured', 'MeasuredQR']:
         for i, reward in enumerate(['distance', 'move', 'move_distance']):
             register(
                 id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
