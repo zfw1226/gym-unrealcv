@@ -3,7 +3,7 @@ import gym_unrealcv
 import gym
 from gym import wrappers
 import cv2
-
+import time
 
 class RandomAgent(object):
     """The world's simplest agent!"""
@@ -31,16 +31,20 @@ if __name__ == '__main__':
     for i in range(episode_count):
         env.seed(i)
         ob = env.reset()
+        count_step = 0
+        t0 = time.time()
         while True:
             action = agent.act(ob, reward, done)
             ob, reward, done, _ = env.step(action)
-            print ('reward: ' + str(reward))
+            count_step += 1
             if args.render:
                 img = env.render(mode='rgb_array')
                 #  img = img[..., ::-1]  # bgr->rgb
                 cv2.imshow('show', img)
                 cv2.waitKey(1)
             if done:
+                fps = count_step / (time.time() - t0)
+                print ('Fps:' + str(fps))
                 break
 
     # Close the env and write monitor result info to disk
