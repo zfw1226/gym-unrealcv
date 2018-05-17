@@ -34,6 +34,7 @@ if __name__ == '__main__':
         while True:
             action = agent.act(ob, reward, done)
             ob, reward, done, _ = env.step(action)
+            print ('reward: ' + str(reward))
             if args.render:
                 img = env.render(mode='rgb_array')
                 #  img = img[..., ::-1]  # bgr->rgb
