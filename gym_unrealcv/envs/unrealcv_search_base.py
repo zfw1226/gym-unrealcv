@@ -192,13 +192,12 @@ class UnrealCvSearch_base(gym.Env):
         return seed
 
     def _render(self, mode='rgb_array', close=False):
-        if close==True and self.docker:
-            self.unreal.docker.close()
+        if close==True:
+            self.unreal.close()
         return self.unrealcv.img_color
 
     def _close(self):
-        if self.docker:
-            self.unreal.docker.close()
+        self.unreal.close()
 
     def _get_action_size(self):
         return len(self.action)

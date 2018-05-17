@@ -86,6 +86,8 @@ class UnrealCvTracking_base(gym.Env):
                 self.unrealcv.hide_obj(x)
 
     def _render(self, mode='rgb_array', close=False):
+        if close==True:
+            self.unreal.close()
         return self.unrealcv.img_color
 
     def _step(self, action ):
@@ -188,8 +190,7 @@ class UnrealCvTracking_base(gym.Env):
         return state
 
     def _close(self):
-        if self.docker:
-            self.unreal.docker.close()
+        self.unreal.close()
 
     def _seed(self, seed=None):
         print('fake seed')
