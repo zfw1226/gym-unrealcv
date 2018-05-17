@@ -200,8 +200,7 @@ class UnrealCvSearch_3d(gym.Env):
         return self.unrealcv.img_color
 
     def _close(self):
-        if self.docker:
-            self.unreal.docker.close()
+        self.unreal.close()
 
     def _get_action_size(self):
         return len(self.action)

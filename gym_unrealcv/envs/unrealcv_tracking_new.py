@@ -254,17 +254,11 @@ class UnrealCvTracking_base_random(gym.Env):
         return state
 
     def _close(self):
-        if self.docker:
-            self.unreal.docker.close()
-        else:
-            self.unreal.close_proc()
+        self.unreal.close()
 
     def _render(self, mode='rgb_array', close=False):
         if close==True:
-            if self.docker:
-                self.unreal.docker.close()
-            else:
-                self.unreal.close_proc()
+            self.unreal.close()
         return self.unrealcv.img_color
 
     def _seed(self, seed=None):
