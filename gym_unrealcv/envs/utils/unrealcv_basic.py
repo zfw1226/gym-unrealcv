@@ -36,6 +36,7 @@ class UnrealCv(object):
         self.client.connect()
         self.check_connection()
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0], h=resolution[1]))
+        self.client.request('vrun t.maxFPS 100')
         time.sleep(5)
         #  self.get_pose(cam_id,'hard')
         self.get_rotation(cam_id, 'hard')
