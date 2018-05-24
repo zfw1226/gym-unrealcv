@@ -31,6 +31,8 @@ class UnrealCv(object):
         self.init_unrealcv(cam_id, resolution)
         self.pitch = 0
         self.resolution = resolution
+        self.img_color = None
+        self.img_depth = None
 
     def init_unrealcv(self, cam_id, resolution=(320, 240)):
         self.client.connect()
