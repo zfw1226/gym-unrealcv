@@ -200,7 +200,7 @@ class UnrealCvRobotArm_base(gym.Env):
                 if not self.unrealcv.check_inbox():
                     break
 
-        #  self.unrealcv.get_grip_position()
+        self.unrealcv.get_grip_position()
         self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
 
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.target_pose)

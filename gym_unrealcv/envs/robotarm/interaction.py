@@ -43,7 +43,8 @@ class Robotarm(UnrealCv):
     def set_arm_pose(self, pose):
         self.arm['pose'] = np.array(pose)
         cmd = 'vbp armBP setpos {grip} {M3} {M2} {M1} {M0}'
-        return self.client.request(cmd.format(M0=pose[0],M1=pose[1],M2=pose[2],M3=pose[3],grip=pose[4]))
+        return self.client.request(cmd.format(M0=pose[0], M1=pose[1], M2=pose[2],
+                                              M3=pose[3], grip=pose[4]))
 
     def move_arm(self, action):
         pose_tmp = self.arm['pose']+action
