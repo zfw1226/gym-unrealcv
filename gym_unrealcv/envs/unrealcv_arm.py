@@ -175,7 +175,7 @@ class UnrealCvRobotArm_base(gym.Env):
         return state, info['Reward'], info['Done'], info
 
     def _seed(self, seed=None):
-        print('fake seed')
+        pass
 
     def _reset(self):
 
@@ -194,7 +194,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
             self.unrealcv.keyboard('RightBracket')  # random light
             time.sleep(1)
-            #  self.unrealcv.reset_obj(self.target_list[1], self.box_area)
+            #  self.unrealcv.reset_obj(self.target_list[1], self.box_area)  # reset box
             while True:
                 self.unrealcv.keyboard('LeftBracket')  # random ball position
                 if not self.unrealcv.check_inbox():
@@ -202,7 +202,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
         #  self.unrealcv.get_grip_position()
         self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
-        #  self.target_pose = np.array(self.unrealcv.get_obj_location(self.target_list[0]))
+
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.target_pose)
 
         self.count_steps = 0
@@ -226,7 +226,7 @@ class UnrealCvRobotArm_base(gym.Env):
         return len(self.action)
 
     def get_distance(self, target, current, n=3):
-        error = np.array(target) - np.array(current)  # only x and y
+        error = np.array(target) - np.array(current)
         distance = np.linalg.norm(error[:n])
         return distance
 
