@@ -5,19 +5,18 @@ from gym import spaces
 import random
 import re
 class Robotarm(UnrealCv):
-    def __init__(self, env, pose_range, cam_id = 0, port = 9000, targets = None,
-                 ip = '127.0.0.1',resolution=(160,120)):
+    def __init__(self, env, pose_range, cam_id=0, port=9000, targets=None,
+                 ip='127.0.0.1', resolution=(160, 120)):
         self.arm = dict(
-                pose = np.zeros(5),
-                state= np.zeros(8), # ground, left, left_in, right, right_in, body, reach
-                grip = np.zeros(3),
-                high = np.array(pose_range['high']),
-                low = np.array(pose_range['low']),
-                QR = np.zeros(4),
-                flag_grip = False,
+                pose=np.zeros(5),
+                state=np.zeros(8),  # ground, left, left_in, right, right_in, body, reach
+                grip=np.zeros(3),
+                high=np.array(pose_range['high']),
+                low=np.array(pose_range['low']),
+                QR=np.zeros(4),
+                flag_grip=False,
         )
-
-        super(Robotarm, self).__init__(env=env, port = port,ip = ip , cam_id=cam_id,resolution=resolution)
+        super(Robotarm, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
 
         if targets == 'all':
             self.targets = self.get_objects()
@@ -25,11 +24,10 @@ class Robotarm(UnrealCv):
         elif targets is not None:
             self.targets = targets
             self.color_dict = self.build_color_dic(self.targets)
-
-
         self.bad_msgs = []
         self.good_msgs = []
-    def message_handler(self,msg):
+
+    def message_handler(self, msg):
         print ('receive msg')
 
     def read_message(self):
@@ -42,12 +40,12 @@ class Robotarm(UnrealCv):
         self.good_msgs = []
         self.bad_msgs = []
 
-    def set_arm_pose(self,pose):
+    def set_arm_pose(self, pose):
         self.arm['pose'] = np.array(pose)
-        cmd = 'vexec armBP setpos {grip} {M3} {M2} {M1} {M0}'
+        cmd = 'vbp armBP setpos {grip} {M3} {M2} {M1} {M0}'
         return self.client.request(cmd.format(M0=pose[0],M1=pose[1],M2=pose[2],M3=pose[3],grip=pose[4]))
 
-    def move_arm(self,action):
+    def move_arm(self, action):
         pose_tmp = self.arm['pose']+action
         out_max = pose_tmp > self.arm['high']
         out_min = pose_tmp < self.arm['low']
@@ -58,7 +56,6 @@ class Robotarm(UnrealCv):
             limit = True
             pose_tmp = out_max * self.arm['high'] + out_min* self.arm['low'] + ~(out_min+out_max)*pose_tmp
 
-        #pose_tmp[-1] = action[-1]
         self.set_arm_pose(pose_tmp)
         state = self.get_arm_state()
         state.append(limit)
@@ -69,7 +66,7 @@ class Robotarm(UnrealCv):
         result = self.client.request(cmd)
         result = result.split()
         pose = []
-        for i in range(2,11,2):
+        for i in range(2, 11, 2):
             pose.append(float(result[i][1:-2]))
         pose.reverse()
         self.arm['pose'] = np.array(pose)
@@ -82,7 +79,7 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         state = []
-        for i in range(2,17,2):
+        for i in range(2, 17, 2):
             if result[i][1:5] == 'true':
                 state.append(True)
             else:
@@ -97,7 +94,7 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         position = []
-        for i in range(2,7,2):
+        for i in range(2, 7, 2):
             position.append(float(result[i][1:-2]))
         self.arm['grip'] = np.array(position)
         return self.arm['grip']
@@ -109,7 +106,7 @@ class Robotarm(UnrealCv):
             result = self.client.request(cmd)
         result = result.split()
         QRpose = []
-        for i in range(2, 9, 2): #x,y,z,pitch
+        for i in range(2, 9, 2):  # x,y,z,pitch
             QRpose.append(float(result[i][1:-2]))
         self.arm['QR'] = QRpose
         return QRpose
@@ -133,7 +130,7 @@ class Robotarm(UnrealCv):
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         elif observation_type == 'MeasuredQR':
-            s_high = [ 130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
+            s_high = [130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
@@ -157,19 +154,17 @@ class Robotarm(UnrealCv):
         return state
 
     def reset_env_keyboard(self):
-        #self.keyboard('R')  # reset arm pose
-        self.set_arm_pose([0,0,0,0,0])
-        self.set_material('Ball0', rgb=[1,0.2,0.2], prop=np.random.random(3))
+        self.set_arm_pose([0, 0, 0, 0, 0])
+        self.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
 
         self.keyboard('RightBracket')  # random light
-        #time.sleep(1)
+        # time.sleep(1)
         '''
         while True:
             self.keyboard('LeftBracket')  # random ball position
             if not self.check_inbox():
                 break
         '''
-
 
     def random_material(self):
         self.set_material('Ball0',rgb=np.random.random(3),prop=np.random.random(3))
@@ -211,7 +206,7 @@ class Robotarm(UnrealCv):
         z = random.uniform(area[4], area[5])
         self.set_obj_rotation(target, [0, 0, 0])
         self.set_obj_location(target, [x, y, z])
-        return [x,y,z]
+        return [x, y, z]
 
     def check_inbox(self):
         cmd = 'vbp destboxBP query'
