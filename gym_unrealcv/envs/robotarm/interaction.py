@@ -64,7 +64,9 @@ class Robotarm(UnrealCv):
 
     def get_arm_pose(self):
         cmd = 'vbp armBP getpos'
-        result = self.client.request(cmd)
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
         result = result.split()
         pose = []
         for i in range(2, 11, 2):
