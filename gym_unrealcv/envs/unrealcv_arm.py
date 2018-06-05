@@ -192,12 +192,13 @@ class UnrealCvRobotArm_base(gym.Env):
         self.unrealcv.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
         if self.reset_type == 'keyboard':
             self.unrealcv.keyboard('RightBracket')  # random light
-            time.sleep(1)
             #  self.unrealcv.reset_obj(self.target_list[1], self.box_area)  # reset box
             while True:
                 self.unrealcv.keyboard('LeftBracket')  # random ball position
                 if not self.unrealcv.check_inbox():
                     break
+            time.sleep(1)
+            self.target_pose = self.unrealcv.get_obj_location(self.target_list[0])
         else:
             self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
 
