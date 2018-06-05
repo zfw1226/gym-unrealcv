@@ -28,7 +28,7 @@ class UnrealCvTracking_base(gym.Env):
                  observation_type='color',  # 'color', 'depth', 'rgbd'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 120)
+                 resolution=(107, 80)
                  ):
         setting = self.load_env_setting(setting_file)
         self.cam_id = setting['cam_id']
@@ -193,7 +193,7 @@ class UnrealCvTracking_base(gym.Env):
         self.unreal.close()
 
     def _seed(self, seed=None):
-        print('fake seed')
+        pass
 
     def _get_action_size(self):
         return len(self.action)

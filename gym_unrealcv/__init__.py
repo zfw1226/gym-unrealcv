@@ -84,14 +84,14 @@ for env in ['City1', 'City2']:
     for target in ['Malcom', 'Stefani']:
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
-                for path in ['Paht1', 'Path2']:  # observation type
+                for path in ['Path1', 'Path2']:  # observation type
                     for i, reset in enumerate(['static', 'random']):
                         register(
                             id='Tracking{env}{target}{path}-{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
                                                                                      action=action, obs=obs, reset=i),
-                            entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
+                            entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
                             kwargs={'setting_file': 'tracking_v0/{env}{target}{path}.json'.format(env=env, target=target, path=path),
-                                    'reset_type': i,
+                                    'reset_type': reset,
                                     'action_type': action,
                                     'observation_type': obs,
                                     'reward_type': 'distance',
