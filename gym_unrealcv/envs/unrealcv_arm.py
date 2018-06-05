@@ -188,10 +188,9 @@ class UnrealCvRobotArm_base(gym.Env):
             self.unrealcv.detach_ball()
             self.attached = False
 
+        self.unrealcv.set_arm_pose([0, 0, 0, 0, 0])
+        self.unrealcv.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
         if self.reset_type == 'keyboard':
-            self.unrealcv.set_arm_pose([0, 0, 0, 0, 0])
-            self.unrealcv.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
-
             self.unrealcv.keyboard('RightBracket')  # random light
             time.sleep(1)
             #  self.unrealcv.reset_obj(self.target_list[1], self.box_area)  # reset box
@@ -199,10 +198,10 @@ class UnrealCvRobotArm_base(gym.Env):
                 self.unrealcv.keyboard('LeftBracket')  # random ball position
                 if not self.unrealcv.check_inbox():
                     break
+        else:
+            self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
 
         self.unrealcv.get_grip_position()
-        self.target_pose = self.unrealcv.reset_obj(self.target_list[0], self.ball_area)
-
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.target_pose)
 
         self.count_steps = 0
