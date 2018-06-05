@@ -20,8 +20,8 @@
 		[0,  0]
 	],
 	"continous_actions": {
-		"high": [40,  20],
-		"low":  [0,  -20]
+		"high": [80,  20],
+		"low":  [-80,  -20]
 	},
 	"objects_list": [
 		"Building_2_02_19", "Building_6_02_32",

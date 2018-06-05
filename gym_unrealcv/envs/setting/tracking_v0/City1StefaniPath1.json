@@ -21,7 +21,7 @@
 	],
 	"continous_actions": {
 		"high": [80,  20],
-		"low":  [0,  -20]
+		"low":  [-80,  -20]
 	},
 	"objects_list": [
 		"road_A_55", "road_B_58", "road_B2_61",
