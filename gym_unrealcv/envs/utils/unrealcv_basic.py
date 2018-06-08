@@ -38,7 +38,7 @@ class UnrealCv(object):
         self.client.connect()
         self.check_connection()
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0], h=resolution[1]))
-        self.client.request('vrun t.maxFPS 100')
+        # self.client.request('vrun t.maxFPS 100')
         time.sleep(5)
         #  self.get_pose(cam_id,'hard')
         self.get_rotation(cam_id, 'hard')
@@ -84,7 +84,7 @@ class UnrealCv(object):
                     img_dirs = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 image = cv2.imread(img_dirs)
             elif mode == 'fast':
-                cmd = 'vget /camera/{cam_id}/{viewmode} bmp'
+                cmd = 'vget /camera/{cam_id}/{viewmode}_fast bmp'
                 res = None
                 while res is None:
                     res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))

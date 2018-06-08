@@ -184,9 +184,9 @@ class UnrealCvTracking_base_random(gym.Env):
 
         # movement
         if self.reset_type >= 1:
-            self.unrealcv.set_speed(self.target_list[0], np.random.randint(50, 150))
+            self.unrealcv.set_speed(self.target_list[0], np.random.randint(40, 100))
             self.unrealcv.set_acceleration(self.target_list[0], np.random.randint(100, 300))
-            self.unrealcv.set_maxdis2goal(self.target_list[0], np.random.randint(500, 3000))
+            self.unrealcv.set_maxdis2goal(self.target_list[0], np.random.randint(200, 3000))
             if self.reset_type == 1:
                 self.unrealcv.set_appearance(self.target_list[0], 7)
 
@@ -228,7 +228,9 @@ class UnrealCvTracking_base_random(gym.Env):
 
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
         res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
+        count = 0
         while not res:
+            count += 1
             self.unrealcv.reset_target(self.target_list[0])
             time.sleep(0.1)
             self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
