@@ -90,7 +90,7 @@ class UnrealCvTracking_base(gym.Env):
             self.unreal.close()
         return self.unrealcv.img_color
 
-    def _step(self, action ):
+    def _step(self, action):
         info = dict(
             Collision=False,
             Done=False,
@@ -154,13 +154,13 @@ class UnrealCvTracking_base(gym.Env):
         self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
         # random hide and show objects
         if 'random' in self.reset_type:
-            num_update = 3
-            objs_to_hide = random.sample(self.show_list,num_update)
+            num_update = 5
+            objs_to_hide = random.sample(self.show_list, num_update)
             for x in objs_to_hide:
                 self.show_list.remove(x)
                 self.hiden_list.append(x)
                 self.unrealcv.hide_obj(x)
-            objs_to_show = random.sample(self.hiden_list[:-num_update],num_update)
+            objs_to_show = random.sample(self.hiden_list[:-num_update], num_update)
             for x in objs_to_show:
                 self.hiden_list.remove(x)
                 self.show_list.append(x)
