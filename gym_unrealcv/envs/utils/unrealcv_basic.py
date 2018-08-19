@@ -133,7 +133,7 @@ class UnrealCv(object):
 
     def set_pose(self, cam_id, pose):  # pose = [x, y, z, roll, yaw, pitch]
         cmd = 'vset /camera/{cam_id}/pose {x} {y} {z} {pitch} {yaw} {roll}'
-        self.client.request(cmd.format(cam_id=cam_id, x=pose[0], y=pose[1], z=pose[2], roll= pose[3], yaw=pose[4], pitch=pose[5]))
+        self.client.request(cmd.format(cam_id=cam_id, x=pose[0], y=pose[1], z=pose[2], roll=pose[3], yaw=pose[4], pitch=pose[5]))
         self.cam[cam_id]['location'] = pose[:3]
         self.cam[cam_id]['rotation'] = pose[-3:]
 
@@ -297,6 +297,12 @@ class UnrealCv(object):
         while rotation is None:
             rotation = self.client.request('vget /object/{obj}/rotation'.format(obj=obj))
         return [float(i) for i in rotation.split()]
+
+    def get_obj_pose(self, obj):
+        loc = self.get_obj_location(obj)
+        rot = self.get_obj_rotation(obj)
+        pose = loc+rot
+        return pose
 
     def build_pose_dic(self, objects):
         pose_dic = dict()
