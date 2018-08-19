@@ -135,16 +135,15 @@ class Tracking(Navigation):
             self.cam[cam_id]['location'] = [float(i) for i in location.split()]
             return self.cam[cam_id]['location']
 
-    def get_startpoint(self, target_pos, distance, reset_area, exp_height=170):
+    def get_startpoint(self, target_pos, distance, reset_area, exp_height=200):
         count = 0
-        while True: # searching a safe point
+        while True:  # searching a safe point
             direction = 2 * np.pi * np.random.sample(1)
             dx = float(distance * np.cos(direction))
             dy = float(distance * np.sin(direction))
-            cam_pos_exp = target_pos
             x = dx + target_pos[0]
             y = dy + target_pos[1]
-            cam_pos_exp[2] = exp_height
+            cam_pos_exp = [x, y, exp_height]
             yaw = float(direction / np.pi * 180 - 180)
             if reset_area[0] < x < reset_area[1] and reset_area[2] < y < reset_area[3]:
                 cam_pos_exp[0] = dx + target_pos[0]
@@ -179,6 +178,10 @@ class Tracking(Navigation):
             object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
             self.set_object_location(objects[id], object_loc)
 
-
-
+    def set_move(self, target_name, angle, velocity):
+        cmd = 'vbp {target_name} set_move {angle} {velocity}'.format(target_name=target_name,
+                                                                     angle=angle, velocity=velocity)
+        res=None
+        while res is None:
+            res = self.client.request(cmd)
 
