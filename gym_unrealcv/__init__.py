@@ -135,7 +135,23 @@ for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
                     max_episode_steps=1000
                 )
 
-
+# new training env
+for env in ['MPRoom']:
+    for i in range(5):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                register(
+                    id='UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
+                    entry_point='gym_unrealcv.envs:UnrealCvTracking_multi',
+                    kwargs={'setting_file': 'tracking_multi/{env}.json'.format(env=env),
+                            'reset_type': i,
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'distance',
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=1000
+                )
 # test video image
 register(
     id='Tracking-Video-v0',
