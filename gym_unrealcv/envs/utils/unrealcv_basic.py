@@ -88,7 +88,7 @@ class UnrealCv(object):
                     img_dirs = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode,ip=self.ip))
                 image = cv2.imread(img_dirs)
             elif mode == 'fast':
-                cmd = 'vget /camera/{cam_id}/{viewmode}_fast bmp'
+                cmd = 'vget /camera/{cam_id}/{viewmode} bmp'
                 res = None
                 while res is None:
                     res = self.client.request(cmd.format(cam_id=cam_id, viewmode=viewmode))

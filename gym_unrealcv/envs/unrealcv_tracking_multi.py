@@ -145,8 +145,8 @@ class UnrealCvTracking_multi(gym.Env):
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
         # update observation
-        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'direct')
-        state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'direct')
+        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+        state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
         states = np.array([state_0, state_1])
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
@@ -236,8 +236,8 @@ class UnrealCvTracking_multi(gym.Env):
         current_pose = self.unrealcv.get_obj_pose(self.target_list[1])
 
         # get state
-        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'direct')
-        state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'direct')
+        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+        state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
         states = np.array([state_0, state_1])
         # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
