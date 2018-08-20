@@ -151,6 +151,7 @@ class UnrealCvTracking_multi(gym.Env):
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
         # cv2.imshow('target', state_0)
+        # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
         if info['Distance'] > self.max_distance or info['Distance'] < self.min_distance or abs(info['Direction']) > self.max_direction:
             self.count_close += 1
