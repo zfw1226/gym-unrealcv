@@ -28,11 +28,13 @@ class UnrealCvTracking_multi(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 120)
+                 resolution=(160, 120),
+                 single=False
                  ):
         self.docker = docker
         self.reset_type = reset_type
         self.roll = 0
+        self.single = single
 
         setting = self.load_env_setting(setting_file)
         self.env_name = setting['env_name']
@@ -106,6 +108,8 @@ class UnrealCvTracking_multi(gym.Env):
         self.person_id = 0
         self.unrealcv.set_location(0, [-475, 0, 1600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
+        if self.single:
+            self.random_agent = RandomAgent(self.continous_actions)
 
     def _step(self, actions):
         info = dict(
@@ -130,9 +134,11 @@ class UnrealCvTracking_multi(gym.Env):
             (velocity0, angle0) = actions[0]
             (velocity1, angle1) = actions[1]
 
-        info['Collision'] = False
+        if self.single:
+            (velocity0, angle0) = self.random_agent.act()
 
-        # info['Collision'] = self.unrealcv.move_2d(self.cam_id, angle, velocity)
+        info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
+
         self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
         self.unrealcv.set_move(self.target_list[1], angle1, velocity1)
 
@@ -145,15 +151,18 @@ class UnrealCvTracking_multi(gym.Env):
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
         # update observation
-        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
+        if self.single:
+            state_0 = state_1.copy()
+        else:
+            state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         states = np.array([state_0, state_1])
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
         # cv2.imshow('target', state_0)
         # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
-        if info['Distance'] > self.max_distance or info['Distance'] < self.min_distance or abs(info['Direction']) > self.max_direction:
+        if info['Distance'] > self.max_distance or info['Collision'] or abs(info['Direction']) > self.max_direction:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -244,7 +253,8 @@ class UnrealCvTracking_multi(gym.Env):
         self.trajectory = []
         self.trajectory.append(current_pose)
         self.count_steps = 0
-
+        if self.single:
+            self.random_agent.reset()
         return states
 
     def _close(self):
@@ -289,3 +299,22 @@ class UnrealCvTracking_multi(gym.Env):
         import gym_unrealcv
         gympath = os.path.dirname(gym_unrealcv.__file__)
         return os.path.join(gympath, 'envs/setting', filename)
+
+class RandomAgent(object):
+    """The world's simplest agent!"""
+    def __init__(self, action_space):
+        self.action_space = action_space
+        self.step_counter = 0
+        self.keep_steps = 0
+
+    def act(self):
+        self.step_counter += 1
+        if self.step_counter > self.keep_steps:
+            self.velocity = np.random.randint(50, 200)
+            self.angle = np.random.randint(-45, 45)
+            self.keep_steps = np.random.randint(1, 10)
+        return (self.velocity, self.angle)
+
+    def reset(self):
+        self.step_counter = 0
+        self.keep_steps = 0
