@@ -178,10 +178,21 @@ class Tracking(Navigation):
             object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
             self.set_object_location(objects[id], object_loc)
 
-    def set_move(self, target_name, angle, velocity):
-        cmd = 'vbp {target_name} set_move {angle} {velocity}'.format(target_name=target_name,
+    def set_move(self, target, angle, velocity):
+        cmd = 'vbp {target} set_move {angle} {velocity}'.format(target=target,
                                                                      angle=angle, velocity=velocity)
         res=None
         while res is None:
             res = self.client.request(cmd)
+
+    def get_hit(self, target):
+        cmd = 'vbp {target} get_hit'.format(target=target)
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        if 'true' in res:
+            return True
+        if 'false' in res:
+            return False
+
 
