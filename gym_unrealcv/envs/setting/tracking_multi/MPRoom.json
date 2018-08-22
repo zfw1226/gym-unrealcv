@@ -8,9 +8,9 @@
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
-	"min_distance": 80,
+	"min_distance": 100,
 	"max_direction": 90,
-	"exp_distance": 300,
+	"exp_distance": 250,
 	"targets": [
         "targetbp", "targetbp2"
 	],
@@ -29,8 +29,8 @@
     ],
 	"reset_area" : [-1800, 900, -1400, 1400],
 	"continous_actions": {
-		"high": [80,    20],
-		"low":  [-80,  -20]
+		"high": [200,    45],
+		"low":  [0,     -45]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"
