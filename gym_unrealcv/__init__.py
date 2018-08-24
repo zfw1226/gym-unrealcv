@@ -156,7 +156,7 @@ for env in ['MPRoom']:
                                 'docker': use_docker,
                                 'single': test
                                 },
-                        max_episode_steps=1000
+                        max_episode_steps=500
                     )
 # test video image
 register(
