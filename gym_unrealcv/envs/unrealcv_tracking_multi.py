@@ -109,7 +109,9 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_location(0, [-475, 0, 1600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if self.single:
-            self.random_agent = RandomAgent(self.continous_actions)
+            self.unrealcv.set_random(self.target_list[0])
+            self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
+            # self.random_agent = RandomAgent(self.continous_actions)
 
     def _step(self, actions):
         info = dict(
@@ -134,8 +136,8 @@ class UnrealCvTracking_multi(gym.Env):
             (velocity0, angle0) = actions[0]
             (velocity1, angle1) = actions[1]
 
-        if self.single:
-            (velocity0, angle0) = self.random_agent.act()
+        #if self.single:
+        #    (velocity0, angle0) = self.random_agent.act()
 
         info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
@@ -254,7 +256,8 @@ class UnrealCvTracking_multi(gym.Env):
         self.trajectory.append(current_pose)
         self.count_steps = 0
         if self.single:
-            self.random_agent.reset()
+            self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
+            # self.random_agent.reset()
         return states
 
     def _close(self):
