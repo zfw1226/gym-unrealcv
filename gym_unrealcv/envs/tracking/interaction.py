@@ -196,3 +196,8 @@ class Tracking(Navigation):
             return False
 
 
+    def set_random(self, target, value=1):
+        cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
+        res=None
+        while res is None:
+            res = self.client.request(cmd)
