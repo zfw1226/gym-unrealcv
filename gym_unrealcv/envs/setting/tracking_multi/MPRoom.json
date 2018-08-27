@@ -1,6 +1,6 @@
 {
 	"env_name": "MPRoom",
-	"env_bin": "tracking_test/tracking/Binaries/Linux/tracking",
+	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
     "imgs_dir": "place_val",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -15,12 +15,13 @@
         "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 150,  0],
+		[ 160,  0],
 		[  80,  0],
-		[  50, 15],
-		[  50,-15],
-		[  30, 30],
-		[  30,-30],
+		[ -80,  0],
+		[  40, 15],
+		[  40,-15],
+		[  0,  30],
+		[  0, -30],
 		[  0,   0]
 	],
 	"safe_start" :[
@@ -29,8 +30,8 @@
     ],
 	"reset_area" : [-1800, 900, -1400, 1400],
 	"continous_actions": {
-		"high": [200,    90],
-		"low":  [0,     -90]
+		"high": [200,    45],
+		"low":  [-100,     -45]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"
