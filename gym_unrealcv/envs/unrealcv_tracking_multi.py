@@ -42,6 +42,7 @@ class UnrealCvTracking_multi(gym.Env):
         self.target_list = setting['targets']
         self.discrete_actions = setting['discrete_actions']
         self.continous_actions = setting['continous_actions']
+        self.continous_actions_forward = setting['continous_actions_forward']
         self.max_distance = setting['max_distance']
         self.min_distance = setting['min_distance']
         self.max_direction = setting['max_direction']
@@ -78,11 +79,14 @@ class UnrealCvTracking_multi(gym.Env):
         assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
         if self.action_type == 'Discrete':
             action_space = spaces.Discrete(len(self.discrete_actions))
+            action_space_forward = action_space
         elif self.action_type == 'Continuous':
             action_space = spaces.Box(low=np.array(self.continous_actions['low']),
-                                           high=np.array(self.continous_actions['high']))
+                                      high=np.array(self.continous_actions['high']))
+            action_space_forward = spaces.Box(low=np.array(self.continous_actions_forward['low']),
+                                              high=np.array(self.continous_actions_forward['high']))
         # self.action_space = [action_space, action_space]
-        self.action_space = action_space
+        self.action_space = [action_space_forward, action_space]
         self.count_steps = 0
 
         # define observation space,
@@ -109,9 +113,9 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_location(0, [-475, 0, 1600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if self.single:
-            self.unrealcv.set_random(self.target_list[0])
-            self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
-            # self.random_agent = RandomAgent(self.continous_actions)
+            # self.unrealcv.set_random(self.target_list[0])
+            # self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
+            self.random_agent = RandomAgent(self.continous_actions_forward)
 
     def _step(self, actions):
         info = dict(
@@ -136,8 +140,8 @@ class UnrealCvTracking_multi(gym.Env):
             (velocity0, angle0) = actions[0]
             (velocity1, angle1) = actions[1]
 
-        #if self.single:
-        #    (velocity0, angle0) = self.random_agent.act()
+        if self.single:
+            (velocity0, angle0) = self.random_agent.act()
 
         info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
@@ -256,8 +260,8 @@ class UnrealCvTracking_multi(gym.Env):
         self.trajectory.append(current_pose)
         self.count_steps = 0
         if self.single:
-            self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-            # self.random_agent.reset()
+            # self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
+            self.random_agent.reset()
         return states
 
     def _close(self):
@@ -306,15 +310,18 @@ class UnrealCvTracking_multi(gym.Env):
 class RandomAgent(object):
     """The world's simplest agent!"""
     def __init__(self, action_space):
-        self.action_space = action_space
         self.step_counter = 0
         self.keep_steps = 0
+        self.velocity_high = action_space['high'][0]
+        self.velocity_low = action_space['low'][0]
+        self.angle_high = action_space['high'][1]
+        self.angle_low = action_space['low'][1]
 
     def act(self):
         self.step_counter += 1
         if self.step_counter > self.keep_steps:
-            self.velocity = np.random.randint(50, 200)
-            self.angle = np.random.randint(-45, 45)
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            self.angle = np.random.randint(self.angle_low, self.angle_high)
             self.keep_steps = np.random.randint(1, 10)
         return (self.velocity, self.angle)
 
