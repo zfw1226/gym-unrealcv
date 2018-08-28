@@ -22,8 +22,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     env = gym.make(args.env_id)
 
-    agent_0 = RandomAgent(env.action_space)
-    agent_1 = RandomAgent(env.action_space)
+    agent_0 = RandomAgent(env.action_space[0])
+    agent_1 = RandomAgent(env.action_space[1])
 
     episode_count = 100
     rewards = 0
