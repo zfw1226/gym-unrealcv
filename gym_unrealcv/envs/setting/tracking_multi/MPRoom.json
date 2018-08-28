@@ -31,7 +31,11 @@
 	"reset_area" : [-1800, 900, -1400, 1400],
 	"continous_actions": {
 		"high": [200,    45],
-		"low":  [-100,     -45]
+		"low":  [-200,     -45]
+	},
+	"continous_actions_forward": {
+		"high": [200,    45],
+		"low":  [0,     -45]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"
