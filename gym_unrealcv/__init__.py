@@ -140,9 +140,9 @@ for env in ['MPRoom']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for test in [True, False]:
-                    if test:
-                        name = 'UnrealTracking{env}-{action}{obs}Test-v{reset}'.format(env=env, action=action, obs=obs, reset=i)
+                for nav in ['Random', 'Goal', 'Internal', False]:
+                    if nav:
+                        name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
                     else:
                         name = 'UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i)
                     register(
@@ -154,7 +154,7 @@ for env in ['MPRoom']:
                                 'observation_type': obs,
                                 'reward_type': 'distance',
                                 'docker': use_docker,
-                                'single': test
+                                'nav': nav
                                 },
                         max_episode_steps=500
                     )
