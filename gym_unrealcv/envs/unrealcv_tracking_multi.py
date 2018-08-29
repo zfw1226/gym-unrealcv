@@ -29,13 +29,12 @@ class UnrealCvTracking_multi(gym.Env):
                  reward_type='distance',  # distance
                  docker=False,
                  resolution=(160, 120),
-                 single=False
+                 nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
         self.reset_type = reset_type
         self.roll = 0
-        self.single = single
-
+        self.nav = nav
         setting = self.load_env_setting(setting_file)
         self.env_name = setting['env_name']
         self.cam_id = setting['cam_id']
@@ -112,10 +111,13 @@ class UnrealCvTracking_multi(gym.Env):
         self.person_id = 0
         self.unrealcv.set_location(0, [-475, 0, 1600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
-        if self.single:
-            # self.unrealcv.set_random(self.target_list[0])
-            # self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
+        if 'Random' in self.nav:
             self.random_agent = RandomAgent(self.continous_actions_forward)
+        if 'Goal' in self.nav:
+            self.random_agent = GoalNavAgent(self.continous_actions_forward, self.reset_area)
+        if 'Internal' in self.nav:
+            self.unrealcv.set_random(self.target_list[0])
+            self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
 
     def _step(self, actions):
         info = dict(
@@ -140,8 +142,10 @@ class UnrealCvTracking_multi(gym.Env):
             (velocity0, angle0) = actions[0]
             (velocity1, angle1) = actions[1]
 
-        if self.single:
+        if 'Random' in self.nav:
             (velocity0, angle0) = self.random_agent.act()
+        if 'Goal' in self.nav:
+            (velocity0, angle0) = self.random_agent.act(self.target_pos)
 
         info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
@@ -151,17 +155,15 @@ class UnrealCvTracking_multi(gym.Env):
         self.count_steps += 1
 
         info['Pose'] = self.unrealcv.get_obj_pose(self.target_list[1])  # tracker pose
-        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
+        self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
         info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
 
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
         # update observation
+        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
-        if self.single:
-            state_0 = state_1.copy()
-        else:
-            state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+
         states = np.array([state_0, state_1])
         info['Color'] = self.unrealcv.img_color
         info['Depth'] = self.unrealcv.img_depth
@@ -231,14 +233,14 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.random_texture(self.background_list, self.textures_list)
 
         self.unrealcv.set_obj_location(self.target_list[0], [-600, -200, 250])
-        self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
+        self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
         res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
 
         count = 0
         while not res:
             count += 1
             time.sleep(0.1)
-            self.target_pos = self.unrealcv.get_obj_location(self.target_list[0])
+            self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
             res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
         cam_pos_exp, yaw = res
         cam_pos_exp[-1] = self.height
@@ -259,9 +261,10 @@ class UnrealCvTracking_multi(gym.Env):
         self.trajectory = []
         self.trajectory.append(current_pose)
         self.count_steps = 0
-        if self.single:
-            # self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
+        if 'Random' in self.nav or 'Goal' in self.nav:
             self.random_agent.reset()
+        if 'Internal' in self.nav:
+            self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
         return states
 
     def _close(self):
@@ -328,3 +331,53 @@ class RandomAgent(object):
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
+
+class GoalNavAgent(object):
+    """The world's simplest agent!"""
+    def __init__(self, action_space, goal_area):
+        self.step_counter = 0
+        self.keep_steps = 0
+        self.velocity_high = action_space['high'][0]
+        self.velocity_low = action_space['low'][0]
+        self.angle_high = action_space['high'][1]
+        self.angle_low = action_space['low'][1]
+        self.goal_area = goal_area
+        self.goal = self.generate_goal(self.goal_area)
+
+    def act(self, pose):
+        self.step_counter += 1
+        if self.check_reach(self.goal, pose) or self.step_counter > 30:
+            self.goal = self.generate_goal(self.goal_area)
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            self.step_counter = 0
+
+        delt_yaw = self.get_direction(pose, self.goal)
+        self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
+        return (self.velocity, self.angle)
+
+    def reset(self):
+        self.step_counter = 0
+        self.keep_steps = 0
+        self.goal = self.generate_goal(self.goal_area)
+        self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+
+    def generate_goal(self, goal_area):
+        x = np.random.randint(goal_area[0], goal_area[1])
+        y = np.random.randint(goal_area[2], goal_area[3])
+        goal = np.array([x, y])
+        return goal
+
+    def check_reach(self, goal, now):
+        error = np.array(now[:2]) - np.array(goal[:2])
+        distance = np.linalg.norm(error)
+        return distance < 50
+
+    def get_direction(self, current_pose, target_pose):
+        y_delt = target_pose[1] - current_pose[1]
+        x_delt = target_pose[0] - current_pose[0]
+        angle_now = np.arctan2(y_delt, x_delt) / np.pi * 180 - current_pose[4]
+        if angle_now > 180:
+            angle_now -= 360
+        if angle_now < -180:
+            angle_now += 360
+        return angle_now
