@@ -140,11 +140,10 @@ for env in ['MPRoom']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for nav in ['Random', 'Goal', 'Internal', False]:
+                for nav in ['Random', 'Goal', 'Internal', 'None']:
                     if nav:
                         name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-                    else:
-                        name = 'UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i)
+
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvTracking_multi',
