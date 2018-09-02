@@ -157,8 +157,14 @@ class UnrealCvTracking_multi(gym.Env):
         info['Pose'] = self.unrealcv.get_obj_pose(self.target_list[1])  # tracker pose
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
         info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
-
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
+
+        delt_pose = np.array(info['Trajectory'][-20:]) - np.array(self.target_pos)
+        error = np.linalg.norm(delt_pose[:2], axis=1)
+        if len(np.where(error < 10)[0]) > 0:
+            loop_closed = 1
+        else:
+            loop_closed = 0
 
         # update observation
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
@@ -180,10 +186,10 @@ class UnrealCvTracking_multi(gym.Env):
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
-            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'])
+            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction']) - loop_closed
             info['Reward'] = np.array([reward_0, reward_1])
         # save the trajectory
-        self.trajectory.append(info['Pose'])
+        self.trajectory.append(self.target_pos)
         info['Trajectory'] = self.trajectory
         # self.C_reward += info['Reward']
         return states, info['Reward'], info['Done'], info
