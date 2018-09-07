@@ -34,6 +34,6 @@ class Reward():
         #  e_dis_relative = e_dis / self.dis_exp
         e_dis_relative = e_dis / dis_exp
         # reward = 1 - 2 * min(abs(e_dis_relative), 1) + min(abs(direction_error/(np.pi/4)), 2)
-        reward = 1 - min(abs(e_dis_relative), 1) - min(abs(direction_error/(np.pi/4)), 1)
+        reward = 2 - min(abs(e_dis_relative), 1) - min(abs(direction_error/(np.pi/4)), 1)
         self.dis2target_last = dis2target_now
         return reward
