@@ -1,7 +1,7 @@
 {
 	"env_name": "MPRoom",
 	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
-    "imgs_dir": "place_val",
+    "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
 	"height": 220,
@@ -31,11 +31,11 @@
     ],
 	"reset_area" : [-1850, 940, -1450, 1450],
 	"continous_actions": {
-		"high": [200,    45],
-		"low":  [-200,     -45]
+		"high": [100,    45],
+		"low":  [-100,     -45]
 	},
 	"continous_actions_forward": {
-		"high": [200,    45],
+		"high": [100,    45],
 		"low":  [0,     -45]
 	},
 	"objects_list": [

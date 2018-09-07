@@ -344,7 +344,7 @@ class GoalNavAgent(object):
         self.step_counter = 0
         self.keep_steps = 0
         self.velocity_high = action_space['high'][0]
-        self.velocity_low = action_space['low'][0]
+        self.velocity_low = 50
         self.angle_high = action_space['high'][1]
         self.angle_low = action_space['low'][1]
         self.goal_area = goal_area
