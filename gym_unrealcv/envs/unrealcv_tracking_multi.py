@@ -210,14 +210,8 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.set_appearance(self.target_list[1], np.random.choice(map_id))
             #  map_id = [0, 2, 3, 7, 8, 9]
             if self.env_name == 'MPRoom':  # random target texture
-                for i in range(5):
-                    self.unrealcv.set_texture(self.target_list[0], (1, 1, 1), np.random.uniform(0, 1, 3),
-                                              self.textures_list[np.random.randint(0, len(self.textures_list))],
-                                              np.random.randint(2, 6), i)
-                for i in range(5):
-                    self.unrealcv.set_texture(self.target_list[1], (1, 1, 1), np.random.uniform(0, 1, 3),
-                                              self.textures_list[np.random.randint(0, len(self.textures_list))],
-                                              np.random.randint(2, 6), i)
+                self.unrealcv.random_player_texture(self.target_list[0], self.textures_list, 3)
+                self.unrealcv.random_player_texture(self.target_list[1], self.textures_list, 3)
 
         # light
         if self.reset_type >= 3:
@@ -236,7 +230,7 @@ class UnrealCvTracking_multi(gym.Env):
 
         # texture
         if self.reset_type >= 4:
-            self.unrealcv.random_texture(self.background_list, self.textures_list)
+            self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
         self.unrealcv.set_obj_location(self.target_list[0], [-600, -200, 250])
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
