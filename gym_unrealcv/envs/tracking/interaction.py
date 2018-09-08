@@ -3,6 +3,7 @@ import numpy as np
 import cv2
 import math
 import random
+import time
 class Tracking(Navigation):
     def __init__(self, env, cam_id = 0, port = 9000,
                  ip = '127.0.0.1', targets = None, resolution=(160,120)):
@@ -28,14 +29,23 @@ class Tracking(Navigation):
         self.set_maxdis2goal(target, np.random.randint(1000, 3000))
         self.set_appearance(target, np.random.randint(0, num))
 
-    def random_texture(self, backgrounds, img_dirs):
-        sample_index = np.random.choice(len(backgrounds), 5)
+    def random_texture(self, backgrounds, img_dirs, num=5):
+        sample_index = np.random.choice(len(backgrounds), num)
         for id in sample_index:
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
             #self.set_picture(target, img_dir)
             self.set_texture(target, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
+            time.sleep(0.03)
         #self.set_texture('floor', (1, 1, 1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))], np.random.randint(1, 4))
+
+    def random_player_texture(self, player, img_dirs, num):
+        sample_index = np.random.choice(5, num)
+        for id in sample_index:
+            img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
+            self.set_texture(player, (1, 1, 1), np.random.uniform(0, 1, 3),
+                             img_dir, np.random.randint(2, 6), id)
+            time.sleep(0.03)
 
     def set_picture(self, target, dir):
         cmd = 'vbp {target} set_pic {dir}'
