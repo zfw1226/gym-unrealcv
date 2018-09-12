@@ -177,13 +177,13 @@ class UnrealCvTracking_multi(gym.Env):
         # cv2.imshow('target', state_0)
         # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
-        # if info['Distance'] > self.max_distance or info['Collision'] or abs(info['Direction']) > self.max_direction:
-        #     self.count_close += 1
-        # else:
-        #     self.count_close = 0
+        if info['Distance'] > self.max_distance or info['Collision'] or abs(info['Direction']) > self.max_direction:
+            self.count_close += 1
+        else:
+            self.count_close = 0
 
-        # if self.count_close > 10:
-        #    info['Done'] = True
+        if self.count_close > 10:
+           info['Done'] = True
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
