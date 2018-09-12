@@ -159,12 +159,13 @@ class UnrealCvTracking_multi(gym.Env):
         info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
-        delt_pose = np.array(info['Trajectory'][-20:]) - np.array(self.target_pos)
-        error = np.linalg.norm(delt_pose[:2], axis=1)
-        if len(np.where(error < 10)[0]) > 0:
-            loop_closed = 1
-        else:
-            loop_closed = 0
+        loop_closed = 0
+        # delt_pose = np.array(info['Trajectory'][-20:]) - np.array(self.target_pos)
+        # error = np.linalg.norm(delt_pose[:2], axis=1)
+        # if len(np.where(error < 10)[0]) > 0:
+        #     loop_closed = 1
+        # else:
+        #     loop_closed = 0
 
         # update observation
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
@@ -348,7 +349,8 @@ class GoalNavAgent(object):
         self.step_counter += 1
         if self.check_reach(self.goal, pose) or self.step_counter > 30:
             self.goal = self.generate_goal(self.goal_area)
-            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            # self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            self.velocity = 70
             self.step_counter = 0
 
         delt_yaw = self.get_direction(pose, self.goal)
