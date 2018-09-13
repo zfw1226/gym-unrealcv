@@ -112,7 +112,7 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_location(0, [-475, 0, 1600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if 'Random' in self.nav:
-            self.random_agent = RandomAgent(self.continous_actions_forward)
+            self.random_agent = RandomAgent(action_space_forward)
         if 'Goal' in self.nav:
             self.random_agent = GoalNavAgent(self.continous_actions_forward, self.reset_area)
         if 'Internal' in self.nav:
@@ -143,7 +143,10 @@ class UnrealCvTracking_multi(gym.Env):
             (velocity1, angle1) = actions[1]
 
         if 'Random' in self.nav:
-            (velocity0, angle0) = self.random_agent.act()
+            if self.action_type == 'Discrete':
+                (velocity0, angle0) = self.discrete_actions[self.random_agent.act()]
+            else:
+                (velocity0, angle0) = self.random_agent.act()
         if 'Goal' in self.nav:
             (velocity0, angle0) = self.random_agent.act(self.target_pos)
 
@@ -316,18 +319,14 @@ class RandomAgent(object):
     def __init__(self, action_space):
         self.step_counter = 0
         self.keep_steps = 0
-        self.velocity_high = action_space['high'][0]
-        self.velocity_low = action_space['low'][0]
-        self.angle_high = action_space['high'][1]
-        self.angle_low = action_space['low'][1]
+        self.action_space = action_space
 
     def act(self):
         self.step_counter += 1
         if self.step_counter > self.keep_steps:
-            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
-            self.angle = np.random.randint(self.angle_low, self.angle_high)
+            self.action = self.action_space.sample()
             self.keep_steps = np.random.randint(1, 10)
-        return (self.velocity, self.angle)
+        return self.action
 
     def reset(self):
         self.step_counter = 0
