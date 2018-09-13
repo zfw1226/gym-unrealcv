@@ -205,9 +205,15 @@ class Tracking(Navigation):
         if 'false' in res:
             return False
 
-
     def set_random(self, target, value=1):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
         res=None
         while res is None:
             res = self.client.request(cmd)
+
+    def set_interval(self, interval):
+        cmd = 'vbp set_interval {value}'.format(value=interval)
+        res=None
+        while res is None:
+            res = self.client.request(cmd)
+
