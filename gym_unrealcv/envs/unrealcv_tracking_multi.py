@@ -118,6 +118,8 @@ class UnrealCvTracking_multi(gym.Env):
         if 'Internal' in self.nav:
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
+        if 'Interval' in self.nav:
+            self.unrealcv.set_interval(15)
 
     def _step(self, actions):
         info = dict(
