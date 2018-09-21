@@ -1,10 +1,10 @@
 {
-	"env_name": "MPRoom",
-	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
+	"env_name": "Garage",
+	"env_bin": "tracking2p_garage/garage/Binaries/Linux/garage",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": 220,
+	"height": 100,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
@@ -12,7 +12,7 @@
 	"max_direction": 90,
 	"exp_distance": 250,
 	"targets": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
 		[ 100,  0],
@@ -24,9 +24,9 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -600, -200,  220]
+		[  -450,  2270,  110]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450],
+	"reset_area" : [-900, 1500, 0, 3000],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]

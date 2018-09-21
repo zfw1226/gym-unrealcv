@@ -1,10 +1,10 @@
 {
-	"env_name": "MPRoom",
-	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
+	"env_name": "Urbancity",
+	"env_bin": "tracking2p_urbancity/urbancity/Binaries/Linux/urbancity",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": 220,
+	"height": 100,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
@@ -24,7 +24,7 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -600, -200,  220]
+	[  -600, -200,  100]
     ],
 	"reset_area" : [-1850, 940, -1450, 1450],
 	"continous_actions": {

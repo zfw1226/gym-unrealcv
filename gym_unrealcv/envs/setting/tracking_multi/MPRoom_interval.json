@@ -1,6 +1,6 @@
 {
 	"env_name": "MPRoom",
-	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
+	"env_bin": "tracking_2p_interval/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -15,12 +15,12 @@
         "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
-		[  0,  30],
-		[  0, -30],
+		[ 200,  0],
+		[-200,  0],
+		[ 100, 30],
+		[ 100,-30],
+		[  0,  60],
+		[  0, -60],
 		[  0,   0]
 	],
 	"safe_start" :[

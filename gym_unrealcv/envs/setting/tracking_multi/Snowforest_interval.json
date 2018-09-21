@@ -1,10 +1,10 @@
 {
-	"env_name": "MPRoom",
-	"env_bin": "tracking_2p_back/tracking/Binaries/Linux/tracking",
+	"env_name": "Snowforest",
+	"env_bin": "tracking2p_snow/snowforest/Binaries/Linux/snowforest",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": 220,
+	"height": -1950,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
@@ -12,7 +12,7 @@
 	"max_direction": 90,
 	"exp_distance": 250,
 	"targets": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
 		[ 100,  0],
@@ -24,9 +24,9 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -600, -200,  220]
+		[  2000,  12000,  -1950]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450],
+	"reset_area" : [0, 4000, 10000, 14000],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
