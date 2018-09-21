@@ -209,12 +209,18 @@ class UnrealCvTracking_multi(gym.Env):
         np.random.seed()
         #  self.exp_distance = np.random.randint(150, 250)
 
-        # target appearance
-        if self.reset_type >= 2:
-            map_id = [2, 3, 6, 7, 9]
+        if self.reset_type >= 1:
+            if self.env_name == 'MPRoom':
+                #  map_id = [0, 2, 3, 7, 8, 9]
+                map_id = [2, 3, 6, 7, 9]
+            else:
+                map_id = [1, 2, 4]
+            # map_id = [6, 7, 8, 9]
             self.unrealcv.set_appearance(self.target_list[0], np.random.choice(map_id))
             self.unrealcv.set_appearance(self.target_list[1], np.random.choice(map_id))
-            #  map_id = [0, 2, 3, 7, 8, 9]
+
+        # target appearance
+        if self.reset_type >= 2:
             if self.env_name == 'MPRoom':  # random target texture
                 self.unrealcv.random_player_texture(self.target_list[0], self.textures_list, 3)
                 self.unrealcv.random_player_texture(self.target_list[1], self.textures_list, 3)
@@ -238,7 +244,7 @@ class UnrealCvTracking_multi(gym.Env):
         if self.reset_type >= 4:
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
-        self.unrealcv.set_obj_location(self.target_list[0], [-600, -200, 250])
+        self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
         res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
 
@@ -253,9 +259,11 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_obj_location(self.target_list[1], cam_pos_exp)
         yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
         delta_yaw = yaw-yaw_pre
-        self.unrealcv.set_move(self.target_list[1], delta_yaw, 0)
-        # self.unrealcv.set_obj_rotation(self.target_list[1], [self.roll, yaw, self.pitch])
-        time.sleep(0.5)
+        while abs(delta_yaw) > 5:
+            self.unrealcv.set_move(self.target_list[1], delta_yaw, 0)
+            yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
+            delta_yaw = yaw - yaw_pre
+
         current_pose = self.unrealcv.get_obj_pose(self.target_list[1])
 
         # get state
@@ -271,6 +279,7 @@ class UnrealCvTracking_multi(gym.Env):
             self.random_agent.reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
+            self.unrealcv.set_interval(15)
         return states
 
     def _close(self):
