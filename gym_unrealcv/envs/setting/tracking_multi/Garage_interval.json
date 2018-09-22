@@ -1,6 +1,6 @@
 {
 	"env_name": "Garage",
-	"env_bin": "tracking2p_garage/garage/Binaries/Linux/garage",
+	"env_bin": "tracking2p_garage1/garage/Binaries/Linux/garage",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -24,9 +24,9 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -450,  2270,  110]
+		[  -300,  2500,  110]
     ],
-	"reset_area" : [-900, 1500, 0, 3000],
+	"reset_area" : [-1000, 500, 500, 4500],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
