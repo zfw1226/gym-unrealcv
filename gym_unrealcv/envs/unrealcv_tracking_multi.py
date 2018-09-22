@@ -109,7 +109,7 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
-        self.unrealcv.set_location(0, [-475, 0, 1600])
+        self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+400])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if 'Random' in self.nav:
             self.random_agent = RandomAgent(action_space_forward)
@@ -213,11 +213,13 @@ class UnrealCvTracking_multi(gym.Env):
             if self.env_name == 'MPRoom':
                 #  map_id = [0, 2, 3, 7, 8, 9]
                 map_id = [2, 3, 6, 7, 9]
+                spline = False
             else:
-                map_id = [1, 2, 4]
+                map_id = [1, 2, 3, 4]
+                spline = True
             # map_id = [6, 7, 8, 9]
-            self.unrealcv.set_appearance(self.target_list[0], np.random.choice(map_id))
-            self.unrealcv.set_appearance(self.target_list[1], np.random.choice(map_id))
+            self.unrealcv.set_appearance(self.target_list[0], np.random.choice(map_id), spline)
+            self.unrealcv.set_appearance(self.target_list[1], np.random.choice(map_id), spline)
 
         # target appearance
         if self.reset_type >= 2:
