@@ -136,7 +136,7 @@ for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
                 )
 
 # new training env
-for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest']:
+for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
