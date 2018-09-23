@@ -109,7 +109,7 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
-        self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+400])
+        self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if 'Random' in self.nav:
             self.random_agent = RandomAgent(action_space_forward)
