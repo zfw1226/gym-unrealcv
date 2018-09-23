@@ -1,6 +1,6 @@
 {
 	"env_name": "Snowforest",
-	"env_bin": "tracking2p_snow/snowforest/Binaries/Linux/snowforest",
+	"env_bin": "tracking2p_snow1/snowforest/Binaries/Linux/snowforest",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
