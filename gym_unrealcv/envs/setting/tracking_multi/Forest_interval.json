@@ -7,18 +7,18 @@
 	"height": -680,
 	"pitch": 0,
 	"max_steps": 1000,
-	"max_distance": 600,
+	"max_distance": 1200,
 	"min_distance": 100,
 	"max_direction": 90,
-	"exp_distance": 250,
+	"exp_distance": 500,
 	"targets": [
         "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
+		[ 200,  0],
+		[-200,  0],
+		[ 100, 15],
+		[ 100,-15],
 		[  0,  30],
 		[  0, -30],
 		[  0,   0]
