@@ -1,6 +1,6 @@
 {
 	"env_name": "Urbancity",
-	"env_bin": "tracking2p_urbancity/urbancity/Binaries/Linux/urbancity",
+	"env_bin": "tracking2p_urban/urbancity/Binaries/Linux/urbancity",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -24,9 +24,9 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-	[  -600, -200,  100]
+	[  500, -1000,  100]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450],
+	"reset_area" : [-1500, 2500, -3000, 1000],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
