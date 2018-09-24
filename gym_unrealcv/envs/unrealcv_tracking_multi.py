@@ -214,12 +214,17 @@ class UnrealCvTracking_multi(gym.Env):
                 #  map_id = [0, 2, 3, 7, 8, 9]
                 map_id = [2, 3, 6, 7, 9]
                 spline = False
+                object_app = np.random.choice(map_id)
+                tracker_app = np.random.choice(map_id)
             else:
                 map_id = [1, 2, 3, 4]
                 spline = True
-            # map_id = [6, 7, 8, 9]
-            self.unrealcv.set_appearance(self.target_list[0], np.random.choice(map_id), spline)
-            self.unrealcv.set_appearance(self.target_list[1], np.random.choice(map_id), spline)
+                object_app = map_id[self.person_id % len(map_id)]
+                tracker_app = map_id[self.person_id % len(map_id)]
+                self.person_id += 1
+                # map_id = [6, 7, 8, 9]
+            self.unrealcv.set_appearance(self.target_list[0], object_app, spline)
+            self.unrealcv.set_appearance(self.target_list[1], tracker_app, spline)
 
         # target appearance
         if self.reset_type >= 2:
