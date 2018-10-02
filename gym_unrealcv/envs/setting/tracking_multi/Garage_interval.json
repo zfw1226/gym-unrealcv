@@ -1,6 +1,6 @@
 {
 	"env_name": "Garage",
-	"env_bin": "tracking2p_garage1/garage/Binaries/Linux/garage",
+	"env_bin": "tracking2p_pklot/garage/Binaries/Linux/garage",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
