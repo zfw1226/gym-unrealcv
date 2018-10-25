@@ -1,4 +1,4 @@
-#Env list of Gym-UnrealCV
+# Env list of Gym-UnrealCV
 
 we provide a set of pre-defined gym environments for various tasks.
 The action spaces are various from discrete to continuous and the observation spaces are various from depth image to RGB-D image.
