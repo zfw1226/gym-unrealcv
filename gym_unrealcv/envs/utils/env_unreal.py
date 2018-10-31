@@ -6,9 +6,10 @@ from multiprocessing import Process
 # api for running unrealenv
 
 class RunUnreal():
-    def __init__(self, ENV_BIN):
+    def __init__(self, ENV_BIN, ENV_MAP=None):
 
         self.env_bin = ENV_BIN
+        self.env_map = ENV_MAP
         self.path2env = self.get_path2UnrealEnv()
         self.path2binary = os.path.join(self.path2env, self.env_bin)
 
@@ -27,7 +28,7 @@ class RunUnreal():
                 port += 1
             self.write_port(self.path2binary, port)
             #self.modify_permission(self.path2env)
-            self.env = Process(target=self.run_proc, args=(self.path2binary,))
+            self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
             self.env.start()
             print ('Running docker-free env, pid:{}'.format(self.env.pid))
 
@@ -40,10 +41,14 @@ class RunUnreal():
         gympath = os.path.dirname(gym_unrealcv.__file__)
         return os.path.join(gympath, 'envs/UnrealEnv')
 
-    def run_proc(self, path2env):
+    def run_proc(self, path2env, map):
         # os.system('export Display=:0.0')
-        cmd = 'exec nohup {path2env}'
-        os.system(cmd.format(path2env=path2env))
+        cmd = 'exec nohup {path2env} '
+        cmd_exe = cmd.format(path2env=path2env)
+        if map is not None:
+            cmd_exe += map
+        print (cmd_exe)
+        os.system(cmd_exe)
 
     def close(self):
         if self.use_docker:
