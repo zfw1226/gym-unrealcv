@@ -77,6 +77,20 @@ for action in ['Discrete', 'Continuous']:  # action type
                 max_episode_steps=1000000
             )
 
+for action in ['Discrete', 'Continuous']:  # action type
+    for obs in [ 'MeasuredReal']:
+        for i, reward in enumerate(['distance']):
+            register(
+                    id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=0),
+                    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+                    kwargs={'setting_file': 'robotarm/robotarm_v1.json',
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'distance',
+                            'docker': use_docker
+                            },
+                            max_episode_steps=200
+                        )
 # Tracking
 # -----------------------------------------------------------------------
 # old env
