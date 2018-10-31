@@ -1,0 +1,36 @@
+{
+	"env_name": "RobotArm-OWI",
+	"env_bin": "arm_new_v1/ArmUE4/Binaries/Linux/ArmUE4",
+	"env_map": "OWI_RL",
+	"cam_view_id": 0,
+	"maxsteps": 100,
+	"camera_pose": [
+		[-76,-275,385,0,90,-45]
+	],
+	"color_shape": [120, 160, 3],
+	"rgbd_shape": [120, 160, 4],
+	"depth_shape": [120, 160, 1],
+	"objects": ["Cube_17"],
+	"discrete_actions": [
+		[ 3, 0, 0, 0, 0],
+		[-3, 0, 0, 0, 0],
+		[ 0, 3, 0, 0, 0],
+		[ 0,-3, 0, 0, 0],
+		[ 0, 0, 5, 0, 0],
+		[ 0, 0,-5, 0, 0],
+		[ 0, 0, 0, 5, 0],
+		[ 0, 0, 0,-5, 0]
+	],
+	"continous_actions": {
+		"high": [ 5,  5,  5, 5],
+		"low":  [-5, -5, -5, -5]
+	},
+	"pose_range": {
+		"high": [ 130,  60,  90, 45, 70],
+		"low":  [-130, -90, -60, -45, 0]
+	},
+	"goal_range": {
+		"high": [ 90,  280,  250],
+		"low":  [-90,  100,    0]
+	}
+}
