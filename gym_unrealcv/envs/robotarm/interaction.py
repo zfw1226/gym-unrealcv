@@ -24,29 +24,33 @@ class Robotarm(UnrealCv):
         elif targets is not None:
             self.targets = targets
             self.color_dict = self.build_color_dic(self.targets)
-        self.bad_msgs = []
-        self.good_msgs = []
+        self.msgs_buffer = []
 
     def message_handler(self, msg):
-        print ('receive msg')
+        # print (msg)
+        # msg: 'Hit object'
+        self.msgs_buffer.append(msg)
 
     def read_message(self):
-        good_msgs = self.good_msgs
-        bad_msgs = self.bad_msgs
+        msgs = self.msgs_buffer
         self.empty_msgs_buffer()
-        return good_msgs, bad_msgs
+        return msgs
 
     def empty_msgs_buffer(self):
-        self.good_msgs = []
-        self.bad_msgs = []
+        self.msgs_buffer = []
 
-    def set_arm_pose(self, pose):
+    def set_arm_pose(self, pose, mode='old'):
         self.arm['pose'] = np.array(pose)
-        cmd = 'vbp armBP setpos {grip} {M3} {M2} {M1} {M0}'
+        if mode == 'new':
+            cmd = 'vset /arm/pose {M0} {M1} {M2} {M3} {grip}'
+        elif mode == 'move':
+            cmd = 'vset /arm/moveto {M0} {M1} {M2} {M3} {grip}'
+        elif mode == 'old':
+            cmd = 'vbp armBP setpos {grip} {M3} {M2} {M1} {M0}'
         return self.client.request(cmd.format(M0=pose[0], M1=pose[1], M2=pose[2],
                                               M3=pose[3], grip=pose[4]))
 
-    def move_arm(self, action):
+    def move_arm(self, action, mode='old'):
         pose_tmp = self.arm['pose']+action
         out_max = pose_tmp > self.arm['high']
         out_min = pose_tmp < self.arm['low']
@@ -55,25 +59,43 @@ class Robotarm(UnrealCv):
             limit = False
         else:
             limit = True
-            pose_tmp = out_max * self.arm['high'] + out_min* self.arm['low'] + ~(out_min+out_max)*pose_tmp
-
-        self.set_arm_pose(pose_tmp)
-        state = self.get_arm_state()
-        state.append(limit)
+            pose_tmp = out_max*self.arm['high'] + out_min*self.arm['low'] + ~(out_min+out_max)*pose_tmp
+        self.set_arm_pose(pose_tmp, mode)
+        collision = False
+        if mode == 'old':
+            state = self.get_arm_state()
+            state.append(limit)
+        else:
+            state = limit
         return state
 
-    def get_arm_pose(self):
-        cmd = 'vbp armBP getpos'
+    def get_arm_pose(self, mode='old'):
+        if mode == 'old':
+            cmd = 'vbp armBP getpos'
+        else:
+            cmd = 'vget /arm/pose'
         result = None
         while result is None:
             result = self.client.request(cmd)
         result = result.split()
-        pose = []
-        for i in range(2, 11, 2):
-            pose.append(float(result[i][1:-2]))
-        pose.reverse()
+        if mode=='old':
+            pose = []
+            for i in range(2, 11, 2):
+                pose.append(float(result[i][1:-2]))
+            pose.reverse()
+        else:
+            pose = [float(i) for i in result]
         self.arm['pose'] = np.array(pose)
         return self.arm['pose']
+
+    def get_tip_pose(self):
+        cmd = 'vget /arm/tip_pose'
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
+        pose = np.array([float(i) for i in result.split()])
+        self.arm['grip'] = pose[:3]
+        return pose
 
     def get_arm_state(self):
         cmd = 'vbp armBP querysetpos'
@@ -114,19 +136,17 @@ class Robotarm(UnrealCv):
         self.arm['QR'] = QRpose
         return QRpose
 
-    def define_observation(self, cam_id, observation_type):
+    def define_observation(self, cam_id, observation_type, setting):
         if observation_type == 'Color':
-            state = self.read_image(cam_id, 'lit','fast')
-            observation_space = spaces.Box(low=0, high=255., shape=state.shape)
+            observation_space = spaces.Box(low=0, high=255., shape=setting['color_shape'])
         elif observation_type == 'Depth':
             state = self.read_depth(cam_id)
-            observation_space = spaces.Box(low=0, high=1, shape=state.shape)
+            observation_space = spaces.Box(low=0, high=1, shape=setting['depth_shape'])
         elif observation_type == 'Rgbd':
-            state = self.get_rgbd(cam_id)
-            s_high = state
+            s_high = np.ones(setting['rgbd_shape'])
             s_high[:, :, -1] = 100.0  # max_depth
             s_high[:, :, :-1] = 255  # max_rgb
-            s_low = np.zeros(state.shape)
+            s_low = np.zeros(setting['rgbd_shape'])
             observation_space = spaces.Box(low=s_low, high=s_high)
         elif observation_type == 'Measured':
             s_high = [130,  60,  90, 45, 70,  200,  300, 360, 250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
@@ -136,15 +156,19 @@ class Robotarm(UnrealCv):
             s_high = [130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
             s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
+        elif observation_type == 'MeasuredReal':
+            s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continous_actions']['high']  # arm_pose, target_position, action
+            s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continous_actions']['low']
+            observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
-    def get_observation(self,cam_id, observation_type, target_pose, action=np.zeros(4)):
+    def get_observation(self, cam_id, observation_type, target_pose, action=np.zeros(4)):
         if observation_type == 'Color':
-            self.img_color = state = self.read_image(cam_id, 'lit','fast')
+            self.img_color = state = self.read_image(cam_id, 'lit', 'fast')
         elif observation_type == 'Depth':
             self.img_depth = state = self.read_depth(cam_id)
         elif observation_type == 'Rgbd':
-            self.img_color = self.read_image(cam_id, 'lit','fast')
+            self.img_color = self.read_image(cam_id, 'lit', 'fast')
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'Measured':
@@ -154,6 +178,9 @@ class Robotarm(UnrealCv):
         elif  observation_type == 'MeasuredQR':
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.arm['QR'], self.target_pose, action))
+        elif observation_type == 'MeasuredReal':
+            self.target_pose = np.array(target_pose)
+            state = np.concatenate((self.arm['pose'], self.target_pose, action))
         return state
 
     def reset_env_keyboard(self):
