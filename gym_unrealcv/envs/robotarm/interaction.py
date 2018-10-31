@@ -61,11 +61,12 @@ class Robotarm(UnrealCv):
             limit = True
             pose_tmp = out_max*self.arm['high'] + out_min*self.arm['low'] + ~(out_min+out_max)*pose_tmp
         self.set_arm_pose(pose_tmp, mode)
-        collision = False
+
         if mode == 'old':
             state = self.get_arm_state()
             state.append(limit)
         else:
+            self.arm['pose'] = pose_tmp
             state = limit
         return state
 
