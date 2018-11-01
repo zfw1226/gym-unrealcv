@@ -104,14 +104,14 @@ class UnrealCvRobotArm_base(gym.Env):
         done = False
         tip_pose = self.unrealcv.get_tip_pose()
         tip_pos_tf = self.xyz2trz(tip_pose)
-        distance = self.get_distance(self.goal_pos, tip_pos_tf, True)
+        distance = self.get_distance(self.goal_pos, tip_pos_tf, norm=True)
 
         # reward function
         reward = -0.1
         if arm_state:  # reach limitation
             done = True
             reward = -10
-        elif distance < 0.01:  # reach
+        elif distance < 0.05:  # reach
             reward = 1
             self.count_reach += 1
             if self.count_reach > 10:
@@ -121,7 +121,7 @@ class UnrealCvRobotArm_base(gym.Env):
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
                 reward += 10 * distance_delt
-
+                print (distance, distance_delt)
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
             done = True
@@ -186,7 +186,7 @@ class UnrealCvRobotArm_base(gym.Env):
         return distance
 
     def xyz2trz(self, xyz):
-        theta = np.arctan2(xyz[0], xyz[1])
+        theta = np.arctan2(xyz[0], xyz[1])/np.pi*180
         r = np.linalg.norm(xyz[:2])
         z = xyz[2]
         return np.array([theta, r, z])
