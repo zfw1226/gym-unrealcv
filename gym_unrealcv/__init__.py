@@ -78,15 +78,15 @@ for action in ['Discrete', 'Continuous']:  # action type
             )
 
 for action in ['Discrete', 'Continuous']:  # action type
-    for obs in [ 'MeasuredReal']:
-        for i, reward in enumerate(['distance']):
+    for obs in ['MeasuredReal']:
+        for i, reward in enumerate(['trz', 'xyz']):
             register(
-                    id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=0),
+                    id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
                     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
                     kwargs={'setting_file': 'robotarm/robotarm_v1.json',
                             'action_type': action,
                             'observation_type': obs,
-                            'reward_type': 'distance',
+                            'reward_type': reward,
                             'docker': use_docker
                             },
                             max_episode_steps=200
