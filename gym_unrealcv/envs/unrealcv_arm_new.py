@@ -152,9 +152,9 @@ class UnrealCvRobotArm_base(gym.Env):
     def _reset(self):
         self.launch_env()
         self.unrealcv.set_arm_pose([random.uniform(-90, 90),
-                                    random.uniform(-45, 45),
-                                    random.uniform(-45, 45),
                                     random.uniform(-15, 15),
+                                    random.uniform(-30, 30),
+                                    random.uniform(-30, 30),
                                     0], 'new')
         tip_pose = self.unrealcv.get_tip_pose()
         tip_pos_trz = self.xyz2trz(tip_pose)
