@@ -95,6 +95,7 @@ class Robotarm(UnrealCv):
         while result is None:
             result = self.client.request(cmd)
         pose = np.array([float(i) for i in result.split()])
+        pose[1] = -pose[1]
         self.arm['grip'] = pose[:3]
         return pose
 
