@@ -121,7 +121,6 @@ class UnrealCvRobotArm_base(gym.Env):
                 distance_delt = self.distance_last - distance
                 self.distance_last = distance
                 reward += 10 * distance_delt
-                print (distance, distance_delt)
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
             done = True
