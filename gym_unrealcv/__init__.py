@@ -79,7 +79,7 @@ for action in ['Discrete', 'Continuous']:  # action type
 
 for action in ['Discrete', 'Continuous']:  # action type
     for obs in ['MeasuredReal']:
-        for i, reward in enumerate(['trz', 'xyz']):
+        for i, reward in enumerate(['trz', 'xyz', 'xyz_abs']):
             register(
                     id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
                     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',

@@ -17,7 +17,7 @@ class UnrealCvRobotArm_base(gym.Env):
                  reset_type='keyboard',    # keyboard, bp
                  action_type='continuous',   # 'discrete', 'continuous'
                  observation_type='MeasuredReal',  # 'color', 'depth', 'rgbd' . 'measure'
-                 reward_type='xyz',  # distance, move, move_distance
+                 reward_type='xyz_abs',  # distance, move, move_distance
                  docker=False,
                  resolution=(160, 120),
                  ):
@@ -111,21 +111,23 @@ class UnrealCvRobotArm_base(gym.Env):
         if arm_state:  # reach limitation
             done = True
             reward = -10
-        elif distance_xyz < 20:  # reach
-            reward = 1
+        elif distance_xyz < 5:  # reach
+            reward = 5
             self.count_reach += 1
             if self.count_reach > 10:
                 done = True
                 print ('Success')
         else:
-            if 'rtz' in self.reward_type:
+            if self.reward_type == 'rtz':
                 distance_delt = self.distance_last - distance_trz
                 self.distance_last = distance_trz
                 reward += 10 * distance_delt
-            elif 'xyz' in self.reward_type:
+            elif self.reward_type == 'xyz':
                 distance_delt = self.distance_last - distance_xyz
                 self.distance_last = distance_xyz
                 reward += 0.05 * distance_delt
+            elif self.reward_type == 'xyz_abs':
+                reward = 1 - 0.01 * distance_xyz
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
             done = True
