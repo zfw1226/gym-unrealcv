@@ -55,6 +55,7 @@ class UnrealCvRobotArm_base(gym.Env):
         self.pose_high = np.array(self.pose_range['high'])
 
         self.count_steps = 0
+        self.count_eps = 0
 
         # define observation space,
         # color, depth, rgbd...
@@ -107,27 +108,31 @@ class UnrealCvRobotArm_base(gym.Env):
         distance_trz = self.get_distance(self.goal_pos_trz, tip_pos_trz, norm=True)
         distance_xyz = self.get_distance(self.goal_pos_xyz, tip_pose)
         # reward function
-        reward = -0.1
+
+        if self.reward_type == 'xyz_abs':
+            reward = 1 - 0.01 * distance_xyz
+
         if arm_state:  # reach limitation
             done = True
             reward = -10
-        elif distance_xyz < 5:  # reach
-            reward = 5
+        elif distance_xyz < 10:  # reach
+            if self.reward_type != 'xyz_abs':
+                reward = 1 - 0.01 * distance_xyz
             self.count_reach += 1
             if self.count_reach > 10:
                 done = True
+                reward = 10
                 print ('Success')
         else:
             if self.reward_type == 'rtz':
                 distance_delt = self.distance_last - distance_trz
                 self.distance_last = distance_trz
-                reward += 10 * distance_delt
+                reward = -0.1 + 10 * distance_delt
             elif self.reward_type == 'xyz':
                 distance_delt = self.distance_last - distance_xyz
                 self.distance_last = distance_xyz
-                reward += 0.05 * distance_delt
-            elif self.reward_type == 'xyz_abs':
-                reward = 1 - 0.01 * distance_xyz
+                reward = -0.1 + 0.05 * distance_delt
+
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
             done = True
@@ -153,6 +158,7 @@ class UnrealCvRobotArm_base(gym.Env):
 
     def _reset(self):
         self.launch_env()
+        self.count_eps += 1
         self.unrealcv.set_arm_pose([random.uniform(-90, 90),
                                     random.uniform(-15, 15),
                                     random.uniform(-30, 30),
@@ -161,6 +167,8 @@ class UnrealCvRobotArm_base(gym.Env):
         tip_pose = self.unrealcv.get_tip_pose()
         tip_pos_trz = self.xyz2trz(tip_pose)
         self.goal_pos_trz = self.sample_goal()
+        # print (self.goal_pos_trz)
+        self.goal_pos_trz = np.array([0, 100+5*self.count_eps, 50])
         self.goal_pos_xyz = self.trz2xyz(self.goal_pos_trz)
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz)
 
