@@ -168,7 +168,7 @@ class UnrealCvRobotArm_base(gym.Env):
         tip_pos_trz = self.xyz2trz(tip_pose)
         self.goal_pos_trz = self.sample_goal()
         # print (self.goal_pos_trz)
-        self.goal_pos_trz = np.array([0, 100+5*self.count_eps, 50])
+        # self.goal_pos_trz = np.array([0, 100+5*self.count_eps, 50])
         self.goal_pos_xyz = self.trz2xyz(self.goal_pos_trz)
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz)
 
