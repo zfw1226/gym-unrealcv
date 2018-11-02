@@ -117,11 +117,11 @@ class UnrealCvRobotArm_base(gym.Env):
             reward = -10
         elif distance_xyz < 10:  # reach
             if self.reward_type != 'xyz_abs':
-                reward = 1 - 0.01 * distance_xyz
+                reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
             if self.count_reach > 10:
                 done = True
-                reward = 10
+                reward = (1 - 0.1 * distance_xyz)*20
                 print ('Success')
         else:
             if self.reward_type == 'rtz':
@@ -132,6 +132,9 @@ class UnrealCvRobotArm_base(gym.Env):
                 distance_delt = self.distance_last - distance_xyz
                 self.distance_last = distance_xyz
                 reward = -0.1 + 0.05 * distance_delt
+            if self.count_reach > 0:
+                reward = -self.count_reach
+                self.count_reach = 0
 
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
