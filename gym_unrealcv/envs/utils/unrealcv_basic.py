@@ -41,7 +41,7 @@ class UnrealCv(object):
         self.client.request('vrun sg.ShadowQuality 0')
         self.client.request('vrun sg.TextureQuality 0')
         self.client.request('vrun sg.EffectsQuality 0')
-        self.client.request('vrun r.ScreenPercentage 10')
+        # self.client.request('vrun r.ScreenPercentage 10')
         # self.client.request('vrun t.maxFPS 100')
         time.sleep(1)
         #  self.get_pose(cam_id,'hard')
@@ -180,13 +180,15 @@ class UnrealCv(object):
 
     def get_rotation(self, cam_id, mode='hard'):
         if mode == 'soft':
-            return self.cam[cam_id]['location']
+            return self.cam[cam_id]['rotation']
         if mode == 'hard':
             cmd = 'vget /camera/{cam_id}/rotation'
             rotation = None
             while rotation is None:
                 rotation = self.client.request(cmd.format(cam_id=cam_id))
-            self.cam[cam_id]['rotation'] = [float(i) for i in rotation.split()]
+            rotation = [float(i) for i in rotation.split()]
+            rotation.reverse()
+            self.cam[cam_id]['rotation'] = rotation
             return self.cam[cam_id]['rotation']
 
     def moveto(self, cam_id, loc):
