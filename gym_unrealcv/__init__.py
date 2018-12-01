@@ -115,7 +115,7 @@ for env in ['City1', 'City2']:
                             )
 
 # new training env
-for env in ['SimpleRoom', 'BpRoom', 'MetaRoom']:
+for env in ['SimpleRoom', 'BpRoom', 'MetaRoom', 'SemiActive']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
@@ -165,6 +165,32 @@ for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest']:
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvTracking_multi',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
+
+for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest']:
+    for i in range(5):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'Internal', 'None',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+
+                    name = 'UnrealSurv{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    if 'Interval' in nav:
+                        setting_file = 'surveillance/{env}_interval.json'.format(env=env)
+                    else:
+                        setting_file = 'surveillance/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvSurveillance',
                         kwargs={'setting_file': setting_file,
                                 'reset_type': i,
                                 'action_type': action,
