@@ -5,12 +5,12 @@ import math
 import random
 import time
 class Tracking(Navigation):
-    def __init__(self, env, cam_id = 0, port = 9000,
-                 ip = '127.0.0.1', targets = None, resolution=(160,120)):
-        super(Tracking, self).__init__(env=env, port = port,ip = ip , cam_id=cam_id,resolution=resolution)
+    def __init__(self, env, cam_id=0, port=9000,
+                 ip='127.0.0.1', targets = None, resolution=(160, 120)):
+        super(Tracking, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
 
     # functions for character setting
-    def random_env(self,backgrounds, img_dirs, type, lights):
+    def random_env(self, backgrounds, img_dirs, type, lights):
         for target in backgrounds:
             if np.random.sample(1) > 0.5:
                 if type=='img':
@@ -145,10 +145,13 @@ class Tracking(Navigation):
             self.cam[cam_id]['location'] = [float(i) for i in location.split()]
             return self.cam[cam_id]['location']
 
-    def get_startpoint(self, target_pos, distance, reset_area, exp_height=200):
+    def get_startpoint(self, target_pos, distance, reset_area, exp_height=200, direction=None):
         count = 0
         while True:  # searching a safe point
-            direction = 2 * np.pi * np.random.sample(1)
+            if direction == None:
+                direction = 2 * np.pi * np.random.sample(1)
+            else:
+                direction = direction % (2 * np.pi)
             dx = float(distance * np.cos(direction))
             dy = float(distance * np.sin(direction))
             x = dx + target_pos[0]
@@ -183,7 +186,7 @@ class Tracking(Navigation):
     def random_layout(self,objects, reset_area):
         sample_index = np.random.choice(len(objects), 5)
         for id in sample_index:
-            object_loc = [0,0, 150]
+            object_loc = [0, 0, 150]
             object_loc[0] = np.random.uniform(reset_area[0], reset_area[1])
             object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
             self.set_object_location(objects[id], object_loc)
