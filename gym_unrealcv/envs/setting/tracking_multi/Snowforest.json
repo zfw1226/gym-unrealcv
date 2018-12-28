@@ -11,6 +11,7 @@
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
+	"interval": 10,
 	"targets": [
         "targetBP", "targetBP2"
 	],

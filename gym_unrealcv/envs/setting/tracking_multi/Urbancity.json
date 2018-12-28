@@ -1,32 +1,33 @@
 {
-	"env_name": "Forest",
-	"env_bin": "tracking2p_forest/nature/Binaries/Linux/nature",
+	"env_name": "Urbancity",
+	"env_bin": "tracking2p_urban/urbancity/Binaries/Linux/urbancity",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": -680,
+	"height": 100,
 	"pitch": 0,
 	"max_steps": 1000,
-	"max_distance": 1200,
+	"max_distance": 600,
 	"min_distance": 100,
 	"max_direction": 90,
-	"exp_distance": 500,
+	"exp_distance": 250,
+	"interval": 10,
 	"targets": [
-        "targetBP", "targetBP2"
+        "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 200,  0],
-		[-200,  0],
-		[ 100, 15],
-		[ 100,-15],
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
 		[  0,  30],
 		[  0, -30],
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  5000, -17000,  -680]
+	[  -250, -250,  100]
     ],
-	"reset_area" : [3000, 9000, -20000, -14000 ],
+	"reset_area" : [-1500, 1000, -1500, 1000],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
