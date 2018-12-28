@@ -1,6 +1,6 @@
 {
 	"env_name": "Garage",
-	"env_bin": "tracking2p_pklot/garage/Binaries/Linux/garage",
+	"env_bin": "tracking2p_garage1/garage/Binaries/Linux/garage",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -11,16 +11,17 @@
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
+	"interval": 10,
 	"targets": [
         "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
-		[  0,  30],
-		[  0, -30],
+		[ 80,  0],
+		[-80,  0],
+		[  40, 12],
+		[  40,-12],
+		[  0,  24],
+		[  0, -24],
 		[  0,   0]
 	],
 	"safe_start" :[
