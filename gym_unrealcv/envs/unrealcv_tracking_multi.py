@@ -58,6 +58,7 @@ class UnrealCvTracking_multi(gym.Env):
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
+        self.start_area = self.get_start_area(self.safe_start[0], 500)
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -101,7 +102,8 @@ class UnrealCvTracking_multi(gym.Env):
         self.reward_function = reward.Reward(setting)
 
         if self.reset_type == 5:
-            self.unrealcv.simulate_physics(self.objects_env)
+            self.unrealcv.init_objects(self.objects_env)
+            # self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
         self.count_eps = 0
@@ -121,7 +123,7 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
         if 'Interval' in self.nav:
-            self.unrealcv.set_interval(10)
+            self.unrealcv.set_interval(setting['interval'])
 
     def _step(self, actions):
         info = dict(
@@ -203,7 +205,7 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_move(self.target_list[1], 0, 0)
         np.random.seed()
         #  self.exp_distance = np.random.randint(150, 250)
-
+        self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
         if self.reset_type >= 1:
             if self.env_name == 'MPRoom':
                 #  map_id = [0, 2, 3, 7, 8, 9]
@@ -231,7 +233,7 @@ class UnrealCvTracking_multi(gym.Env):
         if self.reset_type >= 3:
             for lit in self.light_list:
                 if 'sky' in lit:
-                    self.unrealcv.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5,2))
+                    self.unrealcv.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5, 2))
                 else:
                     lit_direction = np.random.uniform(-1, 1, 3)
                     if 'directional' in lit:
@@ -246,7 +248,13 @@ class UnrealCvTracking_multi(gym.Env):
         if self.reset_type >= 4:
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
-        self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
+        # obstacle
+        if self.reset_type >= 5:
+            self.unrealcv.clean_obstacles()
+            self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
+                                           np.random.randint(3, 10), self.reset_area, self.start_area)
+
+
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
 
         res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
@@ -283,7 +291,6 @@ class UnrealCvTracking_multi(gym.Env):
             self.random_agent.reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-            self.unrealcv.set_interval(10)
 
         return states
 
@@ -329,6 +336,11 @@ class UnrealCvTracking_multi(gym.Env):
         import gym_unrealcv
         gympath = os.path.dirname(gym_unrealcv.__file__)
         return os.path.join(gympath, 'envs/setting', filename)
+
+    def get_start_area(self, safe_start, safe_range):
+        start_area = [safe_start[0]-safe_range, safe_start[0]+safe_range,
+                     safe_start[1]-safe_range, safe_start[1]+safe_range]
+        return start_area
 
 class RandomAgent(object):
     """The world's simplest agent!"""

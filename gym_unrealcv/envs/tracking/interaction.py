@@ -8,20 +8,7 @@ class Tracking(Navigation):
     def __init__(self, env, cam_id=0, port=9000,
                  ip='127.0.0.1', targets = None, resolution=(160, 120)):
         super(Tracking, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
-
-    # functions for character setting
-    def random_env(self, backgrounds, img_dirs, type, lights):
-        for target in backgrounds:
-            if np.random.sample(1) > 0.5:
-                if type=='img':
-                    img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-                    self.set_picture(target,img_dir)
-                elif type=='color':
-                    self.set_color(target,np.round(np.random.sample(6),3))
-
-        for lit in lights:
-            if np.random.sample(1) > 0.5:
-                self.set_light(lit, 360*np.random.sample(3), np.random.sample(1), np.random.sample(3))
+        self.obstacles = []
 
     def random_character(self, target, num):  # apperance, speed, acceleration
         self.set_speed(target, np.random.randint(60, 160))
@@ -30,14 +17,12 @@ class Tracking(Navigation):
         self.set_appearance(target, np.random.randint(0, num))
 
     def random_texture(self, backgrounds, img_dirs, num=5):
-        sample_index = np.random.choice(len(backgrounds), num)
+        sample_index = np.random.choice(len(backgrounds), num, replace=False)
         for id in sample_index:
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-            #self.set_picture(target, img_dir)
             self.set_texture(target, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             time.sleep(0.03)
-        #self.set_texture('floor', (1, 1, 1), np.random.uniform(0, 1, 3), img_dirs[np.random.randint(0, len(img_dirs))], np.random.randint(1, 4))
 
     def random_player_texture(self, player, img_dirs, num):
         sample_index = np.random.choice(5, num)
@@ -114,7 +99,6 @@ class Tracking(Navigation):
             return pose
 
     def move_2d(self, cam_id, angle, length):
-
         yaw_exp = (self.cam[cam_id]['rotation'][1] + angle) % 360
         delt_x = length * math.cos(yaw_exp / 180.0 * math.pi)
         delt_y = length * math.sin(yaw_exp / 180.0 * math.pi)
@@ -183,7 +167,7 @@ class Tracking(Navigation):
         for obj in objects:
             self.set_phy(obj, 1)
 
-    def random_layout(self,objects, reset_area):
+    def random_layout(self, objects, reset_area):
         sample_index = np.random.choice(len(objects), 5)
         for id in sample_index:
             object_loc = [0, 0, 150]
@@ -192,9 +176,8 @@ class Tracking(Navigation):
             self.set_object_location(objects[id], object_loc)
 
     def set_move(self, target, angle, velocity):
-        cmd = 'vbp {target} set_move {angle} {velocity}'.format(target=target,
-                                                                     angle=angle, velocity=velocity)
-        res=None
+        cmd = 'vbp {target} set_move {angle} {velocity}'.format(target=target, angle=angle, velocity=velocity)
+        res = None
         while res is None:
             res = self.client.request(cmd)
 
@@ -216,7 +199,44 @@ class Tracking(Navigation):
 
     def set_interval(self, interval):
         cmd = 'vbp set_interval {value}'.format(value=interval)
-        res=None
+        res = None
         while res is None:
             res = self.client.request(cmd)
+
+    def init_objects(self, objects):
+        self.objects_dict = dict()
+        for obj in objects:
+            print (obj)
+            self.objects_dict[obj] = self.get_obj_location(obj)
+        return self.objects_dict
+
+    def set_obj_scale(self, obj, scale):
+        cmd = 'vbp {obj} set_scale {x} {y} {z}'.format(obj=obj, x=scale[0], y=scale[1], z=scale[2])
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+
+    def random_obstacles(self, objects, img_dirs, num, area, start_area):
+        sample_index = np.random.choice(len(objects), num, replace=False)
+        for id in sample_index:
+            obstacle = objects[id]
+            self.obstacles.append(obstacle)
+            # texture
+            img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
+            self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
+            # scale
+            self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
+            # location
+            obstacle_loc = [start_area[0], start_area[2], 0]
+            while start_area[0] <= obstacle_loc[0] <= start_area[1] and start_area[2] <= obstacle_loc[1] <= start_area[3]:
+                obstacle_loc[0] = np.random.uniform(area[0]+100, area[1]-100)
+                obstacle_loc[1] = np.random.uniform(area[2]+100, area[3]-100)
+                obstacle_loc[2] = np.random.uniform(area[4], area[5])
+            self.set_obj_location(obstacle, obstacle_loc)
+            time.sleep(0.03)
+
+    def clean_obstacles(self):
+        for obj in self.obstacles:
+            self.set_obj_location(obj, self.objects_dict[obj])
+        self.obstacles = []
 

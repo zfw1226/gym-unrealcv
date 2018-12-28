@@ -150,18 +150,16 @@ for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
                 )
 
 # new training env
-for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest']:
-    for i in range(5):  # reset type
+for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom']:
+    for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
                 for nav in ['Random', 'Goal', 'Internal', 'None',
                             'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
 
                     name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-                    if 'Interval' in nav:
-                        setting_file = 'tracking_multi/{env}_interval.json'.format(env=env)
-                    else:
-                        setting_file = 'tracking_multi/{env}.json'.format(env=env)
+
+                    setting_file = 'tracking_multi/{env}.json'.format(env=env)
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvTracking_multi',
