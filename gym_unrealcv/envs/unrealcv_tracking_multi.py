@@ -86,7 +86,6 @@ class UnrealCvTracking_multi(gym.Env):
                                               high=np.array(self.continous_actions_forward['high']))
         # self.action_space = [action_space, action_space]
         self.action_space = [action_space_forward, action_space]
-        self.count_steps = 0
 
         # define observation space,
         # color, depth, rgbd,...
@@ -101,16 +100,19 @@ class UnrealCvTracking_multi(gym.Env):
         self.reward_type = reward_type
         self.reward_function = reward.Reward(setting)
 
-        self.rendering = False
-
-        self.count_close = 0
-
         if self.reset_type == 5:
             self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
+        self.count_eps = 0
+        self.count_steps = 0
+        self.count_close = 0
+        self.direction = None
+        self.rendering = False
+        # set third-person view camera
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
+        # config target
         if 'Random' in self.nav:
             self.random_agent = RandomAgent(action_space_forward)
         if 'Goal' in self.nav:
@@ -119,7 +121,7 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
         if 'Interval' in self.nav:
-            self.unrealcv.set_interval(20)
+            self.unrealcv.set_interval(10)
 
     def _step(self, actions):
         info = dict(
@@ -164,14 +166,6 @@ class UnrealCvTracking_multi(gym.Env):
         info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
-        loop_closed = 0
-        # delt_pose = np.array(info['Trajectory'][-20:]) - np.array(self.target_pos)
-        # error = np.linalg.norm(delt_pose[:2], axis=1)
-        # if len(np.where(error < 10)[0]) > 0:
-        #     loop_closed = 1
-        # else:
-        #     loop_closed = 0
-
         # update observation
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
@@ -192,17 +186,18 @@ class UnrealCvTracking_multi(gym.Env):
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
-            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction']) - loop_closed
+            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'])
             info['Reward'] = np.array([reward_0, reward_1])
         # save the trajectory
-        self.trajectory.append(self.target_pos)
+        self.trajectory.append([info['Distance'], info['Direction']])
         info['Trajectory'] = self.trajectory
-        # self.C_reward += info['Reward']
+
         return states, info['Reward'], info['Done'], info
 
     def _reset(self, ):
         self.C_reward = 0
         self.count_close = 0
+        self.count_eps += 1
         # stop move
         self.unrealcv.set_move(self.target_list[0], 0, 0)
         self.unrealcv.set_move(self.target_list[1], 0, 0)
@@ -253,7 +248,8 @@ class UnrealCvTracking_multi(gym.Env):
 
         self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
-        res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
+
+        res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
 
         count = 0
         while not res:
@@ -266,13 +262,14 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_obj_location(self.target_list[1], cam_pos_exp)
         yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
         delta_yaw = yaw-yaw_pre
-        while abs(delta_yaw) > 5:
+        while abs(delta_yaw) > 3:
             self.unrealcv.set_move(self.target_list[1], delta_yaw, 0)
             yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
-            delta_yaw = yaw - yaw_pre
+            delta_yaw = (yaw - yaw_pre) % 360
+            if delta_yaw > 180:
+                delta_yaw = 360 - delta_yaw
 
         current_pose = self.unrealcv.get_obj_pose(self.target_list[1])
-
         # get state
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
@@ -286,7 +283,8 @@ class UnrealCvTracking_multi(gym.Env):
             self.random_agent.reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-            self.unrealcv.set_interval(15)
+            self.unrealcv.set_interval(10)
+
         return states
 
     def _close(self):
