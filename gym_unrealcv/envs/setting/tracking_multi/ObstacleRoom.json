@@ -3,7 +3,7 @@
 	"env_bin": "tracking2p_obstacle/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
-	"cam_id": [1, 2],
+	"cam_id": [2, 3],
 	"height": 220,
 	"pitch": 0,
 	"max_steps": 1000,
