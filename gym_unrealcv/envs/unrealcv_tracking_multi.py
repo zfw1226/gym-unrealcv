@@ -252,7 +252,7 @@ class UnrealCvTracking_multi(gym.Env):
         if self.reset_type >= 5:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
-                                           np.random.randint(3, 10), self.reset_area, self.start_area)
+                                           np.random.randint(10, 20), self.reset_area, self.start_area)
 
 
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
