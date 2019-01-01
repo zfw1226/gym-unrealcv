@@ -13,10 +13,10 @@ import random
 '''
 It is a general env for searching target object.
 
-State : raw color image and depth (640x480) 
-Action:  (linear velocity ,angle velocity , trigger) 
+State : raw color image and depth (640x480)
+Action:  (linear velocity ,angle velocity , trigger)
 Done : Collision or get target place or False trigger three times.
-Task: Learn to avoid obstacle and search for a target object in a room, 
+Task: Learn to avoid obstacle and search for a target object in a room,
       you can select the target name according to the Recommend object list as below
 
 Recommend object list in RealisticRendering
@@ -92,7 +92,7 @@ class UnrealCvSearch_base(gym.Env):
 
      self.rendering = False
 
-   def _step(self, action ):
+   def step(self, action ):
         info = dict(
             Collision=False,
             Done = False,
@@ -181,7 +181,7 @@ class UnrealCvSearch_base(gym.Env):
             show_info(info)
 
         return state, info['Reward'], info['Done'], info
-   def _reset(self, ):
+   def reset(self, ):
        # augment environment
        self.random_scene(self.augment_env)
 
@@ -296,5 +296,3 @@ class UnrealCvSearch_base(gym.Env):
        import gym_unrealcv
        gympath = os.path.dirname(gym_unrealcv.__file__)
        return os.path.join(gympath, 'envs/setting', filename)
-
-
