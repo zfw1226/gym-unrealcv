@@ -156,7 +156,7 @@ class UnrealCvTracking_multi(gym.Env):
         if 'Goal' in self.nav:
             (velocity0, angle0) = self.random_agent.act(self.target_pos)
 
-        info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
+        # info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
         self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
         self.unrealcv.set_move(self.target_list[1], angle1, velocity1)
@@ -178,18 +178,19 @@ class UnrealCvTracking_multi(gym.Env):
         # cv2.imshow('target', state_0)
         # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
-        if info['Distance'] > self.max_distance or info['Collision'] or abs(info['Direction']) > self.max_direction:
-            self.count_close += 1
-        else:
-            self.count_close = 0
-
-        if self.count_close > 10:
-           info['Done'] = True
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'])
             info['Reward'] = np.array([reward_0, reward_1])
+
+        if reward_1 <= -0.99:
+            self.count_close += 1
+        else:
+            self.count_close = 0
+
+        if self.count_close > 20:
+           info['Done'] = True
         # save the trajectory
         self.trajectory.append([info['Distance'], info['Direction']])
         info['Trajectory'] = self.trajectory
@@ -252,7 +253,7 @@ class UnrealCvTracking_multi(gym.Env):
         if self.reset_type >= 5:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
-                                           np.random.randint(10, 20), self.reset_area, self.start_area)
+                                           20, self.reset_area, self.start_area)
 
 
         self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
@@ -376,8 +377,8 @@ class GoalNavAgent(object):
         self.step_counter += 1
         if self.check_reach(self.goal, pose) or self.step_counter > 30:
             self.goal = self.generate_goal(self.goal_area)
-            # self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
-            self.velocity = 70
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            # self.velocity = 70
             self.step_counter = 0
 
         delt_yaw = self.get_direction(pose, self.goal)
