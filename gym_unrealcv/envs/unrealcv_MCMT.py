@@ -20,7 +20,7 @@ Task: Learn to follow the target object(moving person) in the scene
 '''
 #TODO: fix reset rotation/ check rewards
 
-class UnrealCvSurveillance(gym.Env):
+class UnrealCvMCMT(gym.Env):
     def __init__(self,
                  setting_file,
                  reset_type,
@@ -28,7 +28,7 @@ class UnrealCvSurveillance(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(640, 480),
+                 resolution=(320, 240),
                  nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
@@ -52,13 +52,16 @@ class UnrealCvSurveillance(gym.Env):
         self.reset_area = setting['reset_area']
         self.background_list = setting['backgrounds']
         self.light_list = setting['lights']
-        self.target_num = setting['target_num']
+        self.target_num = setting['target_num'] # the number of the target appearance
         self.exp_distance = setting['exp_distance']
         texture_dir = setting['imgs_dir']
         gym_path = os.path.dirname(gym_unrealcv.__file__)
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
+
+        self.num_target = len(self.target_list)
+        self.num_cam = len(self.cam_id)
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -71,18 +74,18 @@ class UnrealCvSurveillance(gym.Env):
         env_ip, env_port = self.unreal.start(docker, resolution)
 
         # connect UnrealCV
-        self.unrealcv = Tracking(cam_id=self.cam_id, port=env_port, ip=env_ip,
+        self.unrealcv = Tracking(cam_id=self.cam_id[0], port=env_port, ip=env_ip,
                                  env=self.unreal.path2env, resolution=resolution)
 
         # define action
         self.action_type = action_type
         assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
         if self.action_type == 'Discrete':
-            self.action_space = spaces.Discrete(len(self.discrete_actions))
-            player_action_space  = spaces.Discrete(len(self.discrete_actions_player))
+            self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.num_cam)]
+            player_action_space = spaces.Discrete(len(self.discrete_actions_player))
         elif self.action_type == 'Continuous':
-            self.action_space = spaces.Box(low=np.array(self.continous_actions['low']),
-                                      high=np.array(self.continous_actions['high']))
+            self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
+                                      high=np.array(self.continous_actions['high'])) for i in range(self.num_cam)]
             player_action_space = spaces.Discrete(len(self.continous_actions_player))
 
         self.count_steps = 0
@@ -91,9 +94,8 @@ class UnrealCvSurveillance(gym.Env):
         # color, depth, rgbd,...
         self.observation_type = observation_type
         assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray']
-        observation_space = self.unrealcv.define_observation(self.cam_id, self.observation_type, 'direct')
-        # self.observation_space = [observation_space, observation_space]
-        self.observation_space = observation_space
+        self.observation_space = [self.unrealcv.define_observation(self.cam_id[i], self.observation_type, 'fast')
+                                  for i in range(self.num_cam)]
         self.unrealcv.pitch = self.pitch
         # define reward type
         # distance, bbox, bbox_distance,
@@ -111,69 +113,71 @@ class UnrealCvSurveillance(gym.Env):
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         if 'Random' in self.nav:
-            self.random_agent = RandomAgent(player_action_space)
+            self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
         if 'Goal' in self.nav:
-            self.random_agent = GoalNavAgent(self.continous_actions_player, self.reset_area)
+            self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area) for i in range(self.num_target)]
         if 'Internal' in self.nav:
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
         if 'Interval' in self.nav:
             self.unrealcv.set_interval(30)
 
-    def _step(self, action):
+    def step(self, actions):
         info = dict(
-            Collision=False,
             Done=False,
-            Trigger=0.0,
-            Reward=0.0,
-            Action=action,
-            Pose=[],
+            Reward=[0 for i in range(self.num_cam)],
+            Target_Pose=[],
+            Cam_Pose=[],
             Steps=self.count_steps,
-            Direction=None,
-            Distance=None,
-            Color=None,
-            Depth=None,
         )
-        action = np.squeeze(action)
-        if self.action_type == 'Discrete':
-            a = self.discrete_actions[action]
-            (delta_yaw, delta_pitch) = a
-        else:
-            (delta_yaw, delta_pitch) = action
-
-        if 'Random' in self.nav:
+        actions = np.squeeze(actions)
+        actions2cam = []
+        for i in range(self.num_cam):
             if self.action_type == 'Discrete':
-                (velocity0, angle0) = self.discrete_actions_player[self.random_agent.act()]
-                (velocity1, angle1) = self.discrete_actions_player[self.random_agent.act()]
+                actions2cam.append(self.discrete_actions[actions[i]])  # delta_yaw, delta_pitch
             else:
-                (velocity0, angle0) = self.random_agent.act()
-                (velocity1, angle1) = self.random_agent.act()
-        if 'Goal' in self.nav:
-            (velocity0, angle0) = self.random_agent.act(self.target_pos)
-            (velocity1, angle1) = self.random_agent.act(self.target_pos)
+                actions2cam.append(actions[i])  # delta_yaw, delta_pitch
 
-        self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
-        # self.unrealcv.set_move(self.target_list[1], angle1, velocity1)
-        cam_pose = self.unrealcv.get_rotation(self.cam_id, 'hard')
-        cam_pose[1] += delta_yaw
-        cam_pose[2] += delta_pitch
-        self.unrealcv.set_rotation(self.cam_id, cam_pose)
+        actions2target = []
+        for i in range(len(self.target_list)):
+            if 'Random' in self.nav:
+                if self.action_type == 'Discrete':
+                    actions2target.append(self.discrete_actions_player[self.random_agents[i].act()])
+                else:
+                    actions2target.append(self.random_agents[i].act())
+            if 'Goal' in self.nav:
+                    actions2target.append(self.random_agents[i].act(self.target_pos[i]))
+
+        for i, target in enumerate(self.target_list):
+            self.unrealcv.set_move(target, actions2target[i][1], actions2target[i][0])
+
+        states = []
+        for i, cam in enumerate(self.cam_id):
+            cam_rot = self.unrealcv.get_rotation(cam, 'hard')
+            cam_rot[1] += actions2cam[i][0]
+            cam_rot[2] += actions2cam[i][1]
+            self.unrealcv.set_rotation(cam, cam_rot)
+            self.cam_pose[i][-3:] = cam_rot
+            states.append(self.unrealcv.get_observation(cam, self.observation_type, 'direct'))
 
         self.count_steps += 1
 
-        # info['Pose'] = self.unrealcv.get_obj_pose(self.target_list[1])  # tracker pose
-        self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
+        for i, target in enumerate(self.target_list):
+            self.target_pos[i] = self.unrealcv.get_obj_pose(target)
+        info['Target_Pose'] = self.target_pos
+        info['Cam_Pose'] = self.cam_pose
         # info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
         # info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 3)
 
-        state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'direct')
-        info['Color'] = self.unrealcv.img_color
-        info['Depth'] = self.unrealcv.img_depth
-
-        cv2.imshow('tracker', state)
+        # info['Color'] = self.unrealcv.img_color
+        # info['Depth'] = self.unrealcv.img_depth
+        cv2.imshow('tracker_0', states[0])
+        cv2.imshow('tracker_1', states[1])
         cv2.waitKey(10)
 
         # set your done condition
+        if self.count_steps > 200:
+            info['Done'] = True
         '''
         if info['Distance'] > self.max_distance or abs(info['Direction']) > self.max_direction:
             self.count_close += 1
@@ -185,23 +189,21 @@ class UnrealCvSurveillance(gym.Env):
         '''
 
         # add your reward function
-        info['Reward'] = 0
 
-        return state, info['Reward'], info['Done'], info
+        return states, info['Reward'], info['Done'], info
 
-    def _reset(self, ):
+    def reset(self, ):
         self.C_reward = 0
         self.count_close = 0
-        # stop move
-        self.unrealcv.set_move(self.target_list[0], 0, 0)
-        self.unrealcv.set_move(self.target_list[1], 0, 0)
+        # stop
+        for i, target in enumerate(self.target_list):
+            self.unrealcv.set_move(target, 0, 0)
         np.random.seed()
-        #  self.exp_distance = np.random.randint(150, 250)
 
         if self.reset_type >= 1:
-            if self.env_name == 'MPRoom':
+            if self.env_name == 'MCMTRoom':
                 #  map_id = [0, 2, 3, 7, 8, 9]
-                map_id = [2, 3, 6, 7, 9]
+                map_id = [1, 2, 3, 4]
                 spline = False
                 object_app = np.random.choice(map_id)
                 tracker_app = np.random.choice(map_id)
@@ -209,7 +211,7 @@ class UnrealCvSurveillance(gym.Env):
                 map_id = [1, 2, 3, 4]
                 spline = True
                 object_app = map_id[self.person_id % len(map_id)]
-                tracker_app = map_id[self.person_id % len(map_id)]
+                tracker_app = map_id[(self.person_id+1) % len(map_id)]
                 self.person_id += 1
                 # map_id = [6, 7, 8, 9]
             self.unrealcv.set_appearance(self.target_list[0], object_app, spline)
@@ -240,49 +242,48 @@ class UnrealCvSurveillance(gym.Env):
         if self.reset_type >= 4:
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
-        self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
-        self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
-        res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area, self.height)
-
-        count = 0
-        while not res:
-            count += 1
-            time.sleep(0.1)
-            self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
-            res = self.unrealcv.get_startpoint(self.target_pos, self.exp_distance, self.reset_area)
-        cam_pos_exp, yaw = res
-        cam_pos_exp[-1] = self.height
-        self.unrealcv.set_obj_location(self.target_list[1], cam_pos_exp)
-        yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
-        delta_yaw = yaw-yaw_pre
-        while abs(delta_yaw) > 5:
-            self.unrealcv.set_move(self.target_list[1], delta_yaw, 0)
-            yaw_pre = self.unrealcv.get_obj_rotation(self.target_list[1])[1]
-            delta_yaw = yaw - yaw_pre
+        self.target_pos = []
+        for i, target in enumerate(self.target_list):
+            self.unrealcv.set_obj_location(target, self.safe_start[i])
+            self.target_pos.append(self.unrealcv.get_obj_pose(target))
 
         # get state
-        state = self.unrealcv.get_observation(self.cam_id, self.observation_type, 'fast')
+        states = []
+        self.cam_pose = []
+        for i, cam in enumerate(self.cam_id):
+            if i % 4 <= 1:
+                cam_loc = [self.reset_area[i % 4], (self.reset_area[2]+self.reset_area[3])/2, 300]
+                cam_rot = [0, 180*(i % 4), 0]
+            else:
+                cam_loc = [(self.reset_area[0]+self.reset_area[1])/2, self.reset_area[i % 4], 300]
+                cam_rot = [0, 90 * (i % 4), 0]  # not this
+
+            self.unrealcv.set_location(cam, cam_loc)
+            self.unrealcv.set_rotation(cam, cam_rot)
+            self.cam_pose.append(cam_loc+cam_rot)
+            states.append(self.unrealcv.get_observation(cam, self.observation_type, 'fast'))
 
         self.count_steps = 0
         if 'Random' in self.nav or 'Goal' in self.nav:
-            self.random_agent.reset()
+            for i in range(len(self.random_agents)):
+                self.random_agents[i].reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-            self.unrealcv.set_interval(30)
-        return state
 
-    def _close(self):
+        return states
+
+    def close(self):
         self.unreal.close()
 
-    def _render(self, mode='rgb_array', close=False):
+    def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
         return self.unrealcv.img_color
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         self.person_id = seed
 
-    def _get_action_size(self):
+    def get_action_size(self):
         return len(self.action)
 
     def get_direction(self, current_pose, target_pose):
@@ -348,8 +349,8 @@ class GoalNavAgent(object):
         self.step_counter += 1
         if self.check_reach(self.goal, pose) or self.step_counter > 30:
             self.goal = self.generate_goal(self.goal_area)
-            # self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
-            self.velocity = 50
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            # self.velocity = 50
             self.step_counter = 0
 
         delt_yaw = self.get_direction(pose, self.goal)
