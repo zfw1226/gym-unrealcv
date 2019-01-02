@@ -4,13 +4,14 @@ import gym
 from gym import wrappers
 import cv2
 import time
+import numpy as np
 
 class RandomAgent(object):
     """The world's simplest agent!"""
     def __init__(self, action_space):
         self.action_space = action_space
 
-    def act(self, observation, reward, done):
+    def act(self, observation):
         return self.action_space.sample()
 
 
@@ -21,24 +22,25 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--render", default=False, metavar='G', help='show env using cv2')
     args = parser.parse_args()
     env = gym.make(args.env_id)
-
-    agent_0 = RandomAgent(env.action_space[0])
-    agent_1 = RandomAgent(env.action_space[1])
+    agents_num = len(env.action_space)
+    agents = [RandomAgent(env.action_space[i]) for i in range(agents_num)]
 
     episode_count = 100
     rewards = 0
     done = False
 
-    for i in range(episode_count):
-        env.seed(i)
+    done = False
+    Total_rewards = np.zeros(agents_num)
+    for eps in range(1, episode_count):
+        env.seed()
         obs = env.reset()
         count_step = 0
         t0 = time.time()
+        C_rewards = np.zeros(agents_num)
         while True:
-            action_0 = agent_0.act(obs, rewards, done)
-            action_1 = agent_0.act(obs, rewards, done)
-            # action_1 = agent_1.act(obs, rewards, done)
-            obs, rewards, done, _ = env.step([action_0, action_1])
+            actions = [agents[i].act(obs[i]) for i in range(agents_num)]
+            obs, rewards, done, _ = env.step(actions)
+            C_rewards += rewards
             count_step += 1
             if args.render:
                 img = env.render(mode='rgb_array')
@@ -47,7 +49,8 @@ if __name__ == '__main__':
                 cv2.waitKey(1)
             if done:
                 fps = count_step / (time.time() - t0)
-                print ('Fps:' + str(fps))
+                Total_rewards += C_rewards
+                print ('Fps:' + str(fps), 'R:'+str(C_rewards), 'R_ave:'+str(Total_rewards/eps))
                 break
 
     # Close the env and write monitor result info to disk
