@@ -1,9 +1,9 @@
 {
-	"env_name": "MPRoom",
-	"env_bin": "tracking_2p_interval/tracking/Binaries/Linux/tracking",
+	"env_name": "MCMTRoom",
+	"env_bin": "tracking_2p_multicam/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
-	"cam_id": 0,
+	"cam_id": [1, 2],
 	"height": 220,
 	"pitch": 0,
 	"max_steps": 1000,
@@ -12,14 +12,12 @@
 	"max_direction": 90,
 	"exp_distance": 250,
 	"targets": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetbp2"
 	],
 	"discrete_actions": [
+		[  0,  0],
 		[ 10,  0],
-		[-10,  0],
-		[  0, 10],
-		[  0,-10],
-		[  0,  0]
+		[-10,  0]
 	],
 	"discrete_actions_player": [
 		[ 100,  0],
@@ -31,16 +29,17 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -600, -200,  220]
+		[  0,       0,  220],
+		[  -100,  100,  220]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450],
+	"reset_area" : [-500, 500, -500, 500],
 	"continous_actions": {
 		"high": [20,    20],
 		"low":  [-20,  -20]
 	},
 	"continous_actions_player": {
 		"high": [100,     30],
-		"low":  [0,     -30]
+		"low":  [50,     -30]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"

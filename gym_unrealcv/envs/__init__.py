@@ -4,5 +4,5 @@ from gym_unrealcv.envs.unrealcv_arm_new import UnrealCvRobotArm_base
 from gym_unrealcv.envs.unrealcv_tracking import UnrealCvTracking_base
 from gym_unrealcv.envs.unrealcv_tracking_new import UnrealCvTracking_base_random
 from gym_unrealcv.envs.unrealcv_tracking_multi import UnrealCvTracking_multi
-from gym_unrealcv.envs.unrealcv_surveillance import UnrealCvSurveillance
+from gym_unrealcv.envs.unrealcv_MCMT import UnrealCvMCMT
 from gym_unrealcv.envs.video_tracking import VideoTracking_base
