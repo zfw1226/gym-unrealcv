@@ -24,7 +24,7 @@ class Reward():
         reward = max(reward, -1)
         return reward
 
-    def reward_target(self, dis2target_now, direction_error, dis_exp=None):
+    def reward_target(self, dis2target_now, direction_error, dis_exp=None, w=1.0):
         #  reward = (100.0 / max(dis2target_now,100)) * np.cos(direction_error/360.0*np.pi)
         if dis_exp is None:
             dis_exp = self.dis_exp
@@ -32,7 +32,7 @@ class Reward():
         e_dis = abs(abs(dis_exp - dis2target_now) - dis_exp) / dis_exp
         # reward = 1 - 2 * min(abs(e_dis_relative), 1) + min(abs(direction_error/(np.pi/4)), 2)
         # reward = 1 - min(e_dis, 1) - min(direction_error, 1)
-        reward = 1 - e_dis - direction_error
+        reward = 1.0 - w * (e_dis + direction_error)
         reward = max(reward, -1)
         self.dis2target_last = dis2target_now
         return reward

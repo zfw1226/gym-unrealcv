@@ -101,7 +101,7 @@ class UnrealCvTracking_multi(gym.Env):
         self.reward_type = reward_type
         self.reward_function = reward.Reward(setting)
 
-        if self.reset_type == 5:
+        if self.reset_type >= 5:
             self.unrealcv.init_objects(self.objects_env)
             # self.unrealcv.simulate_physics(self.objects_env)
 
@@ -124,6 +124,8 @@ class UnrealCvTracking_multi(gym.Env):
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
         if 'Interval' in self.nav:
             self.unrealcv.set_interval(setting['interval'])
+        self.w_p = 1.0
+        self.ep_lens = []
 
     def _step(self, actions):
         info = dict(
@@ -181,7 +183,10 @@ class UnrealCvTracking_multi(gym.Env):
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
-            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'])
+            if reward_1 > -1:
+                reward_0 = - reward_1
+            else:
+                reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], self.w_p)
             info['Reward'] = np.array([reward_0, reward_1])
 
         if reward_1 <= -0.99:
@@ -201,6 +206,12 @@ class UnrealCvTracking_multi(gym.Env):
         self.C_reward = 0
         self.count_close = 0
         self.count_eps += 1
+        self.ep_lens.append(self.count_steps)
+
+        # adaptive weight
+        ep_lens_mean = np.array(self.ep_lens[-50:]).mean()
+        self.w_p = 1 - int(ep_lens_mean/50)/10.0
+        self.count_steps = 0
         # stop move
         self.unrealcv.set_move(self.target_list[0], 0, 0)
         self.unrealcv.set_move(self.target_list[1], 0, 0)
@@ -287,7 +298,6 @@ class UnrealCvTracking_multi(gym.Env):
         # cv2.waitKey(10)
         self.trajectory = []
         self.trajectory.append(current_pose)
-        self.count_steps = 0
         if 'Random' in self.nav or 'Goal' in self.nav:
             self.random_agent.reset()
         if 'Internal' in self.nav:
