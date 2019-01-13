@@ -186,7 +186,7 @@ class UnrealCvTracking_multi(gym.Env):
             if reward_1 > -1:
                 reward_0 = - reward_1
             else:
-                reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], self.w_p)
+                reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
             info['Reward'] = np.array([reward_0, reward_1])
 
         if reward_1 <= -0.99:
