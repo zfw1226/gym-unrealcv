@@ -385,7 +385,13 @@ class GoalNavAgent(object):
 
     def act(self, pose):
         self.step_counter += 1
-        if self.check_reach(self.goal, pose) or self.step_counter > 30:
+        if self.pose_last == None:
+            self.pose_last = pose
+            d_moved = 100
+        else:
+            d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
+            self.pose_last = pose
+        if self.check_reach(self.goal, pose) or d_moved < 5:
             self.goal = self.generate_goal(self.goal_area)
             self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
             # self.velocity = 70
@@ -400,6 +406,7 @@ class GoalNavAgent(object):
         self.keep_steps = 0
         self.goal = self.generate_goal(self.goal_area)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+        self.pose_last = None
 
     def generate_goal(self, goal_area):
         x = np.random.randint(goal_area[0], goal_area[1])
