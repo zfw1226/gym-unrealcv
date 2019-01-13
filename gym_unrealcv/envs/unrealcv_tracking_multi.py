@@ -209,8 +209,11 @@ class UnrealCvTracking_multi(gym.Env):
         self.ep_lens.append(self.count_steps)
 
         # adaptive weight
-        ep_lens_mean = np.array(self.ep_lens[-50:]).mean()
-        self.w_p = 1 - int(ep_lens_mean/50)/10.0
+        if 'Dynamic' in self.nav:
+            ep_lens_mean = np.array(self.ep_lens[-100:]).mean()
+            self.w_p = 1 - int(ep_lens_mean/100)/5.0
+        else:
+            self.w_p = 0
         self.count_steps = 0
         # stop move
         self.unrealcv.set_move(self.target_list[0], 0, 0)
