@@ -213,7 +213,7 @@ class UnrealCvTracking_multi(gym.Env):
             ep_lens_mean = np.array(self.ep_lens[-100:]).mean()
             self.w_p = 1 - int(ep_lens_mean/100)/5.0
         else:
-            self.w_p = 0
+            self.w_p = 1
         self.count_steps = 0
         # stop move
         self.unrealcv.set_move(self.target_list[0], 0, 0)
