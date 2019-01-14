@@ -16,12 +16,12 @@
         "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
-		[ 80,  0],
-		[-80,  0],
-		[  40, 12],
-		[  40,-12],
-		[  0,  24],
-		[  0, -24],
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
 		[  0,   0]
 	],
 	"safe_start" :[
@@ -34,7 +34,7 @@
 	},
 	"continous_actions_forward": {
 		"high": [100,     30],
-		"low":  [0,     -30]
+		"low":  [50,     -30]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"

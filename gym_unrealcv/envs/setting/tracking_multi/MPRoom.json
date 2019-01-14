@@ -34,7 +34,7 @@
 	},
 	"continous_actions_forward": {
 		"high": [100,     30],
-		"low":  [0,     -30]
+		"low":  [50,     -30]
 	},
 	"objects_list": [
 		"Cube1", "Cube2", "Cube3", "Cube4"
