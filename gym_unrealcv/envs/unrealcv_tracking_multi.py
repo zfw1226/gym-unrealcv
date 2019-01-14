@@ -183,10 +183,7 @@ class UnrealCvTracking_multi(gym.Env):
 
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
-            if reward_1 > -1:
-                reward_0 = - reward_1
-            else:
-                reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
+            reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
             info['Reward'] = np.array([reward_0, reward_1])
 
         if reward_1 <= -0.99:
@@ -212,8 +209,10 @@ class UnrealCvTracking_multi(gym.Env):
         if 'Dynamic' in self.nav:
             ep_lens_mean = np.array(self.ep_lens[-100:]).mean()
             self.w_p = 1 - int(ep_lens_mean/100)/5.0
-        else:
+        elif 'PZR' in self.nav:
             self.w_p = 1
+        else:
+            self.w_p = 0
         self.count_steps = 0
         # stop move
         self.unrealcv.set_move(self.target_list[0], 0, 0)
