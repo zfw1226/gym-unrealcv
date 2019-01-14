@@ -37,8 +37,6 @@ class Reward():
         # reward = 1 - min(e_dis, 1) - min(direction_error, 1)
         reward = -self.r_tracker - w * (e_dis + direction_error)
         reward = max(reward, -1)
-        if e_dis + direction_error > 0:
-            print (e_dis, direction_error, reward)
         self.r_target = reward
         self.dis2target_last = dis2target_now
         return reward
