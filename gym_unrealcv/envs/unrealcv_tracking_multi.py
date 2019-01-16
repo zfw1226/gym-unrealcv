@@ -118,7 +118,7 @@ class UnrealCvTracking_multi(gym.Env):
         if 'Random' in self.nav:
             self.random_agent = RandomAgent(action_space_forward)
         if 'Goal' in self.nav:
-            self.random_agent = GoalNavAgent(self.continous_actions_forward, self.reset_area)
+            self.random_agent = GoalNavAgent(self.continous_actions_forward, self.reset_area, self.nav)
         if 'Internal' in self.nav:
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
@@ -375,7 +375,7 @@ class RandomAgent(object):
 
 class GoalNavAgent(object):
     """The world's simplest agent!"""
-    def __init__(self, action_space, goal_area):
+    def __init__(self, action_space, goal_area, nav):
         self.step_counter = 0
         self.keep_steps = 0
         self.velocity_high = action_space['high'][0]
@@ -384,6 +384,10 @@ class GoalNavAgent(object):
         self.angle_low = action_space['low'][1]
         self.goal_area = goal_area
         self.goal = self.generate_goal(self.goal_area)
+        if 'Base' in nav:
+            self.discrete = True
+        else:
+            self.discrete = False
 
     def act(self, pose):
         self.step_counter += 1
@@ -395,13 +399,28 @@ class GoalNavAgent(object):
             self.pose_last = pose
         if self.check_reach(self.goal, pose) or d_moved < 5:
             self.goal = self.generate_goal(self.goal_area)
-            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            if self.discrete:
+                self.velocity = (self.velocity_high + self.velocity_low)/2
+            else:
+                self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
             # self.velocity = 70
             self.step_counter = 0
 
         delt_yaw = self.get_direction(pose, self.goal)
-        self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
-        return (self.velocity, self.angle)
+        if self.discrete:
+            if abs(delt_yaw) > self.angle_high:
+                velocity = 0
+            else:
+                velocity = self.velocity
+            if delt_yaw > 3:
+                self.angle = self.angle_high / 2
+            elif delt_yaw <-3:
+                self.angle = self.angle_low / 2
+        else:
+            self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
+            self.angle = delt_yaw
+            velocity = self.velocity * (1 + 0.2*np.random.random())
+        return (velocity, self.angle)
 
     def reset(self):
         self.step_counter = 0
