@@ -154,7 +154,7 @@ for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest', 'ObstacleRo
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for nav in ['Random', 'Goal', 'Internal', 'None', 'PZR', 'Dynamic']:
+                for nav in ['Random', 'Goal', 'GoalBase', 'Internal', 'None', 'PZR', 'Dynamic']:
 
                     name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
 
