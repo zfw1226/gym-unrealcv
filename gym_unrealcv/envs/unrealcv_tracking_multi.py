@@ -397,7 +397,7 @@ class GoalNavAgent(object):
         else:
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
-        if self.check_reach(self.goal, pose) or d_moved < 5:
+        if self.check_reach(self.goal, pose) or d_moved < 15:
             self.goal = self.generate_goal(self.goal_area)
             if self.discrete:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
@@ -418,7 +418,7 @@ class GoalNavAgent(object):
                 self.angle = self.angle_low / 2
         else:
             self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
-            self.angle = delt_yaw
+            # self.angle = delt_yaw
             velocity = self.velocity * (1 + 0.2*np.random.random())
         return (velocity, self.angle)
 
