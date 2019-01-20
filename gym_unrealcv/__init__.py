@@ -150,7 +150,7 @@ for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
                 )
 
 # new training env
-for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom']:
+for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom', 'ObstacleRoomFast']:
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
@@ -170,7 +170,7 @@ for env in ['MPRoom', 'Urbancity', 'Garage', 'Snowforest', 'Forest', 'ObstacleRo
                                 'docker': use_docker,
                                 'nav': nav
                                 },
-                        max_episode_steps=500
+                        max_episode_steps=1000
                     )
 
 for env in ['MCMTRoom']:
