@@ -397,7 +397,7 @@ class GoalNavAgent(object):
         else:
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
-        if self.check_reach(self.goal, pose) or d_moved < 15:
+        if self.check_reach(self.goal, pose) or d_moved < 3:
             self.goal = self.generate_goal(self.goal_area)
             if self.discrete:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
