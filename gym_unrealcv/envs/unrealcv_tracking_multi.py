@@ -152,9 +152,9 @@ class UnrealCvTracking_multi(gym.Env):
 
         if 'Random' in self.nav:
             if self.action_type == 'Discrete':
-                (velocity0, angle0) = self.discrete_actions[self.random_agent.act()]
+                (velocity0, angle0) = self.discrete_actions[self.random_agent.act(self.target_pos)]
             else:
-                (velocity0, angle0) = self.random_agent.act()
+                (velocity0, angle0) = self.random_agent.act(self.target_pos)
         if 'Goal' in self.nav:
             (velocity0, angle0) = self.random_agent.act(self.target_pos)
 
@@ -362,16 +362,29 @@ class RandomAgent(object):
         self.keep_steps = 0
         self.action_space = action_space
 
-    def act(self):
+    def act(self, pose):
         self.step_counter += 1
-        if self.step_counter > self.keep_steps:
+        if self.pose_last == None:
+            self.pose_last = pose
+            d_moved = 100
+        else:
+            d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
+            self.pose_last = pose
+        if self.step_counter > self.keep_steps or d_moved < 3:
             self.action = self.action_space.sample()
-            self.keep_steps = np.random.randint(1, 10)
+            if self.action == 1 or self.action == 6 or self.action == 0:
+                self.action = 0
+                self.keep_steps = np.random.randint(10, 20)
+            elif self.action == 2 or self.action == 3:
+                self.keep_steps = np.random.randint(1, 20)
+            else:
+                self.keep_steps = np.random.randint(1, 10)
         return self.action
 
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
+        self.pose_last = None
 
 class GoalNavAgent(object):
     """The world's simplest agent!"""
