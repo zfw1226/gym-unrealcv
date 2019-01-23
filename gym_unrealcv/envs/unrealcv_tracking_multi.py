@@ -166,7 +166,9 @@ class UnrealCvTracking_multi(gym.Env):
         self.count_steps += 1
 
         info['Pose'] = self.unrealcv.get_obj_pose(self.target_list[1])  # tracker pose
-        self.target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
+        target_pos = self.unrealcv.get_obj_pose(self.target_list[0])
+        moved = np.linalg.norm(np.array(self.target_pos) - np.array(target_pos))
+        self.target_pos = target_pos
         info['Direction'] = self.get_direction(info['Pose'], self.target_pos)
         info['Distance'] = self.unrealcv.get_distance(self.target_pos, info['Pose'], 2)
 
@@ -186,7 +188,7 @@ class UnrealCvTracking_multi(gym.Env):
             reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
             info['Reward'] = np.array([reward_0, reward_1])
 
-        if reward_1 <= -0.99:
+        if reward_1 <= -0.99 or moved < 5:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -304,7 +306,6 @@ class UnrealCvTracking_multi(gym.Env):
             self.random_agent.reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-
         return states
 
     def _close(self):
