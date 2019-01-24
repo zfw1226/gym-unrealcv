@@ -158,7 +158,7 @@ class UnrealCvTracking_multi(gym.Env):
         if 'Goal' in self.nav:
             (velocity0, angle0) = self.random_agent.act(self.target_pos)
 
-        # info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
+        info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
         self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
         self.unrealcv.set_move(self.target_list[1], angle1, velocity1)
@@ -183,12 +183,17 @@ class UnrealCvTracking_multi(gym.Env):
         # cv2.imshow('tracker', state_1)
         # cv2.waitKey(10)
 
+        if (self.nav=='Adv' or self.nav=='PZR' or self.nav=='Dynamic') and moved < 5:
+            target_collision = True
+        else:
+            target_collision = False
         if 'distance' in self.reward_type:
             reward_1 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             reward_0 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
+            reward_0 -= 0.5*target_collision
             info['Reward'] = np.array([reward_0, reward_1])
 
-        if reward_1 <= -0.99 or moved < 5:
+        if reward_1 <= -0.99 or target_collision or info['Collision']:
             self.count_close += 1
         else:
             self.count_close = 0
