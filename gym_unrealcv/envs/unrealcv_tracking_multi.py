@@ -157,8 +157,8 @@ class UnrealCvTracking_multi(gym.Env):
                 (velocity0, angle0) = self.random_agent.act(self.target_pos)
         if 'Goal' in self.nav:
             (velocity0, angle0) = self.random_agent.act(self.target_pos)
-
-        info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
+        if self.nav=='Adv' or self.nav=='PZR' or self.nav=='Dynamic':
+            info['Collision'] = self.unrealcv.get_hit(self.target_list[1])
 
         self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
         self.unrealcv.set_move(self.target_list[1], angle1, velocity1)
@@ -407,6 +407,10 @@ class GoalNavAgent(object):
             self.discrete = True
         else:
             self.discrete = False
+        if 'Old' in nav:
+            self.max_len = 30
+        else:
+            self.max_len = 1000
 
     def act(self, pose):
         self.step_counter += 1
@@ -416,7 +420,7 @@ class GoalNavAgent(object):
         else:
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
-        if self.check_reach(self.goal, pose) or d_moved < 3:
+        if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
             self.goal = self.generate_goal(self.goal_area)
             if self.discrete:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
