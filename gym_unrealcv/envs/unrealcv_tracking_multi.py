@@ -466,7 +466,6 @@ class GoalNavAgent(object):
 
         if fixed:
             goal = np.array(goal_list[self.goal_id%len(goal_list)])/2
-            print (goal_list, goal, self.goal_id)
             self.goal_id += 1
 
         else:
