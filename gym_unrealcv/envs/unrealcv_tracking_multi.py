@@ -226,7 +226,10 @@ class UnrealCvTracking_multi(gym.Env):
         self.unrealcv.set_move(self.target_list[1], 0, 0)
         np.random.seed()
         #  self.exp_distance = np.random.randint(150, 250)
-        self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
+        if 'Fix' in self.nav:
+            self.unrealcv.set_obj_location(self.target_list[0], [self.reset_area[0]/2, self.reset_area[2]/2, self.safe_start[0][-1]])
+        else:
+            self.unrealcv.set_obj_location(self.target_list[0], self.safe_start[0])
         if self.reset_type >= 1:
             if self.env_name == 'MPRoom':
                 #  map_id = [0, 2, 3, 7, 8, 9]
@@ -402,7 +405,7 @@ class GoalNavAgent(object):
         self.angle_high = action_space['high'][1]
         self.angle_low = action_space['low'][1]
         self.goal_area = goal_area
-        self.goal = self.generate_goal(self.goal_area)
+        # self.goal = self.generate_goal(self.goal_area)
         if 'Base' in nav:
             self.discrete = True
         else:
@@ -411,18 +414,22 @@ class GoalNavAgent(object):
             self.max_len = 30
         else:
             self.max_len = 1000
+        if 'Fix' in nav:
+            self.fix = True
+        else:
+            self.fix = False
 
     def act(self, pose):
         self.step_counter += 1
-        if self.pose_last == None:
+        if self.pose_last == None or self.fix:
             self.pose_last = pose
             d_moved = 100
         else:
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
         if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
-            self.goal = self.generate_goal(self.goal_area)
-            if self.discrete:
+            self.goal = self.generate_goal(self.goal_area, self.fix)
+            if self.discrete or self.fix:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
@@ -437,7 +444,7 @@ class GoalNavAgent(object):
                 velocity = self.velocity
             if delt_yaw > 3:
                 self.angle = self.angle_high / 2
-            elif delt_yaw <-3:
+            elif delt_yaw < -3:
                 self.angle = self.angle_low / 2
         else:
             self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
@@ -448,14 +455,24 @@ class GoalNavAgent(object):
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
-        self.goal = self.generate_goal(self.goal_area)
+        self.goal_id = 0
+        self.goal = self.generate_goal(self.goal_area, self.fix)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
         self.pose_last = None
 
-    def generate_goal(self, goal_area):
-        x = np.random.randint(goal_area[0], goal_area[1])
-        y = np.random.randint(goal_area[2], goal_area[3])
-        goal = np.array([x, y])
+    def generate_goal(self, goal_area, fixed=False):
+        goal_list = [[goal_area[0], goal_area[2]], [goal_area[0], goal_area[3]],
+                     [goal_area[1], goal_area[3]], [goal_area[1], goal_area[2]]]
+
+        if fixed:
+            goal = np.array(goal_list[self.goal_id%len(goal_list)])/2
+            print (goal_list, goal, self.goal_id)
+            self.goal_id += 1
+
+        else:
+            x = np.random.randint(goal_area[0], goal_area[1])
+            y = np.random.randint(goal_area[2], goal_area[3])
+            goal = np.array([x, y])
         return goal
 
     def check_reach(self, goal, now):
