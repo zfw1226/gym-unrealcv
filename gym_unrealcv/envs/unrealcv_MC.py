@@ -243,7 +243,7 @@ class UnrealCvMC(gym.Env):
         if self.count_steps > self.max_steps:
             info['Done'] = True
         if sum(cal_target_observed) < 3:
-            print('observed num', sum(self.target_observed), 'count step', self.count_steps)
+            # print('observed num', sum(self.target_observed), 'count step', self.count_steps)
             self.count_close += 1
         else:
             self.count_close = 0
