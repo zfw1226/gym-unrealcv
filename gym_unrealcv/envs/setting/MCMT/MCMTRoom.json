@@ -1,6 +1,6 @@
 {
 	"env_name": "MCMTRoom",
-	"env_bin": "tracking_2p_multicam/tracking/Binaries/Linux/tracking",
+	"env_bin": "tracking_mask/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -16,8 +16,12 @@
 	],
 	"discrete_actions": [
 		[  0,  0],
-		[ 10,  0],
-		[-10,  0]
+		[  5,  0],
+		[ -5,  0],
+		[  5,  5],
+		[ -5,  5],
+		[  5,  5],
+		[ -5,  5]
 	],
 	"discrete_actions_player": [
 		[ 100,  0],
