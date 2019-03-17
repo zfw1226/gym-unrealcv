@@ -199,7 +199,7 @@ for env in ['MCMTRoom']:
                         max_episode_steps=500
                     )
 
-for env in ['MCRoom']:
+for env in ['MCRoom', 'MCRoomLarge']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
