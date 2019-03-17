@@ -183,8 +183,9 @@ class UnrealCvMC(gym.Env):
             self.last_cam_pose[i][-3:] = last_cam_rot
             state = self.unrealcv.get_observation(cam, self.observation_type, 'fast')
             states.append(state)
-            cv2.imshow('tracker_{}'.format(str(i)), state)
-        cv2.waitKey(10)
+        self.states = states
+            # cv2.imshow('tracker_{}'.format(str(i)), state)
+        # cv2.waitKey(10)
 
         self.count_steps += 1
 
@@ -252,7 +253,7 @@ class UnrealCvMC(gym.Env):
             info['Done'] = True
 
         info['Reward'] = rewards
-        return states, info['Reward'], info['Done'], info
+        return self.states, info['Reward'], info['Done'], info
 
     def reset(self, ):
         self.C_reward = 0
@@ -356,8 +357,8 @@ class UnrealCvMC(gym.Env):
                 self.random_agents[i].reset()
         if 'Internal' in self.nav:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
-
-        return states
+        self.states = states
+        return self.states
 
     def close(self):
         self.unreal.close()
@@ -365,6 +366,9 @@ class UnrealCvMC(gym.Env):
     def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
+        for i in range(self.num_cam):
+            cv2.imshow('tracker_{}'.format(str(i)), self.states[i])
+        cv2.waitKey(10)
         return self.unrealcv.img_color
 
     def seed(self, seed=None):
