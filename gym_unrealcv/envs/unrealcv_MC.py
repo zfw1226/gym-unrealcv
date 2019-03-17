@@ -27,7 +27,7 @@ class UnrealCvMC(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(320, 240),
+                 resolution=(160, 120),
                  nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
@@ -46,6 +46,7 @@ class UnrealCvMC(gym.Env):
         self.max_distance = setting['max_distance']
         self.min_distance = setting['min_distance']
         self.max_direction = setting['max_direction']
+        self.max_obstacles = setting['max_obstacles']
         self.height = setting['height']
         self.pitch = setting['pitch']
         self.objects_env = setting['objects_list']
@@ -54,7 +55,7 @@ class UnrealCvMC(gym.Env):
 
         self.background_list = setting['backgrounds']
         self.light_list = setting['lights']
-        self.target_num = setting['target_num'] # the number of the target appearance
+        self.target_num = setting['target_num']  # the number of the target appearance
         self.exp_distance = setting['exp_distance']
         texture_dir = setting['imgs_dir']
         gym_path = os.path.dirname(gym_unrealcv.__file__)
@@ -102,7 +103,7 @@ class UnrealCvMC(gym.Env):
         assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray']
         self.observation_space = [self.unrealcv.define_observation(self.cam_id[i], self.observation_type, 'fast')
                                   for i in range(self.num_cam)]
-        # print('observation_space',self.observation_space)
+        print('observation_space', self.observation_space)
         self.unrealcv.pitch = self.pitch
         # define reward type
         # distance, bbox, bbox_distance
@@ -174,16 +175,16 @@ class UnrealCvMC(gym.Env):
             last_cam_rot = cam_rot
             cam_rot[1] += actions2cam[i][0]
             cam_rot[2] += actions2cam[i][1]
-            cam_rot[2] = cam_rot[2] if cam_rot[2] < 45.0 else 45.0
-            cam_rot[2] = cam_rot[2] if cam_rot[2] > - 45.0 else -45.0
+            cam_rot[2] = cam_rot[2] if cam_rot[2] < 80.0 else 80.0
+            cam_rot[2] = cam_rot[2] if cam_rot[2] > - 80.0 else -80.0
 
             self.unrealcv.set_rotation(cam, cam_rot)
             self.cam_pose[i][-3:] = cam_rot
             self.last_cam_pose[i][-3:] = last_cam_rot
             state = self.unrealcv.get_observation(cam, self.observation_type, 'fast')
             states.append(state)
-            # cv2.imshow('tracker_{}'.format(str(i)), state)
-        # cv2.waitKey(10)
+            cv2.imshow('tracker_{}'.format(str(i)), state)
+        cv2.waitKey(10)
 
         self.count_steps += 1
 
@@ -217,12 +218,12 @@ class UnrealCvMC(gym.Env):
 
             # get relative location and reward
             direction = self.get_direction(self.cam_pose[i], self.target_pos[0])
-            hori_reward = 1 - abs(direction) / 45.0 if abs(direction) <= 45.0 else -1
+            hori_reward = 1 - 2*abs(direction) / 45.0
 
             verti_direction = self.get_verti_direction(self.cam_pose[i], self.target_pos[0])
-            verti_reward = 1 - abs(verti_direction) / 30.0 if abs(verti_direction) <= 30.0 else -1
+            verti_reward = 1 - 2*abs(verti_direction) / 30.0
 
-            reward = hori_reward + verti_reward
+            reward = max(hori_reward + verti_reward, -2)
             if abs(direction) <= 45.0 and abs(verti_direction) <= 40.0:
                 cal_target_observed[i] = 1
 
@@ -301,7 +302,7 @@ class UnrealCvMC(gym.Env):
 
         # texture
         if self.reset_type >= 4:
-            self.obstacles_num = np.random.randint(1, 5)
+            self.obstacles_num = np.random.randint(1, self.max_obstacles)
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            self.obstacles_num, self.reset_area, self.start_area)
