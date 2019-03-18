@@ -117,8 +117,8 @@ class UnrealCvMC(gym.Env):
 
         self.count_close = 0
 
-        if self.reset_type == 5:
-            self.unrealcv.simulate_physics(self.objects_env)
+        # if self.reset_type == 5:
+        #     self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
