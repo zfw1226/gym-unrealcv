@@ -303,7 +303,8 @@ class UnrealCvMC(gym.Env):
 
         # texture
         if self.reset_type >= 4:
-            self.obstacles_num = np.random.randint(1, self.max_obstacles)
+            # self.obstacles_num = np.random.randint(10, self.max_obstacles)
+            self.obstacles_num = self.max_obstacles
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            self.obstacles_num, self.reset_area, self.start_area)
