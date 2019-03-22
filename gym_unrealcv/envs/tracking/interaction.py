@@ -225,7 +225,7 @@ class Tracking(Navigation):
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
             self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             # scale
-            self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
+            self.set_obj_scale(obstacle, np.random.uniform(1.0, 10, 10))
             # location
             obstacle_loc = [start_area[0], start_area[2], 0]
             while start_area[0] <= obstacle_loc[0] <= start_area[1] and start_area[2] <= obstacle_loc[1] <= start_area[3]:
