@@ -224,6 +224,31 @@ for env in ['MCRoom', 'MCRoomLarge']:
                                 },
                         max_episode_steps=500
                     )
+
+for env in ['FlexibleRoom']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'Internal', 'None',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+
+                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+
+                    setting_file = 'tracking_1vn/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
+
 # test video image
 register(
     id='Tracking-Video-v0',
