@@ -22,7 +22,7 @@ class UnrealCv(object):
         self.ip = ip
         print (self.ip)
         self.cam = dict()
-        for i in range(3):
+        for i in range(5):
             self.cam[i] = dict(
                  location=[0, 0, 0],
                  rotation=[0, 0, 0],
@@ -222,7 +222,7 @@ class UnrealCv(object):
         distance = np.linalg.norm(error)
         return distance
 
-    def keyboard(self,key, duration=0.01):  # Up Down Left Right
+    def keyboard(self, key, duration=0.01):  # Up Down Left Right
         cmd = 'vset /action/keyboard {key} {duration}'
         return self.client.request(cmd.format(key=key, duration=duration))
 
@@ -244,8 +244,8 @@ class UnrealCv(object):
         cmd = 'vset /object/{obj}/rotation {pitch} {yaw} {roll}'
         self.client.request(cmd.format(obj=obj, roll=rot[0], yaw=rot[1], pitch=rot[2]))
 
-    def get_mask(self,object_mask,object):
-        [r, g, b] = self.color_dict[object]
+    def get_mask(self, object_mask, obj):
+        [r, g, b] = self.color_dict[obj]
         lower_range = np.array([b-3, g-3, r-3])
         upper_range = np.array([b+3, g+3, r+3])
         mask = cv2.inRange(object_mask, lower_range, upper_range)
