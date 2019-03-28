@@ -2,7 +2,7 @@
 	"env_name": "MPRoom",
 	"env_bin": "tracking_spawn/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
-	"target_num": 10,
+	"max_player_num": 3,
 	"cam_id": [1, 2, 0],
 	"height": 220,
 	"pitch": 0,
@@ -38,7 +38,8 @@
 		[  -600,    0,  220],
 		[  -600, -400,  220],
 		[  -800, -200,  220],
-		[  -400, -200,  220]
+		[  -400, -200,  220],
+		[  -500, -200,  220]
     ],
 	"reset_area" : [-1850, 940, -1450, 1450, 135, 140],
 	"continous_actions": {

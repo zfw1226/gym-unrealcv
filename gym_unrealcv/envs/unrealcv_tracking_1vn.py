@@ -30,7 +30,7 @@ class UnrealCvTracking_1vn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(320, 240),
+                 resolution=(80, 80),
                  nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
@@ -45,6 +45,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.discrete_actions_player = setting['discrete_actions_player']
         self.continous_actions = setting['continous_actions']
         self.continous_actions_player = setting['continous_actions_player']
+        self.max_steps = setting['max_steps']
         self.max_distance = setting['max_distance']
         self.min_distance = setting['min_distance']
         self.max_direction = setting['max_direction']
@@ -54,7 +55,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.reset_area = setting['reset_area']
         self.background_list = setting['backgrounds']
         self.light_list = setting['lights']
-        self.target_num = setting['target_num'] # the number of the target appearance
+        self.max_player_num = setting['max_player_num']  # the max players number
         self.exp_distance = setting['exp_distance']
         texture_dir = setting['imgs_dir']
         gym_path = os.path.dirname(gym_unrealcv.__file__)
@@ -67,8 +68,6 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_steps = 0
         self.count_close = 0
         self.direction = None
-        self.num_target = len(self.player_list)
-        self.num_cam = len(self.cam_id) - 1
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -88,11 +87,11 @@ class UnrealCvTracking_1vn(gym.Env):
         self.action_type = action_type
         assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
         if self.action_type == 'Discrete':
-            self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.num_cam)]
+            self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.max_player_num)]
             player_action_space = spaces.Discrete(len(self.discrete_actions_player))
         elif self.action_type == 'Continuous':
             self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
-                                      high=np.array(self.continous_actions['high'])) for i in range(self.num_cam)]
+                                      high=np.array(self.continous_actions['high'])) for i in range(self.max_player_num)]
             player_action_space = spaces.Discrete(len(self.continous_actions_player))
 
         self.count_steps = 0
@@ -101,8 +100,8 @@ class UnrealCvTracking_1vn(gym.Env):
         # color, depth, rgbd,...
         self.observation_type = observation_type
         assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray']
-        self.observation_space = [self.unrealcv.define_observation(self.cam_id[i], self.observation_type, 'fast')
-                                  for i in range(self.num_cam)]
+        self.observation_space = [self.unrealcv.define_observation(self.cam_id[0], self.observation_type, 'fast')
+                                  for i in range(self.max_player_num)]
         self.unrealcv.pitch = self.pitch
         # define reward type
         # distance, bbox, bbox_distance,
@@ -117,13 +116,10 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.simulate_physics(self.objects_env)
 
         self.person_id = 0
-        # self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
-        # self.unrealcv.set_rotation(0, [0, -180, -90])
-        self.num_target = len(self.player_list)
         if 'Random' in self.nav:
-            self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
+            self.random_agents = [RandomAgent(player_action_space) for i in range(self.max_player_num)]
         if 'Goal' in self.nav:
-            self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, self.nav) for i in range(self.num_target)]
+            self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, self.nav) for i in range(self.max_player_num)]
         if 'Internal' in self.nav:
             self.unrealcv.set_random(self.player_list[0])
             self.unrealcv.set_maxdis2goal(target=self.player_list[0], dis=500)
@@ -138,7 +134,6 @@ class UnrealCvTracking_1vn(gym.Env):
             Reward=0.0,
             Action=actions,
             Pose=[],
-            Trajectory=self.trajectory,
             Steps=self.count_steps,
             Direction=None,
             Distance=None,
@@ -148,81 +143,87 @@ class UnrealCvTracking_1vn(gym.Env):
         )
         actions2player = []
         actions = np.squeeze(actions)
-        if self.action_type == 'Discrete':
-            actions2player.append(self.discrete_actions[actions[0]])
-            actions2player.append(self.discrete_actions[actions[1]])
-        else:
-            actions2player.append(actions[0])
-            actions2player.append(actions[1])
 
         for i in range(len(self.player_list)):
-            if i == 0:
-                continue
-            if 'Random' in self.nav:
+            if i == 0 or ('Random' not in self.nav and 'Goal' not in self.nav):
                 if self.action_type == 'Discrete':
-                    actions2player.append(self.discrete_actions_player[self.random_agents[i].act()])
+                    actions2player.append(self.discrete_actions[actions[i]])
                 else:
-                    actions2player.append(self.random_agents[i].act())
-            if 'Goal' in self.nav:
-                    actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                    actions2player.append(actions[i])
+            else:
+                if 'Random' in self.nav:
+                    if self.action_type == 'Discrete':
+                        actions2player.append(self.discrete_actions_player[self.random_agents[i].act()])
+                    else:
+                        actions2player.append(self.random_agents[i].act())
+                if 'Goal' in self.nav:
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
 
         for i, player in enumerate(self.player_list):
             self.unrealcv.set_move(player, actions2player[i][1], actions2player[i][0])
 
-        if self.nav=='Adv' or self.nav=='PZR' or self.nav=='Dynamic':
-            info['Collision'] = self.unrealcv.get_hit(self.player_list[0])
-
-        # self.unrealcv.set_move(self.player_list[1], angle0, velocity0)
-        # self.unrealcv.set_move(self.player_list[0], angle1, velocity1)
-
         self.count_steps += 1
-
-        # info['Pose'] = self.unrealcv.get_obj_pose(self.player_list[0])  # tracker pose
-        # target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
-        # self.target_pos = target_pos
 
         # get relative distance
         relative_pose = []
+        pose_obs = []
         for i, obj in enumerate(self.player_list):
             self.obj_pos[i] = self.unrealcv.get_obj_pose(obj)
             if i == 0:
+                pose_obs.append([0, 0, -1])
                 continue
             angle = self.get_direction(self.obj_pos[0], self.obj_pos[i])
             distance = self.unrealcv.get_distance(self.obj_pos[i], self.obj_pos[0], 2)
             relative_pose.append([angle, distance])
+            pose_obs.append([np.sin(angle), np.cos(angle), (distance-self.exp_distance)/self.exp_distance])
 
         info['Pose'] = self.obj_pos[0]
         info['Direction'] = relative_pose[0][0]
         info['Distance'] = relative_pose[0][1]
         info['Relative_Pose'] = relative_pose
-        #top_down
+        self.pose_obs = np.array(pose_obs)
+        info['Pose_Obs'] = self.pose_obs
+        # set top_down camera
         self.set_topview(info['Pose'], self.cam_id[2])
         
         # update observation
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
-        states = np.array([state_0, state_1])
+        states = []
+        for i in range(len(self.player_list)):
+            if i == 0:
+                states.append(state_0)
+            else:
+                states.append(state_1)
+        states = np.array(states)
+        # states = np.array([state_0, state_1])
 
         info['Color'] = self.unrealcv.img_color
-        cv2.imshow('target', state_0)
-        cv2.imshow('tracker', state_1)
-        cv2.waitKey(1)
+        # cv2.imshow('target', state_0)
+        # cv2.imshow('tracker', state_1)
+        # cv2.waitKey(1)
 
         if 'distance' in self.reward_type:
             reward_0 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             reward_1 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
-            info['Reward'] = np.array([reward_0, reward_1])
+            rewards = []
+            for i in range(len(self.player_list)):
+                if i == 0:
+                    rewards.append(reward_0)
+                elif i == 1:
+                    rewards.append(reward_1)
+                else:
+                    rewards.append(self.reward_function.reward_distractor(relative_pose[i-1][1], relative_pose[i-1][0]))
+            info['Reward'] = np.array(rewards)
+            # info['Reward'] = np.array([reward_0, reward_1])
 
         if reward_0 <= -0.99 or info['Collision']:
             self.count_close += 1
         else:
             self.count_close = 0
 
-        if self.count_close > 20:
+        if self.count_close > 20 or self.count_steps > self.max_steps:
            info['Done'] = True
-        # save the trajectory
-        self.trajectory.append([info['Distance'], info['Direction']])
-        info['Trajectory'] = self.trajectory
 
         return states, info['Reward'], info['Done'], info
 
@@ -326,16 +327,43 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # tracker's pose
         self.obj_pos[0] = self.unrealcv.get_obj_pose(self.player_list[0])
+
+        # new obj
+        # self.player_num = np.random.randint(2, self.max_player_num)
+        self.player_num = self.max_player_num
+        while len(self.player_list) < self.player_num:
+            name = self.unrealcv.new_obj(4, self.safe_start[i])
+            self.obj_pos.append(self.unrealcv.get_obj_pose(name))
+            self.player_list.append(name)
+        while len(self.player_list) > self.player_num:
+            name = self.player_list.pop()
+            self.unrealcv.destroy_obj(name)
+
         # cam on top of tracker
         self.set_topview(self.obj_pos[0], self.cam_id[2])
+
         # get state
         state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
         state_1 = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
-        states = np.array([state_0, state_1])
-        # cv2.imshow('tracker', state_1)
-        # cv2.waitKey(10)
-        self.trajectory = []
-        self.trajectory.append(self.obj_pos[0])
+        states = []
+        for i in range(len(self.player_list)):
+            if i == 0:
+                states.append(state_0)
+            else:
+                states.append(state_1)
+        states = np.array(states)
+
+        # get pose state
+        pose_obs = []
+        for i, pos in enumerate(self.obj_pos):
+            if i == 0:
+                pose_obs.append([0, 0, -1])
+                continue
+            angle = self.get_direction(self.obj_pos[0], self.obj_pos[i])
+            distance = self.unrealcv.get_distance(self.obj_pos[i], self.obj_pos[0], 2)
+            pose_obs.append([np.sin(angle), np.cos(angle), (distance-self.exp_distance)/self.exp_distance])
+        self.pose_obs = np.array(pose_obs)
+
         if 'Random' in self.nav or 'Goal' in self.nav:
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()

@@ -229,8 +229,9 @@ for env in ['FlexibleRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for nav in ['Random', 'Goal', 'Internal', 'None',
-                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+                for nav in ['Random', 'Goal', 'Internal',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval',
+                            'None', 'PZR', 'Dynamic', 'Adv']:
 
                     name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
 
