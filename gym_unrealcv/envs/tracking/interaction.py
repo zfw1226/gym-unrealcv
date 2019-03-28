@@ -240,3 +240,21 @@ class Tracking(Navigation):
             self.set_obj_location(obj, self.objects_dict[obj])
         self.obstacles = []
 
+    def new_obj(self, obj_type, loc, rot=[0, 0, 0]):
+        # return obj name
+        cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2],
+                                                                              roll=rot[0], pitch=rot[1], yaw=rot[2])
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        return res[12:-3]
+
+    def destroy_obj(self, obj):
+        # return obj name
+        cmd = 'vbp {obj} destroy'.format(obj=obj)
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        return res[12:-3]
+
+
