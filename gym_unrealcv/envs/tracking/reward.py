@@ -39,14 +39,13 @@ class Reward():
         self.r_target = reward
         return reward
 
-    def reward_distractor(self, dis2target_now, direction_error, dis_exp=None):
+    def reward_distractor(self, dis2target_now, direction_error, num, dis_exp=None):
         #  reward = (100.0 / max(dis2target_now,100)) * np.cos(direction_error/360.0*np.pi)
         if dis_exp is None:
             dis_exp = self.dis_exp
 
         if dis2target_now < self.dis_max and abs(direction_error) < 45:
-            reward = self.r_target
+            reward = 0.5*self.r_target/num
         else:
-            reward = -1
-        reward = max(reward, -1)
+            reward = -1/num
         return reward

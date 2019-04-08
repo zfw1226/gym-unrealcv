@@ -165,21 +165,22 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_steps += 1
 
         # get relative distance
-        relative_pose = []
         pose_obs = []
+        relative_pose = []
         for i, obj in enumerate(self.player_list):
             self.obj_pos[i] = self.unrealcv.get_obj_pose(obj)
-            if i == 0:
-                pose_obs.append([0, 0, -1])
-                continue
-            angle = self.get_direction(self.obj_pos[0], self.obj_pos[i])
-            distance = self.unrealcv.get_distance(self.obj_pos[i], self.obj_pos[0], 2)
-            relative_pose.append([angle, distance])
-            pose_obs.append([np.sin(angle), np.cos(angle), (distance-self.exp_distance)/self.exp_distance])
+        for j in range(self.player_num):
+            vectors = []
+            for i in range(self.player_num):
+                obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
+                vectors.append(obs)
+                if j==0:
+                    relative_pose.append([distance, direction])
+            pose_obs.append(vectors)
 
         info['Pose'] = self.obj_pos[0]
-        info['Direction'] = relative_pose[0][0]
-        info['Distance'] = relative_pose[0][1]
+        info['Direction'] = relative_pose[1][1]
+        info['Distance'] = relative_pose[1][0]
         info['Relative_Pose'] = relative_pose
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
@@ -199,25 +200,25 @@ class UnrealCvTracking_1vn(gym.Env):
         # states = np.array([state_0, state_1])
 
         info['Color'] = self.unrealcv.img_color
-        # cv2.imshow('target', state_0)
-        # cv2.imshow('tracker', state_1)
-        # cv2.waitKey(1)
+        cv2.imshow('tracker', state_0)
+        # cv2.imshow('target', state_1)
+        cv2.waitKey(1)
 
         if 'distance' in self.reward_type:
-            reward_0 = self.reward_function.reward_distance(info['Distance'], info['Direction'])
-            reward_1 = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
+            r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
+            r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
             rewards = []
             for i in range(len(self.player_list)):
                 if i == 0:
-                    rewards.append(reward_0)
+                    rewards.append(r_tracker)
                 elif i == 1:
-                    rewards.append(reward_1)
+                    rewards.append(r_target)
                 else:
-                    rewards.append(self.reward_function.reward_distractor(relative_pose[i-1][1], relative_pose[i-1][0]))
+                    rewards.append(self.reward_function.reward_distractor(relative_pose[i-1][0], relative_pose[i-1][1],
+                                                                          self.player_num-2))
             info['Reward'] = np.array(rewards)
-            # info['Reward'] = np.array([reward_0, reward_1])
 
-        if reward_0 <= -0.99 or info['Collision']:
+        if r_tracker <= -0.99 or info['Collision']:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -265,8 +266,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     app_id = map_id[self.person_id % len(map_id)]
                     self.person_id += 1
                     # map_id = [6, 7, 8, 9]
-                for i, obj in enumerate(self.player_list):
-                    self.unrealcv.set_appearance(obj, app_id, spline)
+                self.unrealcv.set_appearance(obj, app_id, spline)
 
         # target appearance
         if self.reset_type >= 2:
@@ -355,13 +355,14 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # get pose state
         pose_obs = []
-        for i, pos in enumerate(self.obj_pos):
-            if i == 0:
-                pose_obs.append([0, 0, -1])
-                continue
-            angle = self.get_direction(self.obj_pos[0], self.obj_pos[i])
-            distance = self.unrealcv.get_distance(self.obj_pos[i], self.obj_pos[0], 2)
-            pose_obs.append([np.sin(angle), np.cos(angle), (distance-self.exp_distance)/self.exp_distance])
+        for i, obj in enumerate(self.player_list):
+            self.obj_pos[i] = self.unrealcv.get_obj_pose(obj)
+        for j in range(self.player_num):
+            vectors = []
+            for i in range(self.player_num):
+                obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
+                vectors.append(obs)
+            pose_obs.append(vectors)
         self.pose_obs = np.array(pose_obs)
 
         if 'Random' in self.nav or 'Goal' in self.nav:
@@ -427,6 +428,13 @@ class UnrealCvTracking_1vn(gym.Env):
         cam_rot[-1] = -90
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
+    def get_relative(self, pose0, pose1): # pose0-centric
+        delt_yaw = pose1[4] - pose0[4]
+        angle = self.get_direction(pose0, pose1)
+        distance = self.unrealcv.get_distance(pose1, pose0, 2)
+        distance_norm = (distance - self.exp_distance) / self.exp_distance
+        obs_vector = [np.sin(delt_yaw), np.cos(delt_yaw), np.sin(angle), np.cos(angle), distance_norm]
+        return obs_vector, distance, angle
 
 class RandomAgent(object):
     """The world's simplest agent!"""
