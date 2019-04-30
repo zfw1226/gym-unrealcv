@@ -153,9 +153,9 @@ class UnrealCvTracking_1vn(gym.Env):
             else:
                 if 'Random' in self.nav:
                     if self.action_type == 'Discrete':
-                        actions2player.append(self.discrete_actions_player[self.random_agents[i].act()])
+                        actions2player.append(self.discrete_actions_player[self.random_agents[i].act(self.obj_pos[i])])
                     else:
-                        actions2player.append(self.random_agents[i].act())
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
                 if 'Goal' in self.nav:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
 
@@ -196,13 +196,15 @@ class UnrealCvTracking_1vn(gym.Env):
                 states.append(state_0)
             else:
                 states.append(state_1)
+                if 'Random' in self.nav or 'Goal' in self.nav:
+                    break
         states = np.array(states)
         # states = np.array([state_0, state_1])
 
         info['Color'] = self.unrealcv.img_color
-        cv2.imshow('tracker', state_0)
+        # cv2.imshow('tracker', state_0)
         # cv2.imshow('target', state_1)
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
 
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
@@ -214,6 +216,8 @@ class UnrealCvTracking_1vn(gym.Env):
                 elif i == 1:
                     rewards.append(r_target)
                 else:
+                    if 'Random' in self.nav or 'Goal' in self.nav:
+                        break
                     rewards.append(self.reward_function.reward_distractor(relative_pose[i-1][0], relative_pose[i-1][1],
                                                                           self.player_num-2))
             info['Reward'] = np.array(rewards)
@@ -271,8 +275,8 @@ class UnrealCvTracking_1vn(gym.Env):
         # target appearance
         if self.reset_type >= 2:
             if self.env_name == 'MPRoom':  # random target texture
-                self.unrealcv.random_player_texture(self.player_list[0], self.textures_list, 3)
-                self.unrealcv.random_player_texture(self.player_list[1], self.textures_list, 3)
+                for i, obj in enumerate(self.player_list):
+                    self.unrealcv.random_player_texture(obj, self.textures_list, 3)
 
             for lit in self.light_list:
                 if 'sky' in lit:
@@ -294,6 +298,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # moving objs
         if self.reset_type >= 3: #TOOD
             self.unrealcv.new_obj(4, [0, 0, 0])
+
         # obstacle
         if self.reset_type >= 5:
             self.unrealcv.clean_obstacles()
@@ -318,7 +323,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         yaw_pre = self.unrealcv.get_obj_rotation(self.player_list[0])[1]
         delta_yaw = yaw-yaw_pre
-        while abs(delta_yaw) > 3:
+        while abs(delta_yaw) > 1:
             self.unrealcv.set_move(self.player_list[0], delta_yaw, 0)
             yaw_pre = self.unrealcv.get_obj_rotation(self.player_list[0])[1]
             delta_yaw = (yaw - yaw_pre) % 360
@@ -351,8 +356,12 @@ class UnrealCvTracking_1vn(gym.Env):
                 states.append(state_0)
             else:
                 states.append(state_1)
+                if 'Random' in self.nav or 'Goal' in self.nav:
+                    break
         states = np.array(states)
-
+        # cv2.imshow('tracker', state_0)
+        # cv2.imshow('target', state_1)
+        # cv2.waitKey(1)
         # get pose state
         pose_obs = []
         for i, obj in enumerate(self.player_list):
