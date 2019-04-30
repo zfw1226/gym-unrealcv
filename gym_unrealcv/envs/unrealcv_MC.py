@@ -123,7 +123,7 @@ class UnrealCvMC(gym.Env):
         self.person_id = 0
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
-        self.unrealcv.set_obj_location("TargetBP", [-3000, -3000, 220])
+        # self.unrealcv.set_obj_location("TargetBP", [-3000, -3000, 220])
         if 'Random' in self.nav:
             self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
         if 'Goal' in self.nav:
@@ -214,8 +214,8 @@ class UnrealCvMC(gym.Env):
                 bbox_shape = np.array(bbox[0][1]) - np.array(bbox[0][0])
                 if bbox_shape[0] * bbox_shape[1] < 0.01:
                     self.target_observed[i] = 1
-                bboxs.append(bbox[0])
-                obj_masks.append(object_mask)
+                bboxs.append(bbox)
+                # obj_masks.append(object_mask)
 
             # get relative location and reward
             direction = self.get_direction(self.cam_pose[i], self.target_pos[0])
@@ -233,7 +233,7 @@ class UnrealCvMC(gym.Env):
             verti_directions.append(verti_direction)
             distances.append(self.unrealcv.get_distance(self.cam_pose[i], self.target_pos[0], 3))
 
-        info['masks'] = obj_masks
+        # info['masks'] = obj_masks
         info['bboxs'] = bboxs
         info['Ang_H'] = directions
         info['Distance'] = distances
@@ -265,7 +265,7 @@ class UnrealCvMC(gym.Env):
 
         if self.reset_type >= 1:
             if self.env_name == 'MCMTRoom':
-                map_id = [0, 2, 3, 7, 8, 9]
+                map_id = [2, 3, 6, 7, 9]
                 # map_id = [1, 2, 3, 4]
                 spline = False
                 object_app = np.random.choice(map_id)
@@ -298,8 +298,9 @@ class UnrealCvMC(gym.Env):
 
         # target appearance
         if self.reset_type >= 3:
-            self.unrealcv.random_player_texture(self.target_list[0], self.textures_list, 3)
-            self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
+            for _, target in enumerate(self.target_list):
+                self.unrealcv.random_player_texture(target, self.textures_list, 3)
+            self.unrealcv.random_texture(self.background_list, self.textures_list, -1)
 
         # texture
         if self.reset_type >= 4:
