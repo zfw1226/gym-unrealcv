@@ -11,11 +11,15 @@ class Reward():
         self.dis_max = setting['max_distance']
         self.r_target = 0
         self.r_tracker = 0
+        self.dis2target = 250
+        self.angle2target = 0
 
     def reward_distance(self, dis2target_now, direction_error, dis_exp=None):
         #  reward = (100.0 / max(dis2target_now,100)) * np.cos(direction_error/360.0*np.pi)
         if dis_exp is None:
             dis_exp = self.dis_exp
+        self.dis2target = dis2target_now
+        self.angle2target = direction_error
         direction_error = abs(direction_error/45.0)
         e_dis = abs(dis_exp - dis2target_now)
         #  e_dis_relative = e_dis / self.dis_exp
@@ -39,13 +43,20 @@ class Reward():
         self.r_target = reward
         return reward
 
-    def reward_distractor(self, dis2target_now, direction_error, num, dis_exp=None):
-        #  reward = (100.0 / max(dis2target_now,100)) * np.cos(direction_error/360.0*np.pi)
+    def reward_distractor(self, dis2distractor, direction_error, num, dis_exp=None):
         if dis_exp is None:
             dis_exp = self.dis_exp
-
-        if dis2target_now < self.dis_max and abs(direction_error) < 45:
-            reward = 0.5*self.r_target/num
+        mislead = False
+        if abs(dis2distractor-dis_exp) < abs(self.dis2target-dis_exp) and abs(direction_error) < abs(self.angle2target):
+            # close to expected position, mislead the tracker
+            reward = max(-self.r_tracker, 0)
+            mislead = True
+        elif abs(dis2distractor-dis_exp) < self.dis_max and abs(direction_error) < 45:
+            # observed but not absolute
+            reward = 0.01*num
         else:
-            reward = -1/num
-        return reward
+            direction_error = abs(direction_error / 45.0)
+            e_dis = abs(dis2distractor) / self.dis_max
+            reward = -e_dis
+            reward = max(reward, -1)
+        return reward/num, mislead
