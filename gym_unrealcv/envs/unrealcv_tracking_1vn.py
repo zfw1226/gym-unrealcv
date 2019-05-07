@@ -62,7 +62,7 @@ class UnrealCvTracking_1vn(gym.Env):
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
-
+        self.top = True
         self.person_id = 0
         self.count_eps = 0
         self.count_steps = 0
@@ -177,7 +177,6 @@ class UnrealCvTracking_1vn(gym.Env):
                 if j==0:
                     relative_pose.append([distance, direction])
             pose_obs.append(vectors)
-
         info['Pose'] = self.obj_pos[0]
         info['Direction'] = relative_pose[1][1]
         info['Distance'] = relative_pose[1][0]
@@ -185,26 +184,36 @@ class UnrealCvTracking_1vn(gym.Env):
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
         # set top_down camera
-        self.set_topview(info['Pose'], self.cam_id[2])
+        if self.top:
+            self.set_topview(info['Pose'], self.cam_id[2])
         
         # update observation
-        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
-        state_1 = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
+        # state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+
         states = []
         for i in range(len(self.player_list)):
             if i == 0:
-                states.append(state_0)
-            else:
-                states.append(state_1)
+                state_img = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+            elif i == 1:
+                if self.top:
+                    state_img = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
+                else:
+                    state_img = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
                 if 'Random' in self.nav or 'Goal' in self.nav:
                     break
+            else:
+                if i>1 and not self.top:
+                    state_img = self.unrealcv.get_observation(self.cam_id[1]+i-1, self.observation_type, 'fast')
+            states.append(state_img)
         states = np.array(states)
         # states = np.array([state_0, state_1])
 
         info['Color'] = self.unrealcv.img_color
-        # cv2.imshow('tracker', state_0)
-        # cv2.imshow('target', state_1)
-        # cv2.waitKey(1)
+        cv2.imshow('tracker', states[0])
+        # cv2.imshow('target', states[1])
+        # cv2.imshow('t0', states[2])
+        # cv2.imshow('t1', states[3])
+        cv2.waitKey(1)
 
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
@@ -218,8 +227,11 @@ class UnrealCvTracking_1vn(gym.Env):
                 else:
                     if 'Random' in self.nav or 'Goal' in self.nav:
                         break
-                    rewards.append(self.reward_function.reward_distractor(relative_pose[i-1][0], relative_pose[i-1][1],
-                                                                          self.player_num-2))
+                    r_d, mislead = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
+                                                                          self.player_num - 2)
+                    rewards.append(r_d)
+                    if mislead:
+                        rewards[0] -= r_d
             info['Reward'] = np.array(rewards)
 
         if r_tracker <= -0.99 or info['Collision']:
@@ -345,19 +357,26 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.destroy_obj(name)
 
         # cam on top of tracker
+
         self.set_topview(self.obj_pos[0], self.cam_id[2])
 
         # get state
-        state_0 = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
-        state_1 = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
         states = []
         for i in range(len(self.player_list)):
             if i == 0:
-                states.append(state_0)
-            else:
-                states.append(state_1)
+                state_img = self.unrealcv.get_observation(self.cam_id[0], self.observation_type, 'fast')
+            elif i == 1:
+                if self.top:
+                    state_img = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
+                else:
+                    state_img = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
                 if 'Random' in self.nav or 'Goal' in self.nav:
                     break
+            else:
+                if i>1 and not self.top:
+                    state_img = self.unrealcv.get_observation(self.cam_id[1]+i-1, self.observation_type, 'fast')
+            states.append(state_img)
+
         states = np.array(states)
         # cv2.imshow('tracker', state_0)
         # cv2.imshow('target', state_1)
@@ -437,12 +456,15 @@ class UnrealCvTracking_1vn(gym.Env):
         cam_rot[-1] = -90
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
+
     def get_relative(self, pose0, pose1): # pose0-centric
         delt_yaw = pose1[4] - pose0[4]
         angle = self.get_direction(pose0, pose1)
         distance = self.unrealcv.get_distance(pose1, pose0, 2)
-        distance_norm = (distance - self.exp_distance) / self.exp_distance
-        obs_vector = [np.sin(delt_yaw), np.cos(delt_yaw), np.sin(angle), np.cos(angle), distance_norm]
+        distance_norm = distance / self.exp_distance
+        obs_vector = [np.sin(delt_yaw/180*np.pi), np.cos(delt_yaw/180*np.pi),
+                      np.sin(angle/180*np.pi), np.cos(angle/180*np.pi),
+                      distance_norm]
         return obs_vector, distance, angle
 
 class RandomAgent(object):
