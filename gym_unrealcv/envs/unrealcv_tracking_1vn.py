@@ -211,9 +211,9 @@ class UnrealCvTracking_1vn(gym.Env):
         info['Color'] = self.unrealcv.img_color
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
-        cv2.imshow('t0', states[2])
+        # cv2.imshow('t0', states[2])
         # cv2.imshow('t1', states[3])
-        cv2.waitKey(1)
+        # cv2.waitKey(1)
 
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
@@ -317,44 +317,34 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            20, self.reset_area, self.start_area)
 
-        self.obj_pos = []
-        for i, obj in enumerate(self.player_list):
-            if i >= 2:
-                self.unrealcv.set_obj_location(obj, self.safe_start[i])
-            self.obj_pos.append(self.unrealcv.get_obj_pose(obj))
-
-        res = self.unrealcv.get_startpoint(self.obj_pos[1], self.exp_distance, self.reset_area, self.height, self.direction)
-        count = 0
-        while not res:
-            count += 1
-            time.sleep(0.1)
-            self.obj_pos[1] = self.unrealcv.get_obj_pose(self.player_list[1])
-            res = self.unrealcv.get_startpoint(self.obj_pos[1], self.exp_distance, self.reset_area)
-        cam_pos_exp, yaw = res
-        cam_pos_exp[-1] = self.height
+        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+        # init tracker
+        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
+        cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
-        yaw_pre = self.unrealcv.get_obj_rotation(self.player_list[0])[1]
-        delta_yaw = yaw-yaw_pre
-        while abs(delta_yaw) > 1:
-            self.unrealcv.set_move(self.player_list[0], delta_yaw, 0)
-            yaw_pre = self.unrealcv.get_obj_rotation(self.player_list[0])[1]
-            delta_yaw = (yaw - yaw_pre) % 360
-            if delta_yaw > 180:
-                delta_yaw = 360 - delta_yaw
+        self.rotate2exp(yaw_exp, self.player_list[0])
 
         # tracker's pose
-        self.obj_pos[0] = self.unrealcv.get_obj_pose(self.player_list[0])
+        tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
+        self.obj_pos = [tracker_pos, target_pos]
 
         # new obj
         # self.player_num = np.random.randint(2, self.max_player_num)
         self.player_num = self.max_player_num
         while len(self.player_list) < self.player_num:
-            name = self.unrealcv.new_obj(4, self.safe_start[i])
-            self.obj_pos.append(self.unrealcv.get_obj_pose(name))
+            name = self.unrealcv.new_obj(4, self.safe_start[1])
             self.player_list.append(name)
         while len(self.player_list) > self.player_num:
             name = self.player_list.pop()
             self.unrealcv.destroy_obj(name)
+
+        for i, obj in enumerate(self.player_list[2:]):
+            # reset and get new pos
+            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, 2*self.exp_distance, self.reset_area,
+                                                                self.height, None)
+            self.unrealcv.set_obj_location(obj, cam_pos_exp)
+            self.rotate2exp(yaw_exp, obj, 30)
+            self.obj_pos.append(self.unrealcv.get_obj_pose(obj))
 
         # cam on top of tracker
 
@@ -378,7 +368,7 @@ class UnrealCvTracking_1vn(gym.Env):
             states.append(state_img)
 
         states = np.array(states)
-        # cv2.imshow('tracker', state_0)
+        # cv2.imshow('tracker', states[2])
         # cv2.imshow('target', state_1)
         # cv2.waitKey(1)
         # get pose state
@@ -466,6 +456,17 @@ class UnrealCvTracking_1vn(gym.Env):
                       np.sin(angle/180*np.pi), np.cos(angle/180*np.pi),
                       distance_norm]
         return obs_vector, distance, angle
+
+    def rotate2exp(self, yaw_exp, obj, th=3):
+        yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
+        delta_yaw = yaw_exp - yaw_pre
+        while abs(delta_yaw) > th:
+            self.unrealcv.set_move(obj, delta_yaw, 0)
+            yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
+            delta_yaw = (yaw_exp - yaw_pre) % 360
+            if delta_yaw > 180:
+                delta_yaw = 360 - delta_yaw
+        return delta_yaw
 
 class RandomAgent(object):
     """The world's simplest agent!"""
