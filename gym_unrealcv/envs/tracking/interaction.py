@@ -17,7 +17,10 @@ class Tracking(Navigation):
         self.set_appearance(target, np.random.randint(0, num))
 
     def random_texture(self, backgrounds, img_dirs, num=5):
-        sample_index = np.random.choice(len(backgrounds), num, replace=False)
+        if num < 0:
+            sample_index = range(len(backgrounds))
+        else:
+            sample_index = np.random.choice(len(backgrounds), num, replace=False)
         for id in sample_index:
             target = backgrounds[id]
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
@@ -151,7 +154,7 @@ class Tracking(Navigation):
                 if count > 5:
                     return False
 
-    def reset_target(self,target):
+    def reset_target(self, target):
         cmd = 'vbp {target} reset'
         res=None
         while res is None:
@@ -225,7 +228,7 @@ class Tracking(Navigation):
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
             self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             # scale
-            self.set_obj_scale(obstacle, np.random.uniform(1.0, 10, 10))
+            self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
             # location
             obstacle_loc = [start_area[0], start_area[2], 0]
             while start_area[0] <= obstacle_loc[0] <= start_area[1] and start_area[2] <= obstacle_loc[1] <= start_area[3]:
