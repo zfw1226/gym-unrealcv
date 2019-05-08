@@ -30,12 +30,13 @@ if __name__ == '__main__':
     done = False
 
     done = False
-    Total_rewards = np.zeros(agents_num)
+    Total_rewards = 0
     for eps in range(1, episode_count):
         env.seed()
         obs = env.reset()
         count_step = 0
         t0 = time.time()
+        agents_num = len(obs)
         C_rewards = np.zeros(agents_num)
         while True:
             actions = [agents[i].act(obs[i]) for i in range(agents_num)]
@@ -49,7 +50,7 @@ if __name__ == '__main__':
                 cv2.waitKey(1)
             if done:
                 fps = count_step / (time.time() - t0)
-                Total_rewards += C_rewards
+                Total_rewards += C_rewards[0]
                 print ('Fps:' + str(fps), 'R:'+str(C_rewards), 'R_ave:'+str(Total_rewards/eps))
                 break
 
