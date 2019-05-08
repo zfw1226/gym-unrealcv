@@ -62,7 +62,7 @@ class UnrealCvTracking_1vn(gym.Env):
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
-        self.top = True
+        self.top = False
         self.person_id = 0
         self.count_eps = 0
         self.count_steps = 0
@@ -199,19 +199,19 @@ class UnrealCvTracking_1vn(gym.Env):
                     state_img = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
                 else:
                     state_img = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
+            else:
                 if 'Random' in self.nav or 'Goal' in self.nav:
                     break
-            else:
-                if i>1 and not self.top:
+                if i > 1 and not self.top:
                     state_img = self.unrealcv.get_observation(self.cam_id[1]+i-1, self.observation_type, 'fast')
             states.append(state_img)
         states = np.array(states)
         # states = np.array([state_0, state_1])
 
         info['Color'] = self.unrealcv.img_color
-        cv2.imshow('tracker', states[0])
+        # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
-        # cv2.imshow('t0', states[2])
+        cv2.imshow('t0', states[2])
         # cv2.imshow('t1', states[3])
         cv2.waitKey(1)
 
@@ -370,10 +370,10 @@ class UnrealCvTracking_1vn(gym.Env):
                     state_img = self.unrealcv.get_observation(self.cam_id[2], self.observation_type, 'fast')
                 else:
                     state_img = self.unrealcv.get_observation(self.cam_id[1], self.observation_type, 'fast')
+            else:
                 if 'Random' in self.nav or 'Goal' in self.nav:
                     break
-            else:
-                if i>1 and not self.top:
+                if i > 1 and not self.top:
                     state_img = self.unrealcv.get_observation(self.cam_id[1]+i-1, self.observation_type, 'fast')
             states.append(state_img)
 
