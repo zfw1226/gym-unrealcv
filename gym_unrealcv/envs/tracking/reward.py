@@ -47,16 +47,18 @@ class Reward():
         if dis_exp is None:
             dis_exp = self.dis_exp
         mislead = False
-        if abs(dis2distractor-dis_exp) < abs(self.dis2target-dis_exp) and abs(direction_error) < abs(self.angle2target):
+        direction_error_abs = abs(direction_error)
+        if abs(dis2distractor-dis_exp) < abs(self.dis2target-dis_exp) and direction_error_abs < abs(self.angle2target):
             # close to expected position, mislead the tracker
             reward = max(-self.r_tracker, 0)
             mislead = True
         elif abs(dis2distractor-dis_exp) < self.dis_max and abs(direction_error) < 45:
             # observed but not absolute
-            reward = 0.01*num
+            # reward = abs(dis2distractor) / self.dis_max
+            reward = 0.1
         else:
-            direction_error = abs(direction_error / 45.0)
+            direction_error = max(abs(direction_error)-45, 0) / 180.0
             e_dis = abs(dis2distractor) / self.dis_max
-            reward = -e_dis
+            reward = (-e_dis - direction_error)/2
             reward = max(reward, -1)
-        return reward/num, mislead
+        return reward, mislead
