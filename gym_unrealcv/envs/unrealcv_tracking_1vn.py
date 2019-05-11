@@ -308,8 +308,8 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
         # moving objs
-        if self.reset_type >= 3: #TOOD
-            self.unrealcv.new_obj(4, [0, 0, 0])
+        # if self.reset_type >= 3: #TOOD
+        #     self.unrealcv.new_obj(4, [0, 0, 0])
 
         # obstacle
         if self.reset_type >= 5:
@@ -340,7 +340,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
-            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, 2*self.exp_distance, self.reset_area,
+            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, self.max_distance, self.reset_area,
                                                                 self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
             self.rotate2exp(yaw_exp, obj, 30)
