@@ -62,6 +62,7 @@ class UnrealCvTracking_1vn(gym.Env):
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
+        self.start_area = self.get_start_area(self.safe_start[0], 500)
         self.top = False
         self.person_id = 0
         self.count_eps = 0
@@ -109,6 +110,9 @@ class UnrealCvTracking_1vn(gym.Env):
         self.reward_function = reward.Reward(setting)
 
         self.rendering = False
+
+        if self.reset_type >= 4:
+            self.unrealcv.init_objects(self.objects_env)
 
         self.count_close = 0
 
