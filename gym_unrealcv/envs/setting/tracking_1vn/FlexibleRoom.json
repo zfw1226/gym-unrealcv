@@ -2,7 +2,7 @@
 	"env_name": "MPRoom",
 	"env_bin": "tracking_spawn/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
-	"max_player_num": 4,
+	"max_player_num": 6,
 	"cam_id": [1, 2, 0],
 	"height": 220,
 	"pitch": 0,
@@ -16,14 +16,14 @@
         "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
-		[ -50, 15],
-		[ -50,-15],
-		[  0,  30],
-		[  0, -30],
+		[ 125,  0],
+		[-125,  0],
+		[  75, 15],
+		[  75,-15],
+		[ -75, 15],
+		[ -75,-15],
+		[  0,  45],
+		[  0, -45],
 		[  0,   0]
 	],
   	"discrete_actions_player": [
@@ -33,8 +33,8 @@
 		[  50,-15],
 		[ -50, 15],
 		[ -50,-15],
-		[  0,  30],
-		[  0, -30],
+		[  0,  45],
+		[  0, -45],
 		[  0,   0]
 	],
 	"safe_start" :[
