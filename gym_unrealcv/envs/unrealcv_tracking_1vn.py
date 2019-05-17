@@ -130,6 +130,8 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Interval' in self.nav:
             self.unrealcv.set_interval(30)
 
+        self.player_num = self.max_player_num
+
     def _step(self, actions):
         info = dict(
             Collision=False,
@@ -212,7 +214,7 @@ class UnrealCvTracking_1vn(gym.Env):
         states = np.array(states)
         # states = np.array([state_0, state_1])
 
-        info['Color'] = self.unrealcv.img_color
+        info['Color'] = self.unrealcv.img_color = states[0]
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.imshow('t0', states[2])
@@ -334,7 +336,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # new obj
         # self.player_num = np.random.randint(2, self.max_player_num)
-        self.player_num = self.max_player_num
+        # self.player_num = self.max_player_num
         while len(self.player_list) < self.player_num:
             name = self.unrealcv.new_obj(4, self.safe_start[1])
             self.player_list.append(name)
@@ -404,7 +406,9 @@ class UnrealCvTracking_1vn(gym.Env):
         return self.unrealcv.img_color
 
     def _seed(self, seed=None):
-        self.person_id = seed
+        if seed is not None:
+            # self.person_id = seed
+            self.player_num = seed % (self.max_player_num-2) + 2
 
     def _get_action_size(self):
         return len(self.action)
