@@ -100,7 +100,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # define observation space,
         # color, depth, rgbd,...
         self.observation_type = observation_type
-        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray']
+        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']
         self.observation_space = [self.unrealcv.define_observation(self.cam_id[0], self.observation_type, 'fast')
                                   for i in range(self.max_player_num)]
         self.unrealcv.pitch = self.pitch
@@ -214,7 +214,8 @@ class UnrealCvTracking_1vn(gym.Env):
         states = np.array(states)
         # states = np.array([state_0, state_1])
 
-        info['Color'] = self.unrealcv.img_color = states[0]
+        info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
+        # print (info['Color'].shape)
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.imshow('t0', states[2])
@@ -403,7 +404,7 @@ class UnrealCvTracking_1vn(gym.Env):
     def _render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
-        return self.unrealcv.img_color
+        return self.unrealcv.img_color/255.0
 
     def _seed(self, seed=None):
         if seed is not None:
