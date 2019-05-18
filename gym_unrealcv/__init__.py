@@ -228,7 +228,7 @@ for env in ['MCRoom', 'MCRoomLarge']:
 for env in ['FlexibleRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
-            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
                 for nav in ['Random', 'Goal', 'Internal',
                             'None', 'PZR', 'Dynamic', 'Adv']:
 
