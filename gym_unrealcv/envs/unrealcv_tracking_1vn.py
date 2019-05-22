@@ -243,11 +243,15 @@ class UnrealCvTracking_1vn(gym.Env):
                 else:
                     if 'Random' in self.nav or 'Goal' in self.nav:
                         break
-                    r_d, mislead = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
+                    r_d, mislead, r_distract = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
-                    rewards.append(r_d)
                     if mislead:
-                        rewards[0] -= r_d
+                        rewards[0] -= r_distract
+                        rewards[1] += r_distract
+
+                    rewards.append(r_d)
+            rewards[0] = max(rewards[0], -1)
+            rewards[1] = min(rewards[1], 1)
             info['Reward'] = np.array(rewards)
 
         if r_tracker <= -0.99 or info['Collision']:
