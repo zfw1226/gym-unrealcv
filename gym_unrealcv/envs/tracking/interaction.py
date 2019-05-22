@@ -260,4 +260,9 @@ class Tracking(Navigation):
             res = self.client.request(cmd)
         return res[12:-3]
 
+    def move_goal(self, obj, goal):
+        cmd = 'vbp {obj} move_to_goal {x} {y}'.format(obj=obj, x=goal[0] , y=goal[1])
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
 

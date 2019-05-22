@@ -225,12 +225,12 @@ for env in ['MCRoom', 'MCRoomLarge']:
                         max_episode_steps=500
                     )
 
-for env in ['FlexibleRoom']:
+for env in ['FlexibleRoom', 'BaseRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
-                for nav in ['Random', 'Goal', 'Internal',
-                            'None', 'PZR', 'Dynamic', 'Adv']:
+                for nav in ['Random', 'Goal', 'GoalBase', 'Internal',
+                            'PZR', 'Dynamic', 'Adv']:
 
                     name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
 

@@ -119,16 +119,19 @@ class UnrealCvTracking_1vn(gym.Env):
         if self.reset_type == 5:
             self.unrealcv.simulate_physics(self.objects_env)
 
+        self.unrealcv.set_random(self.player_list[0], 0)
+        if 'Goal' not in self.nav:
+            self.unrealcv.set_random(self.player_list[1], 0)
+
         self.person_id = 0
         if 'Random' in self.nav:
             self.random_agents = [RandomAgent(player_action_space) for i in range(self.max_player_num)]
-        if 'Goal' in self.nav:
+        elif 'Goal' in self.nav:
             self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, self.nav) for i in range(self.max_player_num)]
         if 'Internal' in self.nav:
-            self.unrealcv.set_random(self.player_list[0])
             self.unrealcv.set_maxdis2goal(target=self.player_list[0], dis=500)
-        if 'Interval' in self.nav:
-            self.unrealcv.set_interval(30)
+
+        self.unrealcv.set_interval(20)
 
         self.player_num = self.max_player_num
 
@@ -151,7 +154,7 @@ class UnrealCvTracking_1vn(gym.Env):
         actions = np.squeeze(actions)
 
         for i in range(len(self.player_list)):
-            if i == 0 or ('Random' not in self.nav and 'Goal' not in self.nav):
+            if i == 0 or ('Random' not in self.nav and 'Goal' not in self.nav and 'Internal' not in self.nav):
                 if self.action_type == 'Discrete':
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
@@ -163,10 +166,16 @@ class UnrealCvTracking_1vn(gym.Env):
                     else:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
                 if 'Goal' in self.nav:
-                        actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                    (v, a), goal = self.random_agents[i].act2(self.obj_pos[i])
+                    # (v, a), goal = self.random_agents[i].act(self.obj_pos[i])
+                    if goal is not None:
+                        self.unrealcv.set_speed(self.player_list[i], v)
+                        self.unrealcv.move_goal(self.player_list[i], goal)
+                    # actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
 
-        for i, player in enumerate(self.player_list):
-            self.unrealcv.set_move(player, actions2player[i][1], actions2player[i][0])
+        for i in range(len(actions2player)):
+            # self.unrealcv.set_move(player, actions2player[i][1], actions2player[i][0])
+            self.unrealcv.set_move(self.player_list[i], actions2player[i][1], actions2player[i][0])
 
         self.count_steps += 1
 
@@ -340,6 +349,8 @@ class UnrealCvTracking_1vn(gym.Env):
         # self.player_num = self.max_player_num
         while len(self.player_list) < self.player_num:
             name = self.unrealcv.new_obj(4, self.safe_start[1])
+            if 'Goal' not in self.nav:
+                self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
         while len(self.player_list) > self.player_num:
             name = self.player_list.pop()
@@ -350,7 +361,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, self.max_distance, self.reset_area,
                                                                 self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
-            self.rotate2exp(yaw_exp, obj, 30)
+            # self.rotate2exp(yaw_exp, obj, 30)
             self.obj_pos.append(self.unrealcv.get_obj_pose(obj))
 
         # cam on top of tracker
@@ -394,7 +405,8 @@ class UnrealCvTracking_1vn(gym.Env):
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         if 'Internal' in self.nav:
-            self.unrealcv.set_speed(self.player_list[1], np.random.randint(30, 200))
+            for obj in self.player_list[1:]:
+                self.unrealcv.set_speed(obj, np.random.randint(30, 200))
         self.pose = []
         return states
 
@@ -541,13 +553,14 @@ class GoalNavAgent(object):
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
         if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
-            self.goal = self.generate_goal(self.goal_area, self.fix)
+            self.goal = self.generate_goal(self.fix)
             if self.discrete or self.fix:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
             # self.velocity = 70
             self.step_counter = 0
+            return (self.velocity, 0), self.goal
 
         delt_yaw = self.get_direction(pose, self.goal)
         if self.discrete:
@@ -563,17 +576,38 @@ class GoalNavAgent(object):
             self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
             # self.angle = delt_yaw
             velocity = self.velocity * (1 + 0.2*np.random.random())
-        return (velocity, self.angle)
+        return (velocity, self.angle), None
+
+    def act2(self, pose):
+        if self.pose_last == None or self.fix:
+            self.pose_last = pose
+            d_moved = 100
+        else:
+            d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
+            self.pose_last = pose
+        if d_moved < 10:
+            self.step_counter += 1
+        if self.step_counter > 10:
+            self.goal = self.generate_goal(self.fix)
+            if self.discrete or self.fix:
+                self.velocity = (self.velocity_high + self.velocity_low)/2
+            else:
+                self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            self.step_counter = 0
+            return (self.velocity, 0), self.goal
+        else:
+            return (0, 0), None
 
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
         self.goal_id = 0
-        self.goal = self.generate_goal(self.goal_area, self.fix)
+        self.goal = self.generate_goal(self.fix)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
         self.pose_last = None
 
-    def generate_goal(self, goal_area, fixed=False):
+    def generate_goal(self, fixed=False):
+        goal_area = self.goal_area
         goal_list = [[goal_area[0], goal_area[2]], [goal_area[0], goal_area[3]],
                      [goal_area[1], goal_area[3]], [goal_area[1], goal_area[2]]]
 
