@@ -30,7 +30,7 @@ class UnrealCvTracking_1vn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 160),
+                 resolution=(80, 80),
                  nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
