@@ -30,7 +30,7 @@ class UnrealCvTracking_1vn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(80, 80),
+                 resolution=(160, 160),
                  nav='Random',  # Random, Goal, Internal
                  ):
         self.docker = docker
@@ -169,8 +169,9 @@ class UnrealCvTracking_1vn(gym.Env):
                     (v, a), goal = self.random_agents[i].act2(self.obj_pos[i])
                     # (v, a), goal = self.random_agents[i].act(self.obj_pos[i])
                     if goal is not None:
-                        self.unrealcv.set_speed(self.player_list[i], v)
                         self.unrealcv.move_goal(self.player_list[i], goal)
+                        self.unrealcv.set_speed(self.player_list[i], v)
+
                     # actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
 
         for i in range(len(actions2player)):
@@ -230,7 +231,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cv2.imshow('t0', states[2])
         # cv2.imshow('t1', states[3])
         # cv2.waitKey(1)
-
+        self.mis_lead = False
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
@@ -246,6 +247,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     r_d, mislead, r_distract = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
                     if mislead:
+                        self.mis_lead = True
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
 
@@ -254,7 +256,7 @@ class UnrealCvTracking_1vn(gym.Env):
             rewards[1] = min(rewards[1], 1)
             info['Reward'] = np.array(rewards)
 
-        if r_tracker <= -0.99 or info['Collision']:
+        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -269,7 +271,6 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_close = 0
         # self.count_eps += 1
         # self.ep_lens.append(self.count_steps)
-
         # adaptive weight
         if 'Dynamic' in self.nav:
             ep_lens_mean = np.array(self.ep_lens[-100:]).mean()
@@ -282,6 +283,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # stop move
         for i, obj in enumerate(self.player_list):
             self.unrealcv.set_move(obj, 0, 0)
+            self.unrealcv.set_speed(obj, 0)
         np.random.seed()
         #  self.exp_distance = np.random.randint(150, 250)
         if 'Fix' in self.nav:
@@ -390,8 +392,8 @@ class UnrealCvTracking_1vn(gym.Env):
             states.append(state_img)
 
         states = np.array(states)
-        # cv2.imshow('tracker', states[2])
-        # cv2.imshow('target', state_1)
+        # cv2.imshow('tracker', states[0])
+        # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
         # get pose state
         pose_obs = []
@@ -482,7 +484,7 @@ class UnrealCvTracking_1vn(gym.Env):
                       distance_norm]
         return obs_vector, distance, angle
 
-    def rotate2exp(self, yaw_exp, obj, th=3):
+    def rotate2exp(self, yaw_exp, obj, th=1):
         yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
         delta_yaw = yaw_exp - yaw_pre
         while abs(delta_yaw) > th:
@@ -591,12 +593,15 @@ class GoalNavAgent(object):
             self.pose_last = pose
         if d_moved < 10:
             self.step_counter += 1
-        if self.step_counter > 10:
+        if self.step_counter > 3:
             self.goal = self.generate_goal(self.fix)
+            self.velocity = (self.velocity_high + self.velocity_low) / 2
+            '''
             if self.discrete or self.fix:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            '''
             self.step_counter = 0
             return (self.velocity, 0), self.goal
         else:
@@ -614,11 +619,10 @@ class GoalNavAgent(object):
         goal_area = self.goal_area
         goal_list = [[goal_area[0], goal_area[2]], [goal_area[0], goal_area[3]],
                      [goal_area[1], goal_area[3]], [goal_area[1], goal_area[2]]]
-
+        np.random.seed()
         if fixed:
             goal = np.array(goal_list[self.goal_id%len(goal_list)])/2
             self.goal_id += 1
-
         else:
             x = np.random.randint(goal_area[0], goal_area[1])
             y = np.random.randint(goal_area[2], goal_area[3])
