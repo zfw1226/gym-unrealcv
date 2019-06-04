@@ -86,8 +86,6 @@ class UnrealCvRobotArm_base(gym.Env):
             Done=False,
             Reward=0.0,
             Action=action,
-            ArmPose=[],
-            GripPosition=[],
             Steps=self.count_steps,
             TargetPose=self.goal_pos_trz,
             Color=None,
@@ -136,24 +134,17 @@ class UnrealCvRobotArm_base(gym.Env):
                 reward = -self.count_reach
                 self.count_reach = 0
 
+        # check collision
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
             done = True
             reward = -10
             # print ('Collision')
+
         # Get observation
-        '''
-        arm_pose = self.unrealcv.get_arm_pose('new')
-        if self.get_distance(arm_pose, self.arm_pose_last, False, 4)==0: # special case for collision
-            done = True
-            reward = -10
-            print ('collision')
-        self.arm_pose_last = arm_pose
-        '''
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz, action)
         info['Done'] = done
         info['Reward'] = reward
-        # info['ArmPose'] = arm_pose
         return state, reward, done, info
 
     def _seed(self, seed=None):
@@ -170,8 +161,6 @@ class UnrealCvRobotArm_base(gym.Env):
         tip_pose = self.unrealcv.get_tip_pose()
         tip_pos_trz = self.xyz2trz(tip_pose)
         self.goal_pos_trz = self.sample_goal()
-        # print (self.goal_pos_trz)
-        # self.goal_pos_trz = np.array([0, 100+5*self.count_eps, 50])
         self.goal_pos_xyz = self.trz2xyz(self.goal_pos_trz)
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz)
 
@@ -179,7 +168,6 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_reach = 0
         self.unrealcv.set_obj_location(self.objects[0], [0, 0, -50])
         self.unrealcv.set_obj_rotation(self.objects[0], [0, 0, 0])
-
         if self.reward_type == 'xyz':
             self.distance_last = self.get_distance(self.goal_pos_xyz, tip_pose)
         elif self.reward_type == 'trz':
