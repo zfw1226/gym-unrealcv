@@ -89,7 +89,7 @@ for action in ['Discrete', 'Continuous']:  # action type
                             'reward_type': reward,
                             'docker': use_docker
                             },
-                            max_episode_steps=200
+                    max_episode_steps=100
                         )
 # Tracking
 # -----------------------------------------------------------------------
