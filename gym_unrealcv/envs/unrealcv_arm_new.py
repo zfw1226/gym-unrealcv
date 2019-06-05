@@ -108,7 +108,7 @@ class UnrealCvRobotArm_base(gym.Env):
         # reward function
 
         if self.reward_type == 'xyz_abs':
-            reward = 1 - 0.01 * distance_xyz
+            reward = - 0.01 * distance_xyz
 
         if arm_state:  # reach limitation
             done = True
