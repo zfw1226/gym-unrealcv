@@ -1,6 +1,6 @@
 {
 	"env_name": "RobotArm-OWI",
-	"env_bin": "arm_new_v1/ArmUE4/Binaries/Linux/ArmUE4",
+	"env_bin": "arm_new_v2/ArmUE4/Binaries/Linux/ArmUE4",
 	"env_map": "OWI_RL",
 	"cam_view_id": 0,
 	"maxsteps": 100,
@@ -31,6 +31,6 @@
 	},
 	"goal_range": {
 		"high": [ 90,  280,  250],
-		"low":  [-90,  100,    0]
+		"low":  [-90,  100,  -30]
 	}
 }

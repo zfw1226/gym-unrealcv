@@ -27,7 +27,6 @@ class Robotarm(UnrealCv):
         self.msgs_buffer = []
 
     def message_handler(self, msg):
-        # print (msg)
         # msg: 'Hit object'
         self.msgs_buffer.append(msg)
 
@@ -42,9 +41,9 @@ class Robotarm(UnrealCv):
     def set_arm_pose(self, pose, mode='old'):
         self.arm['pose'] = np.array(pose)
         if mode == 'new':
-            cmd = 'vset /arm/pose {M0} {M1} {M2} {M3} {grip}'
+            cmd = 'vset /arm/RobotArmActor_1/pose {M0} {M1} {M2} {M3} {grip}'
         elif mode == 'move':
-            cmd = 'vset /arm/moveto {M0} {M1} {M2} {M3} {grip}'
+            cmd = 'vset /arm/RobotArmActor_1/moveto {M0} {M1} {M2} {M3} {grip}'
         elif mode == 'old':
             cmd = 'vbp armBP setpos {grip} {M3} {M2} {M1} {M0}'
         return self.client.request(cmd.format(M0=pose[0], M1=pose[1], M2=pose[2],
@@ -74,7 +73,7 @@ class Robotarm(UnrealCv):
         if mode == 'old':
             cmd = 'vbp armBP getpos'
         else:
-            cmd = 'vget /arm/pose'
+            cmd = 'vget /arm/RobotArmActor_1/pose'
         result = None
         while result is None:
             result = self.client.request(cmd)
@@ -90,7 +89,7 @@ class Robotarm(UnrealCv):
         return self.arm['pose']
 
     def get_tip_pose(self):
-        cmd = 'vget /arm/tip_pose'
+        cmd = 'vget /arm/RobotArmActor_1/tip_pose'
         result = None
         while result is None:
             result = self.client.request(cmd)
@@ -177,7 +176,7 @@ class Robotarm(UnrealCv):
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.arm['grip'], self.target_pose, action))
             # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
-        elif  observation_type == 'MeasuredQR':
+        elif observation_type == 'MeasuredQR':
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.arm['QR'], self.target_pose, action))
         elif observation_type == 'MeasuredReal':
@@ -199,8 +198,8 @@ class Robotarm(UnrealCv):
         '''
 
     def random_material(self):
-        self.set_material('Ball0',rgb=np.random.random(3),prop=np.random.random(3))
-        self.set_material('wall1',rgb=np.random.random(3),prop=np.random.random(3))
+        self.set_material('Ball0', rgb=np.random.random(3),prop=np.random.random(3))
+        self.set_material('wall1', rgb=np.random.random(3),prop=np.random.random(3))
         self.set_material('wall2', rgb=np.random.random(3), prop=np.random.random(3))
         self.set_material('wall3', rgb=np.random.random(3), prop=np.random.random(3))
         self.set_material('wall4', rgb=np.random.random(3), prop=np.random.random(3))
@@ -231,7 +230,7 @@ class Robotarm(UnrealCv):
         cmd = 'vbp armBP setarm{target} {r} {g} {b} {metallic} {specular} {roughness}'
         return self.client.request(cmd.format(target = target, r=rgb[0], g=rgb[1], b=rgb[2], metallic=prop[0], specular=prop[1], roughness=prop[2]))
 
-    def reset_obj(self,target,area):
+    def reset_obj(self,target, area):
         # reset target in an area randomly
         x = random.uniform(area[0], area[1])
         y = random.uniform(area[2], area[3])
@@ -247,6 +246,15 @@ class Robotarm(UnrealCv):
             res = self.client.request(cmd)
         res = res.split()
         if res[2][1:5] == 'true':
+            return True
+        else:
+            return False
+
+    def check_collision(self, obj='RobotArmActor_1'):
+        'cmd : vget /arm/RobotArmActor_1/query collision'
+        cmd = 'vget /arm/{obj}/query collision'
+        res = self.client.request(cmd.format(obj=obj))
+        if res == 'true':
             return True
         else:
             return False

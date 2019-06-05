@@ -107,36 +107,29 @@ class UnrealCvRobotArm_base(gym.Env):
         distance_xyz = self.get_distance(self.goal_pos_xyz, tip_pose)
         # reward function
 
-        if arm_state:  # reach limitation
+        if self.reward_type == 'trz':
+            distance_delt = self.distance_last - distance_trz
+            self.distance_last = distance_trz
+            reward = -0.1 + 10 * distance_delt
+        elif self.reward_type == 'xyz':
+            distance_delt = self.distance_last - distance_xyz
+            self.distance_last = distance_xyz
+            reward = -0.1 + 0.1 * distance_delt
+        elif self.reward_type == 'xyz_abs':
+            reward = - 0.1 - 0.005 * distance_xyz
+
+        collision = self.unrealcv.check_collision()  # check collision
+        if arm_state or collision:  # reach limitation or collision
             done = True
             reward = -10
-        elif distance_xyz < 10:  # reach
+        elif distance_xyz < 20:  # reach
             reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
-            if self.count_reach > 10:
+            if self.count_reach > 5:
                 done = True
-                reward = (1 - 0.1 * distance_xyz)*20
+                reward = 100
+                # reward = (1 - 0.1 * distance_xyz)*20
                 print ('Success')
-        else:
-            if self.reward_type == 'trz':
-                distance_delt = self.distance_last - distance_trz
-                self.distance_last = distance_trz
-                reward = -0.1 + 10 * distance_delt
-            elif self.reward_type == 'xyz':
-                distance_delt = self.distance_last - distance_xyz
-                self.distance_last = distance_xyz
-                reward = -0.1 + 0.1 * distance_delt
-            elif self.reward_type == 'xyz_abs':
-                reward = - 0.01 * distance_xyz
-            if self.count_reach > 0:
-                reward = -self.count_reach
-                # self.count_reach = 0
-        # check collision
-        msgs = self.unrealcv.read_message()
-        if len(msgs) > 0:
-            done = True
-            reward = -10
-            # print ('Collision')
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz, action)
