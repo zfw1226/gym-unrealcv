@@ -107,33 +107,30 @@ class UnrealCvRobotArm_base(gym.Env):
         distance_xyz = self.get_distance(self.goal_pos_xyz, tip_pose)
         # reward function
 
-        if self.reward_type == 'xyz_abs':
-            reward = - 0.01 * distance_xyz
-
         if arm_state:  # reach limitation
             done = True
             reward = -10
         elif distance_xyz < 10:  # reach
-            if self.reward_type != 'xyz_abs':
-                reward = 1 - 0.1 * distance_xyz
+            reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
             if self.count_reach > 10:
                 done = True
                 reward = (1 - 0.1 * distance_xyz)*20
                 print ('Success')
         else:
-            if self.reward_type == 'rtz':
+            if self.reward_type == 'trz':
                 distance_delt = self.distance_last - distance_trz
                 self.distance_last = distance_trz
                 reward = -0.1 + 10 * distance_delt
             elif self.reward_type == 'xyz':
                 distance_delt = self.distance_last - distance_xyz
                 self.distance_last = distance_xyz
-                reward = -0.1 + 0.05 * distance_delt
+                reward = -0.1 + 0.1 * distance_delt
+            elif self.reward_type == 'xyz_abs':
+                reward = - 0.01 * distance_xyz
             if self.count_reach > 0:
                 reward = -self.count_reach
-                self.count_reach = 0
-
+                # self.count_reach = 0
         # check collision
         msgs = self.unrealcv.read_message()
         if len(msgs) > 0:
