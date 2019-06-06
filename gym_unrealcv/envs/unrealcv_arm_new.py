@@ -81,7 +81,7 @@ class UnrealCvRobotArm_base(gym.Env):
         self.launched = True
         return self.launched
 
-    def _step(self, action):
+    def step(self, action):
         info = dict(
             Done=False,
             Reward=0.0,
@@ -116,20 +116,18 @@ class UnrealCvRobotArm_base(gym.Env):
             self.distance_last = distance_xyz
             reward = -0.1 + 0.1 * distance_delt
         elif self.reward_type == 'xyz_abs':
-            reward = - 0.1 - 0.005 * distance_xyz
+            reward = - 0.01 * distance_xyz
 
         collision = self.unrealcv.check_collision()  # check collision
         if arm_state or collision:  # reach limitation or collision
             done = True
             reward = -10
-        elif distance_xyz < 20:  # reach
+        elif distance_xyz < 10:  # reach
             reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
-            if self.count_reach > 5:
+            if self.count_reach > 10:
                 done = True
-                reward = 100
-                # reward = (1 - 0.1 * distance_xyz)*20
-                print ('Success')
+                reward = (1 - 0.1 * distance_xyz) * 100
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz, action)
@@ -137,10 +135,10 @@ class UnrealCvRobotArm_base(gym.Env):
         info['Reward'] = reward
         return state, reward, done, info
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         pass
 
-    def _reset(self):
+    def reset(self):
         self.launch_env()
         self.count_eps += 1
         self.unrealcv.set_arm_pose([random.uniform(-90, 90),
@@ -167,15 +165,15 @@ class UnrealCvRobotArm_base(gym.Env):
 
         return state
 
-    def _close(self):
+    def close(self):
         self.unreal.close()
 
-    def _render(self, mode='rgb_array', close=False):
+    def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
         return self.unrealcv.img_color
 
-    def _get_action_size(self):
+    def get_action_size(self):
         return len(self.action)
 
     def get_distance(self, target, current, norm=False, n=3):
