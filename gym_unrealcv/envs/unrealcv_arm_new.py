@@ -122,12 +122,12 @@ class UnrealCvRobotArm_base(gym.Env):
         if arm_state or collision:  # reach limitation or collision
             done = True
             reward = -10
-        elif distance_xyz < 10:  # reach
-            reward = 1 - 0.1 * distance_xyz
+        elif distance_xyz < 20:  # reach
+            # reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
-            if self.count_reach > 10:
+            if self.count_reach > 5:
                 done = True
-                reward = (1 - 0.1 * distance_xyz) * 100
+                reward = (1 - 0.05 * distance_xyz) * 100
 
         # Get observation
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz, action)
