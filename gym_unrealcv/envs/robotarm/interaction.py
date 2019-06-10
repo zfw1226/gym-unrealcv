@@ -149,15 +149,7 @@ class Robotarm(UnrealCv):
             s_high[:, :, :-1] = 255  # max_rgb
             s_low = np.zeros(setting['rgbd_shape'])
             observation_space = spaces.Box(low=s_low, high=s_high)
-        elif observation_type == 'Measured':
-            s_high = [130,  60,  90, 45, 70,  200,  300, 360, 250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
-            s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -350, -150, 40, -5, -5, -5, -5]
-            observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
-        elif observation_type == 'MeasuredQR':
-            s_high = [130,  60,  90, 45, 70, 200,  300, 360, 180,  250, 400, 360, 5, 5, 5, 5]  # arm_pose, grip_position, target_position
-            s_low = [-130, -90, -60, -45,  0, -400, -150, 0, -180, -350, -150, 40, -5, -5, -5, -5]
-            observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
-        elif observation_type == 'MeasuredReal':
+        elif observation_type == 'Pose':
             s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continous_actions']['high']  # arm_pose, target_position, action
             s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continous_actions']['low']
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
@@ -172,14 +164,7 @@ class Robotarm(UnrealCv):
             self.img_color = self.read_image(cam_id, 'lit', 'fast')
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
-        elif observation_type == 'Measured':
-            self.target_pose = np.array(target_pose)
-            state = np.concatenate((self.arm['pose'], self.arm['grip'], self.target_pose, action))
-            # [p0,p1,p2,p3,p4,g_x,g_y,g_z,g_r,g_y,g_p,t_x,t_y,t_z]
-        elif observation_type == 'MeasuredQR':
-            self.target_pose = np.array(target_pose)
-            state = np.concatenate((self.arm['pose'], self.arm['QR'], self.target_pose, action))
-        elif observation_type == 'MeasuredReal':
+        elif observation_type == 'Pose':
             self.target_pose = np.array(target_pose)
             state = np.concatenate((self.arm['pose'], self.target_pose, action))
         return state

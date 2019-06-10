@@ -61,39 +61,25 @@ for env in ['RealisticRoom', 'Arch1', 'Arch2']:
 
 # Robot Arm
 # ------------------------------------------------------------------
-for action in ['Discrete', 'Continuous']:  # action type
-    for obs in ['Color', 'Depth', 'Rgbd', 'Measured', 'MeasuredQR']:
-        for i, reward in enumerate(['distance', 'move', 'move_distance']):
-            register(
-                id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
-                entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-                kwargs={'setting_file': 'robotarm/robotarm_v0.json',
-                        'reset_type': 'keyboard',
-                        'action_type': action,
-                        'observation_type': obs,
-                        'reward_type': reward,
-                        'docker': use_docker
-                        },
-                max_episode_steps=1000000
-            )
 
+# "CRAVES: Controlling Robotic Arm With a Vision-Based Economic System", CVPR2019
 for action in ['Discrete', 'Continuous']:  # action type
-    for obs in ['MeasuredReal']:
-        for i, reward in enumerate(['trz', 'xyz', 'xyz_abs']):
+    for obs in ['Pose', 'Color', 'Depth', 'Rgbd']:
+        for i in range(3):
             register(
-                    id='UnrealArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
+                    id='UnrealArm-{action}{obs}-v{version}'.format(action=action, obs=obs, version=i),
                     entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
                     kwargs={'setting_file': 'robotarm/robotarm_v1.json',
                             'action_type': action,
                             'observation_type': obs,
-                            'reward_type': reward,
-                            'docker': use_docker
+                            'docker': use_docker,
+                            'version': i
                             },
                     max_episode_steps=100
                         )
 # Tracking
 # -----------------------------------------------------------------------
-# old env
+# "End-to-end Active Object Tracking via Reinforcement Learning", ICML2018
 for env in ['City1', 'City2']:
     for target in ['Malcom', 'Stefani']:
         for action in ['Discrete', 'Continuous']:  # action type
@@ -101,7 +87,7 @@ for env in ['City1', 'City2']:
                 for path in ['Path1', 'Path2']:  # observation type
                     for i, reset in enumerate(['static', 'random']):
                         register(
-                            id='Tracking{env}{target}{path}-{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
+                            id='UnrealTracking{env}{target}{path}-{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
                                                                                      action=action, obs=obs, reset=i),
                             entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
                             kwargs={'setting_file': 'tracking_v0/{env}{target}{path}.json'.format(env=env, target=target, path=path),
@@ -114,13 +100,13 @@ for env in ['City1', 'City2']:
                             max_episode_steps=1000
                             )
 
-# new training env
-for env in ['SimpleRoom', 'BpRoom', 'MetaRoom', 'SemiActive']:
+# "End-to-end Active Object Tracking and Its Real-world Deployment via Reinforcement Learning", IEEE TPAMI
+for env in ['RandomRoom']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
                 register(
-                    id='Tracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
+                    id='UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
                     entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
                     kwargs={'setting_file': 'tracking_v1/{env}.json'.format(env=env),
                             'reset_type': i,
@@ -132,32 +118,15 @@ for env in ['SimpleRoom', 'BpRoom', 'MetaRoom', 'SemiActive']:
                     max_episode_steps=1000
                 )
 
-# new testing
-for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
-        for action in ['Discrete', 'Continuous']:  # action type
-            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
-                register(
-                    id='Tracking{env}-{action}{obs}Test-v{reset}'.format(env=env, action=action, obs=obs, reset=0),
-                    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
-                    kwargs={'setting_file': 'tracking_v1/{env}.json'.format(env=env),
-                            'reset_type': -1,
-                            'action_type': action,
-                            'observation_type': obs,
-                            'reward_type': 'distance',
-                            'docker': use_docker,
-                            },
-                    max_episode_steps=1000
-                )
 
-# new training env
-for env in ['MPRoom', 'Urbancity', 'UrbanRoad', 'Garden', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom', 'ObstacleRoomFast']:
+# "AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking", ICLR2019
+for env in ['MPRoom', 'Urbancity', 'UrbanRoad', 'Garden', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom']:
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
                 for nav in ['Random', 'Goal', 'GoalBase', 'GoalOld', 'GoalFix', 'Internal', 'None', 'PZR', 'Dynamic', 'Adv']:
 
                     name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-
                     setting_file = 'tracking_multi/{env}.json'.format(env=env)
                     register(
                         id=name,
@@ -256,6 +225,40 @@ register(
     max_episode_steps=1000
 )
 
+
+# to remove
+# new testing
+for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                register(
+                    id='UnrealTracking{env}-{action}{obs}Test-v{reset}'.format(env=env, action=action, obs=obs, reset=0),
+                    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
+                    kwargs={'setting_file': 'tracking_v1/{env}.json'.format(env=env),
+                            'reset_type': -1,
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'distance',
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=1000
+                )
+
+for action in ['Discrete', 'Continuous']:  # action type
+    for obs in ['Color', 'Depth', 'Rgbd', 'Measured', 'MeasuredQR']:
+        for i, reward in enumerate(['distance', 'move', 'move_distance']):
+            register(
+                id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
+                entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+                kwargs={'setting_file': 'robotarm/robotarm_v0.json',
+                        'reset_type': 'keyboard',
+                        'action_type': action,
+                        'observation_type': obs,
+                        'reward_type': reward,
+                        'docker': use_docker
+                        },
+                max_episode_steps=1000000
+            )
 
 register(
     id='Tracking-B-v0',
