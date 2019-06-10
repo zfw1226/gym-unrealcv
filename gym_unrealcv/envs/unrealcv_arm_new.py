@@ -16,8 +16,8 @@ class UnrealCvRobotArm_base(gym.Env):
                  setting_file,
                  reset_type='keyboard',    # keyboard, bp
                  action_type='continuous',   # 'discrete', 'continuous'
-                 observation_type='MeasuredReal',  # 'color', 'depth', 'rgbd' . 'measure'
-                 reward_type='xyz_abs',  # distance, move, move_distance
+                 observation_type='Pose',  # 'color', 'depth', 'rgbd' . 'pose'
+                 version=0,  # train, test
                  docker=False,
                  resolution=(160, 120),
                  ):
@@ -37,10 +37,9 @@ class UnrealCvRobotArm_base(gym.Env):
         self.docker = docker
         self.reset_type = reset_type
         self.resolution = resolution
-
+        self.version = version
         # define reward type
         # distance, bbox, bbox_distance,
-        self.reward_type = reward_type
         self.launched = False
 
         # define action type
@@ -102,30 +101,18 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_steps += 1
         done = False
         tip_pose = self.unrealcv.get_tip_pose()
-        tip_pos_trz = self.xyz2trz(tip_pose)
-        distance_trz = self.get_distance(self.goal_pos_trz, tip_pos_trz, norm=True)
         distance_xyz = self.get_distance(self.goal_pos_xyz, tip_pose)
-        # reward function
-
-        if self.reward_type == 'trz':
-            distance_delt = self.distance_last - distance_trz
-            self.distance_last = distance_trz
-            reward = -0.1 + 10 * distance_delt
-        elif self.reward_type == 'xyz':
-            distance_delt = self.distance_last - distance_xyz
-            self.distance_last = distance_xyz
-            reward = -0.1 + 0.1 * distance_delt
-        elif self.reward_type == 'xyz_abs':
-            reward = - 0.01 * distance_xyz
-
         collision = self.unrealcv.check_collision()  # check collision
+
+        # reward function
+        reward = - 0.01 * distance_xyz
         if arm_state or collision:  # reach limitation or collision
             done = True
             reward = -10
         elif distance_xyz < 20:  # reach
-            # reward = 1 - 0.1 * distance_xyz
+            reward = 1 - 0.1 * distance_xyz
             self.count_reach += 1
-            if self.count_reach > 5:
+            if self.count_reach >= self.count_th:
                 done = True
                 reward = (1 - 0.05 * distance_xyz) * 100
 
@@ -141,14 +128,21 @@ class UnrealCvRobotArm_base(gym.Env):
     def reset(self):
         self.launch_env()
         self.count_eps += 1
-        self.unrealcv.set_arm_pose([random.uniform(-90, 90),
+
+        if self.version == 0:
+            init_pose = [random.uniform(-90, 90),
                                     random.uniform(-15, 15),
                                     random.uniform(-30, 30),
                                     random.uniform(-30, 30),
-                                    0], 'new')
-        tip_pose = self.unrealcv.get_tip_pose()
-        tip_pos_trz = self.xyz2trz(tip_pose)
-        self.goal_pos_trz = self.sample_goal()
+                                    0]
+            self.goal_pos_trz = self.sample_goal(-1)
+            self.count_th = 5
+        else:
+            init_pose = [0, 0, 0, 0, 0]
+            self.goal_pos_trz = self.sample_goal(self.count_eps)
+            self.count_th = 3
+        self.unrealcv.set_arm_pose(init_pose, 'new')
+
         self.goal_pos_xyz = self.trz2xyz(self.goal_pos_trz)
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type, self.goal_pos_trz)
 
@@ -156,10 +150,6 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_reach = 0
         self.unrealcv.set_obj_location(self.objects[0], [0, 0, -50])
         self.unrealcv.set_obj_rotation(self.objects[0], [0, 0, 0])
-        if self.reward_type == 'xyz':
-            self.distance_last = self.get_distance(self.goal_pos_xyz, tip_pose)
-        elif self.reward_type == 'trz':
-            self.distance_last = self.get_distance(self.goal_pos_trz, tip_pos_trz, True)
         self.arm_pose_last = self.unrealcv.get_arm_pose('new')
         self.unrealcv.empty_msgs_buffer()
 
@@ -195,12 +185,20 @@ class UnrealCvRobotArm_base(gym.Env):
         z = trz[2]
         return np.array([x, y, z])
 
-    def sample_goal(self):
-
-        theta = random.uniform(self.goal_range['low'][0], self.goal_range['high'][0])
-        r = random.uniform(self.goal_range['low'][1], self.goal_range['high'][1])
-        z = random.uniform(self.goal_range['low'][2], min(r, self.goal_range['high'][2]))
-        return np.array([theta, r, z])
+    def sample_goal(self, count_eps):
+        if count_eps < 0:
+            theta = random.uniform(self.goal_range['low'][0], self.goal_range['high'][0])
+            r = random.uniform(self.goal_range['low'][1], self.goal_range['high'][1])
+            z = random.uniform(self.goal_range['low'][2], min(r, self.goal_range['high'][2]))
+            goal = np.array([theta, r, z])
+        else:
+            yaws = [0, -45, 45]
+            length = [150, 200, 250]
+            heights = [20, 20, 20]
+            goal = np.array([yaws[self.count_eps / 3 % 3],
+                             length[self.count_eps % 3],
+                             heights[self.count_eps % 3]])
+        return goal
 
     def load_env_setting(self, filename):
         f = open(self.get_settingpath(filename))
