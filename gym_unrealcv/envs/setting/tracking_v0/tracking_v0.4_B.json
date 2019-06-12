@@ -1,14 +1,14 @@
 {
 	"env_name": "UrbancityTracking",
-	"env_bin": "SplineCharacterA/SplineCharacterSetup/Binaries/Linux/SplineCharacterSetup",
+	"env_bin": "SplineCharacterB/SplineCharacterSetup/Binaries/Linux/SplineCharacterSetup",
 	"cam_id": 0,
 	"height": 40,
-	"max_steps": 3000,
+	"max_steps": 1000,
 	"max_distance": 400,
 	"max_direction": 90,
 	"exp_distance": 200,
 	"targets": [
-        "BP_Malcom_C_0"
+        "BP_Stefani_C_0"
 	],
 	"discrete_actions": [
 		[40, 0],

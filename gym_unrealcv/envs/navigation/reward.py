@@ -7,26 +7,27 @@ class Reward():
         self.reward_th = setting['reward_th']
         self.dis2target_last = 0
 
-
     def reward_bbox(self, boxes):
         reward = 0
+
+        # summarize the reward of each detected box
         for box in boxes:
-            reward += self.get_bbox_reward(box)  #sum the reward of all detected boxes
+            reward += self.get_bbox_reward(box)
 
         if reward > self.reward_th:
+            # get ideal target
             reward = min(reward * self.reward_factor, 10)
-            print ('Get ideal Target!!!')
         elif reward == 0:
+            # false trigger
             reward = -1
-            print ('Get Nothing')
         else:
+            # small target
             reward = 0
-            print ('Get small Target!!!')
 
         return reward, boxes
 
-
-    def get_bbox_reward(self, box):  # get reward of single box considering the size and position of box
+    def get_bbox_reward(self, box):
+        # get reward of single box considering the size and position of box
         (xmin, ymin), (xmax, ymax) = box
         boxsize = (ymax - ymin) * (xmax - xmin)
         x_c = (xmax + xmin) / 2.0
@@ -40,6 +41,3 @@ class Reward():
         self.dis2target_last = dis2target_now
 
         return reward
-
-    def reward_move(self):
-        return 10

@@ -36,5 +36,14 @@
 	"continous_actions": {
 		"high": [100, 45, 1],
 		"low":  [0,  -45, 0]
-	}
+	},
+	"objects_list": [
+		"sofa",   "shelf", "floor", "building", "carpet","tvstand", "tv", "door",
+		"box1", "box2",
+		"plant1", "plant2",
+		"chair1", "chair2", "chair3", "chair4", "chair5", "chair6", "chair7",
+		"table1", "table2", "table3",
+		"bottle1", "bottle2","bottle3", "bottle4", "bottle5", "bottle6", "bottle7", "bottle8", "bottle9" ,"bottle10",
+
+	]
 }

@@ -15,7 +15,6 @@ class ResetPoint():
         self.height = setting['height']
         self.pitch = setting['pitch']
         if self.reset_type == 'testpoint':
-            print setting['test_xy']
             for x,y in setting['test_xy']:
                 pose = [x,y,setting['height'],0]
                 self.new_waypoint(pose, 1000)
@@ -36,7 +35,7 @@ class ResetPoint():
     def reset_random(self):
         x = random.uniform(self.reset_area[0], self.reset_area[1])
         y = random.uniform(self.reset_area[2], self.reset_area[3])
-        z =  self.height
+        z = random.uniform(self.reset_area[4], self.reset_area[5])
         yaw = random.randint(0, 360)
 
         return [x,y,z, 0, yaw, self.pitch]
@@ -53,6 +52,7 @@ class ResetPoint():
     def reset_waypoint(self):
         # reset from waypoints generated in exploration
         x, y, z, pitch, yaw, roll = self.select_waypoint_times()
+        #x, y, z, pitch, yaw, roll = self.select_waypoint_random()
         yaw = random.randint(0, 360)
         return [x, y, z, roll, yaw, self.pitch]
 
@@ -94,19 +94,17 @@ class ResetPoint():
             dis2collision = self.get_dis2collision(P[:3])
 
             # update waypoint
-
             if (dis2waypoint < self.waypoint_th / 4 and
                 dis2collision > self.waypoints[waypoint_id]['dis2collision'] and
                 dis2others > self.waypoint_th):
                 self.waypoints[waypoint_id]['pose'] = P
                 self.waypoints[waypoint_id]['dis2collision'] = dis2collision
-                print 'update waypoint'
 
             # if the point is far from other existing waypoints and collision points, insert it to the waypoints list
-
+            # add a new waypoint
             if dis2waypoint > self.waypoint_th and dis2collision > self.collision_th:
                 self.new_waypoint(P, dis2collision)
-                print 'add new waypoint'
+
 
         return len(self.waypoints)
 

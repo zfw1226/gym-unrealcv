@@ -4,409 +4,307 @@ logger = logging.getLogger(__name__)
 use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 
+def load_env_setting(filename):
+    import os
+    import gym_unrealcv
+    gympath = os.path.dirname(gym_unrealcv.__file__)
+    gympath = os.path.join(gympath, 'envs/setting', filename)
+    f = open(gympath)
+    filetype = os.path.splitext(filename)[1]
+    if filetype == '.json':
+        import json
+        setting = json.load(f)
+    else:
+        print ('unknown type')
 
-# RrDoor41
+    return setting
+# Searching/Navigation
+# -------------------------------------------------
+for env in ['BpRoom']:
+    for i, reset in enumerate(['random', 'testpoint']):
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                register(
+                    id='Search{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
+                    entry_point='gym_unrealcv.envs:UnrealCvSearch_3d',
+                    kwargs={'setting_file': 'searching/{env}.json'.format(env=env),
+                            'reset_type': reset,
+                            'test': False,
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'bbox_distance',
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=200
+                )
+
+for env in ['RealisticRoom', 'Arch1', 'Arch2']:
+    setting_file = 'searching/{env}.json'.format(env=env)
+    settings = load_env_setting(setting_file)
+    for i, reset in enumerate(['random', 'waypoint', 'testpoint']):
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                for category in settings['targets']:
+                    register(
+                        id='Search{env}{category}-{action}{obs}-v{reset}'.format(env=env, category=category, action=action, obs=obs, reset=i),
+                        entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
+                        kwargs={'setting_file': 'searching/{env}.json'.format(env=env),
+                                'category': category,
+                                'reset_type': reset,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'bbox_distance',  # bbox, distance, bbox_distance
+                                'docker': use_docker,
+                                },
+                        max_episode_steps=200
+                    )
+
+# Robot Arm
+# ------------------------------------------------------------------
+
+# "CRAVES: Controlling Robotic Arm With a Vision-Based Economic System", CVPR2019
+for action in ['Discrete', 'Continuous']:  # action type
+    for obs in ['Pose', 'Color', 'Depth', 'Rgbd']:
+        for i in range(3):
+            register(
+                    id='UnrealArm-{action}{obs}-v{version}'.format(action=action, obs=obs, version=i),
+                    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+                    kwargs={'setting_file': 'robotarm/robotarm_v1.json',
+                            'action_type': action,
+                            'observation_type': obs,
+                            'docker': use_docker,
+                            'version': i
+                            },
+                    max_episode_steps=100
+                        )
+# Tracking
+# -----------------------------------------------------------------------
+# "End-to-end Active Object Tracking via Reinforcement Learning", ICML2018
+for env in ['City1', 'City2']:
+    for target in ['Malcom', 'Stefani']:
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                for path in ['Path1', 'Path2']:  # observation type
+                    for i, reset in enumerate(['static', 'random']):
+                        register(
+                            id='UnrealTracking{env}{target}{path}-{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
+                                                                                     action=action, obs=obs, reset=i),
+                            entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
+                            kwargs={'setting_file': 'tracking_v0/{env}{target}{path}.json'.format(env=env, target=target, path=path),
+                                    'reset_type': reset,
+                                    'action_type': action,
+                                    'observation_type': obs,
+                                    'reward_type': 'distance',
+                                    'docker': use_docker,
+                                    },
+                            max_episode_steps=1000
+                            )
+
+# "End-to-end Active Object Tracking and Its Real-world Deployment via Reinforcement Learning", IEEE TPAMI
+for env in ['RandomRoom']:
+    for i in range(5):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                register(
+                    id='UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
+                    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
+                    kwargs={'setting_file': 'tracking_v1/{env}.json'.format(env=env),
+                            'reset_type': i,
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'distance',
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=1000
+                )
+
+
+# "AD-VAT: An Asymmetric Dueling mechanism for learning Visual Active Tracking", ICLR2019
+for env in ['MPRoom', 'Urbancity', 'UrbanRoad', 'Garden', 'Garage', 'Snowforest', 'Forest', 'ObstacleRoom']:
+    for i in range(6):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'GoalBase', 'GoalOld', 'GoalFix', 'Internal', 'None', 'PZR', 'Dynamic', 'Adv']:
+
+                    name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    setting_file = 'tracking_multi/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvTracking_multi',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=1
+                    )
+
+for env in ['MCMTRoom']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'Internal', 'None',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+
+                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    if 'Interval' in nav:
+                        setting_file = 'MCMT/{env}_interval.json'.format(env=env)
+                    else:
+                        setting_file = 'MCMT/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvMCMT',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
+
+for env in ['MCRoom', 'MCRoomLarge']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'Internal', 'None',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+
+                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    if 'Interval' in nav:
+                        setting_file = 'MCMT/{env}_interval.json'.format(env=env)
+                    else:
+                        setting_file = 'MCMT/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvMC',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
+
+for env in ['FlexibleRoom', 'BaseRoom']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
+                for nav in ['Random', 'Goal', 'GoalBase', 'Internal',
+                            'PZR', 'Dynamic', 'Adv']:
+
+                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+
+                    setting_file = 'tracking_1vn/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
+
+# test video image
 register(
-    id='Search-RrDoorDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_door41.json',
-              'reset_type' : 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-
+    id='Tracking-Video-v0',
+    entry_point='gym_unrealcv.envs:VideoTracking_base',
+    max_episode_steps=1000
 )
 
 
+# to remove
+# new testing
+for env in ['UrbanCity', 'Arch1', 'Arch2', 'Arch3']:
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
+                register(
+                    id='UnrealTracking{env}-{action}{obs}Test-v{reset}'.format(env=env, action=action, obs=obs, reset=0),
+                    entry_point='gym_unrealcv.envs:UnrealCvTracking_base_random',
+                    kwargs={'setting_file': 'tracking_v1/{env}.json'.format(env=env),
+                            'reset_type': -1,
+                            'action_type': action,
+                            'observation_type': obs,
+                            'reward_type': 'distance',
+                            'docker': use_docker,
+                            },
+                    max_episode_steps=1000
+                )
 
-register(
-    id='Search-RrDoorContinuous-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_door41.json',
-              'reset_type' : 'waypoint',
-              'test': False,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-RrDoorDiscreteTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_door41.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-RrDoorContinuousTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_door41.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
+for action in ['Discrete', 'Continuous']:  # action type
+    for obs in ['Color', 'Depth', 'Rgbd', 'Measured', 'MeasuredQR']:
+        for i, reward in enumerate(['distance', 'move', 'move_distance']):
+            register(
+                id='RobotArm-{action}{obs}-v{reward}'.format(action=action, obs=obs, reward=i),
+                entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
+                kwargs={'setting_file': 'robotarm/robotarm_v0.json',
+                        'reset_type': 'keyboard',
+                        'action_type': action,
+                        'observation_type': obs,
+                        'reward_type': reward,
+                        'docker': use_docker
+                        },
+                max_episode_steps=1000000
+            )
 
-
-#Arch1Door1
-register(
-    id='Search-Arch1DoorDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-Arch1DoorContinuous-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-Arch1DoorDiscreteTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-Arch1DoorContinuousTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_arch1_door1.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-
-# RrMultiPlants  Finding plants(large objects)
-register(
-    id='Search-RrPlantsDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant78.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'rgbd',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-RrPlantsContinuous-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant78.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='Search-RrPlantsDiscreteTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant78.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-RrPlantsContinuousTest-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_plant78.json',
-              'reset_type': 'testpoint',
-              'test': True,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-
-# RrMultiSockets, finding sockets(small object)
-register(
-    id='Search-RrSocketsDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_socket.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-register(
-    id='Search-RrSocketsContinuous-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_rr_socket.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-
-register(
-    id='Search-LoftSofaDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
-    kwargs = {'setting_file' : 'search_loft_sofa.json',
-              'augment_env' : 'texture',
-              'reset_type' : 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='Search-LoftPlantDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_topview',
-    kwargs = {'setting_file' : 'search_loft_plant.json',
-              'reset_type' : 'random',
-              'test': True,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'distance',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='Search-ForestDiscrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvSearch_topview',
-    kwargs = {'setting_file' : 'search_tree.json',
-              'reset_type' : 'random',
-              'test': True,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'distance',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='RobotArm-Discrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v1.json',
-              'reset_type': 'keyboard',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'move_distance',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='RobotArm-Discrete-v1',
-    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v1.json',
-              'reset_type': 'keyboard',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'measured',
-              'reward_type': 'move_distance',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='RobotArm-Continuous-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvRobotArm_base',
-    kwargs = {'setting_file' : 'robotarm_v2.json',
-              'reset_type': 'keyboard',
-              'test': False,
-              'action_type' : 'continuous',
-              'observation_type': 'color',
-              'reward_type': 'move_distance',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-register(
-    id='UAV-Discrete-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvQuadcopter_base',
-    kwargs = {'setting_file' : 'search_quadcopter1.json',
-              'reset_type': 'waypoint',
-              'test': False,
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type': 'bbox',
-              'docker': use_docker
-              },
-    max_episode_steps = 1000000
-)
-
-#A
-register(
-    id='Tracking-City2MalcomPath2Static-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_A.json',
-              'reset_type': 'static_hide',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
-)
-
-#B
 register(
     id='Tracking-B-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_B.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
+    kwargs={'setting_file': 'tracking_v0/tracking_v0.4_B.json',
+            'reset_type': 'static',
+            'action_type': 'discrete',
+            'observation_type': 'color',
+            'reward_type':  'distance',
+            'docker': use_docker,
+            },
+    max_episode_steps=1000
 )
-#C
 register(
     id='Tracking-C-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_C.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
+    kwargs={'setting_file': 'tracking_v0/tracking_v0.4_C.json',
+            'reset_type': 'static',
+            'action_type': 'discrete',
+            'observation_type': 'color',
+            'reward_type':  'distance',
+            'docker': use_docker,
+            },
+    max_episode_steps=1000
 )
-#D
 register(
     id='Tracking-D-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_D.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
+    kwargs={'setting_file': 'tracking_v0/tracking_v0.4_D.json',
+            'reset_type': 'static',
+            'action_type': 'discrete',
+            'observation_type': 'color',
+            'reward_type':  'distance',
+            'docker': use_docker,
+            },
+    max_episode_steps=1000
 )
-#E
 register(
     id='Tracking-City1MalcomStatic-v0',
     entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_E.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
-)
-
-
-#F
-register(
-    id='Tracking-City1StefaniPath1Static-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_F.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
-)
-
-#Ftrain
-register(
-    id='Tracking-City1StefaniPath1Random-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_F.json',
-              'reset_type': 'random',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
-)
-
-#G
-register(
-    id='Tracking-City1StefaniPath2Static-v0',
-    entry_point='gym_unrealcv.envs:UnrealCvTracking_base',
-    kwargs = {'setting_file' : 'tracking_v0.4_G.json',
-              'reset_type': 'static',
-              'action_type' : 'discrete',
-              'observation_type': 'color',
-              'reward_type':  'distance',
-              'docker': use_docker,
-              },
-    max_episode_steps = 1000000
+    kwargs={'setting_file': 'tracking_v0/tracking_v0.4_E.json',
+            'reset_type': 'static',
+            'action_type': 'discrete',
+            'observation_type': 'color',
+            'reward_type':  'distance',
+            'docker': use_docker,
+            },
+    max_episode_steps=1000
 )

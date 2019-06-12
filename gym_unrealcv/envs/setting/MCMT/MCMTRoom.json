@@ -1,0 +1,58 @@
+{
+	"env_name": "MCMTRoom",
+	"env_bin": "tracking_mask/tracking/Binaries/Linux/tracking",
+    "imgs_dir": "textures",
+	"target_num": 10,
+	"cam_id": [1, 2],
+	"height": 220,
+	"pitch": 0,
+	"max_steps": 1000,
+	"max_distance": 600,
+	"min_distance": 100,
+	"max_direction": 90,
+	"exp_distance": 250,
+	"targets": [
+        "targetBP", "targetbp2"
+	],
+	"discrete_actions": [
+		[  0,  0],
+		[  5,  0],
+		[ -5,  0],
+		[  5,  5],
+		[ -5,  5],
+		[  5,  5],
+		[ -5,  5]
+	],
+	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+	"safe_start" :[
+		[  0,       0,  220],
+		[  -100,  100,  220]
+    ],
+	"reset_area" : [-500, 500, -500, 500],
+	"continous_actions": {
+		"high": [20,    20],
+		"low":  [-20,  -20]
+	},
+	"continous_actions_player": {
+		"high": [100,     30],
+		"low":  [50,     -30]
+	},
+	"objects_list": [
+		"Cube1", "Cube2", "Cube3", "Cube4"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ]
+
+}

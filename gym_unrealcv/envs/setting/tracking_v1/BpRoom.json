@@ -1,0 +1,55 @@
+{
+	"env_name": "BpRoom",
+	"env_bin": "bwroom_setphy/BW_room/Binaries/Linux/BW_room",
+    "imgs_dir": "textures",
+	"target_num": 10,
+	"cam_id": 0,
+	"height": 130,
+	"pitch": -30,
+	"max_steps": 1000,
+	"max_distance": 400,
+	"min_distance": 80,
+	"max_direction": 90,
+	"exp_distance": 150,
+	"targets": [
+        "targetBP"
+	],
+	"safe_start" :[
+	[  200,  350,  100],
+	[ -550,  400,  100]
+    ],
+	"reset_area" : [-800, 600, -100, 600],
+	"discrete_actions": [
+		[30, 0],
+		[-30, 0],
+		[15, 5],
+		[15, -5],
+		[-15, 5],
+		[-15, -5],
+		[0,  10],
+		[0, -10],
+		[0,  0]
+	],
+	"continous_actions": {
+		"high": [80,  20],
+		"low":  [-80,  -20]
+	},
+	"objects_list": [
+		"bed", "box1", "box2",
+		"chair1", "chair10", "chair2", "chair3", "chair4", "chair5", "chair6", "chair7", "chair8", "chair9",
+		"curtain1", "curtain2",
+		"table1","table2", "table3",
+		"sofa",  "tv", "tvstand", "carpet", "lamp"
+	],
+    "backgrounds": [
+		"bed", "box1", "box2",
+		"chair1", "chair2", "chair3", "chair4", "chair5", "chair6", "chair7", "chair8", "chair9", "chair10",
+		"curtain1", "curtain2",
+		"table1","table2", "table3",
+		"shelf", "sofa",  "tv", "tvstand", "carpet","fridge", "lamp",
+		"wall1", "wall2", "wall3", "wall4", "floor", "door"
+    ],
+    "lights": [
+      "directionallight1", "Pointlight1", "skylight"
+    ]
+}
