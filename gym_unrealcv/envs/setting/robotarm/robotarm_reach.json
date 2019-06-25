@@ -7,9 +7,6 @@
 	"camera_pose": [
 		[-76,-275,385,0,90,-45]
 	],
-	"color_shape": [120, 160, 3],
-	"rgbd_shape": [120, 160, 4],
-	"depth_shape": [120, 160, 1],
 	"objects": ["Cube_17"],
 	"discrete_actions": [
 		[ 3, 0, 0, 0, 0],

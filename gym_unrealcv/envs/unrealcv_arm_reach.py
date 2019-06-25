@@ -88,15 +88,16 @@ class UnrealCvRobotArm_reach(gym.Env):
             Depth=None,
         )
         action = np.squeeze(action)
+        self.count_steps += 1
+        done = False
+
         # take a action
         if self.action_type == 'Discrete':
-            arm_state = self.unrealcv.move_arm(self.discrete_actions[action], mode='move')
-
+            action = self.discrete_actions[action]
+            arm_state = self.unrealcv.move_arm(action, mode='move')
         elif self.action_type == 'Continuous':
             arm_state = self.unrealcv.move_arm(np.append(action, 0), mode='move')
 
-        self.count_steps += 1
-        done = False
         tip_pose = self.unrealcv.get_tip_pose()
         distance_xyz = self.get_distance(self.goal_pos_xyz, tip_pose)
         collision = self.unrealcv.check_collision()  # check collision

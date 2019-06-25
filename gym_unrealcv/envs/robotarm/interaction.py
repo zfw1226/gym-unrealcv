@@ -96,35 +96,37 @@ class Robotarm(UnrealCv):
         self.arm['grip'] = pose[:3]
         return pose
 
-    def define_observation(self, cam_id, observation_type, setting):
-        if observation_type == 'Color':
-            observation_space = spaces.Box(low=0, high=255., shape=setting['color_shape'])
+    def define_observation(self, cam_id, observation_type, setting, mode='fast'):
+        if observation_type != 'Pose':
+            state = self.get_observation(cam_id, observation_type, mode=mode)
+        if observation_type == 'Color' or observation_type == 'CG':
+            observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
         elif observation_type == 'Depth':
-            state = self.read_depth(cam_id)
-            observation_space = spaces.Box(low=0, high=1, shape=setting['depth_shape'])
+            observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
         elif observation_type == 'Rgbd':
-            s_high = np.ones(setting['rgbd_shape'])
+            s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
             s_high[:, :, :-1] = 255  # max_rgb
-            s_low = np.zeros(setting['rgbd_shape'])
-            observation_space = spaces.Box(low=s_low, high=s_high)
+            s_low = np.zeros(state.shape)
+            observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)  # for gym>=0.10`
         elif observation_type == 'Pose':
             s_high = setting['pose_range']['high'] + setting['goal_range']['high'] + setting['continous_actions']['high']  # arm_pose, target_position, action
             s_low = setting['pose_range']['low'] + setting['goal_range']['low'] + setting['continous_actions']['low']
             observation_space = spaces.Box(low=np.array(s_low), high=np.array(s_high))
         return observation_space
 
-    def get_observation(self, cam_id, observation_type, target_pose, action=np.zeros(4)):
+    def get_observation(self, cam_id, observation_type, target_pose=np.zeros(3), action=np.zeros(4), mode='fast'):
         if observation_type == 'Color':
-            self.img_color = state = self.read_image(cam_id, 'lit', 'fast')
+            self.img_color = state = self.read_image(cam_id, 'lit', mode)
         elif observation_type == 'Depth':
             self.img_depth = state = self.read_depth(cam_id)
         elif observation_type == 'Rgbd':
-            self.img_color = self.read_image(cam_id, 'lit', 'fast')
+            self.img_color = self.read_image(cam_id, 'lit', mode)
             self.img_depth = self.read_depth(cam_id)
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'Pose':
             self.target_pose = np.array(target_pose)
+            print (self.arm['pose'], self.target_pose, action)
             state = np.concatenate((self.arm['pose'], self.target_pose, action))
         return state
 
