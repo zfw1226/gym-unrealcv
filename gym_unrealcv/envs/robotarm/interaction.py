@@ -88,55 +88,6 @@ class Robotarm(UnrealCv):
         self.arm['pose'] = np.array(pose)
         return self.arm['pose']
 
-    def get_tip_pose(self):
-        cmd = 'vget /arm/RobotArmActor_1/tip_pose'
-        result = None
-        while result is None:
-            result = self.client.request(cmd)
-        pose = np.array([float(i) for i in result.split()])
-        pose[1] = -pose[1]
-        self.arm['grip'] = pose[:3]
-        return pose
-
-    def get_arm_state(self):
-        cmd = 'vbp armBP querysetpos'
-        result = None
-        while result is None:
-            result = self.client.request(cmd)
-        result = result.split()
-        state = []
-        for i in range(2, 17, 2):
-            if result[i][1:5] == 'true':
-                state.append(True)
-            else:
-                state.append(False)
-        self.arm['state'] = state
-        return state
-
-    def get_grip_position(self):
-        cmd = 'vbp armBP getgrip'
-        result = None
-        while result is None:
-            result = self.client.request(cmd)
-        result = result.split()
-        position = []
-        for i in range(2, 7, 2):
-            position.append(float(result[i][1:-2]))
-        self.arm['grip'] = np.array(position)
-        return self.arm['grip']
-
-    def get_QR_pose(self):
-        cmd = 'vbp armBP getQR'
-        result = None
-        while result is None:
-            result = self.client.request(cmd)
-        result = result.split()
-        QRpose = []
-        for i in range(2, 9, 2):  # x,y,z,pitch
-            QRpose.append(float(result[i][1:-2]))
-        self.arm['QR'] = QRpose
-        return QRpose
-
     def define_observation(self, cam_id, observation_type, setting):
         if observation_type == 'Color':
             observation_space = spaces.Box(low=0, high=255., shape=setting['color_shape'])
@@ -169,74 +120,8 @@ class Robotarm(UnrealCv):
             state = np.concatenate((self.arm['pose'], self.target_pose, action))
         return state
 
-    def reset_env_keyboard(self):
-        self.set_arm_pose([0, 0, 0, 0, 0])
-        self.set_material('Ball0', rgb=[1, 0.2, 0.2], prop=np.random.random(3))
-
-        self.keyboard('RightBracket')  # random light
-        # time.sleep(1)
-        '''
-        while True:
-            self.keyboard('LeftBracket')  # random ball position
-            if not self.check_inbox():
-                break
-        '''
-
-    def random_material(self):
-        self.set_material('Ball0', rgb=np.random.random(3),prop=np.random.random(3))
-        self.set_material('wall1', rgb=np.random.random(3),prop=np.random.random(3))
-        self.set_material('wall2', rgb=np.random.random(3), prop=np.random.random(3))
-        self.set_material('wall3', rgb=np.random.random(3), prop=np.random.random(3))
-        self.set_material('wall4', rgb=np.random.random(3), prop=np.random.random(3))
-        self.set_arm_material('yellow', rgb=np.random.random(3), prop=np.random.random(3))
-        self.set_arm_material('black', rgb=np.random.random(3), prop=np.random.random(3))
-
-    def attach_ball(self):
-        res = self.client.request('vbp armBP catch')
-        res = res.split()
-        if res[2][1:7] == 'unable':
-            return False
-        else:
-            return True
-
-    def detach_ball(self):
-        res = self.client.request('vbp armBP loose')
-        res = res.split()
-        if res[2][1:3] == 'ok':
-            return True
-        else:
-            return False
-
-    def set_material(self,target, rgb=(1,1,1), prop = (1,1,1)): # Ball0 wall1/2/3/4
-        cmd = 'vbp {target} setmaterial {r} {g} {b} {metallic} {specular} {roughness}'
-        return self.client.request(cmd.format(target = target, r=rgb[0],g=rgb[1], b=rgb[2], metallic=prop[0], specular=prop[1], roughness=prop[2]))
-
-    def set_arm_material(self,target, rgb=(1,1,1), prop = (1,1,1)):# yellow black
-        cmd = 'vbp armBP setarm{target} {r} {g} {b} {metallic} {specular} {roughness}'
-        return self.client.request(cmd.format(target = target, r=rgb[0], g=rgb[1], b=rgb[2], metallic=prop[0], specular=prop[1], roughness=prop[2]))
-
-    def reset_obj(self,target, area):
-        # reset target in an area randomly
-        x = random.uniform(area[0], area[1])
-        y = random.uniform(area[2], area[3])
-        z = random.uniform(area[4], area[5])
-        self.set_obj_rotation(target, [0, 0, 0])
-        self.set_obj_location(target, [x, y, z])
-        return [x, y, z]
-
-    def check_inbox(self):
-        cmd = 'vbp destboxBP query'
-        res = None
-        while res is None:
-            res = self.client.request(cmd)
-        res = res.split()
-        if res[2][1:5] == 'true':
-            return True
-        else:
-            return False
-
     def check_collision(self, obj='RobotArmActor_1'):
-        'cmd : vget /arm/RobotArmActor_1/query collision'
+        # cmd : vget /arm/RobotArmActor_1/query collision
         cmd = 'vget /arm/{obj}/query collision'
         res = self.client.request(cmd.format(obj=obj))
         if res == 'true':
