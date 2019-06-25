@@ -6,12 +6,11 @@ import time
 import gym
 import numpy as np
 from gym import spaces
-from gym_unrealcv.envs.robotarm.visualization import show_info
-from gym_unrealcv.envs.utils import env_unreal
+from gym_unrealcv.envs.utils import env_unreal, misc
 from gym_unrealcv.envs.robotarm.interaction import Robotarm
 
 
-class UnrealCvRobotArm_base(gym.Env):
+class UnrealCvRobotArm_reach(gym.Env):
     def __init__(self,
                  setting_file,
                  reset_type='keyboard',    # keyboard, bp
@@ -19,11 +18,11 @@ class UnrealCvRobotArm_base(gym.Env):
                  observation_type='Pose',  # 'color', 'depth', 'rgbd' . 'pose'
                  version=0,  # train, test
                  docker=False,
-                 resolution=(160, 120),
+                 resolution=(80, 80),
                  ):
 
         # load and process setting
-        setting = self.load_env_setting(setting_file)
+        setting = misc.load_env_setting(setting_file)
         self.cam_id = setting['cam_view_id']
         self.max_steps = setting['maxsteps']
         self.camera_pose = setting['camera_pose']
@@ -38,8 +37,6 @@ class UnrealCvRobotArm_base(gym.Env):
         self.reset_type = reset_type
         self.resolution = resolution
         self.version = version
-        # define reward type
-        # distance, bbox, bbox_distance,
         self.launched = False
 
         # define action type
@@ -130,14 +127,16 @@ class UnrealCvRobotArm_base(gym.Env):
         self.count_eps += 1
 
         if self.version == 0:
+            # for training
             init_pose = [random.uniform(-90, 90),
-                                    random.uniform(-15, 15),
-                                    random.uniform(-30, 30),
-                                    random.uniform(-30, 30),
-                                    0]
+                         random.uniform(-15, 15),
+                         random.uniform(-30, 30),
+                         random.uniform(-30, 30),
+                         0]
             self.goal_pos_trz = self.sample_goal(-1)
             self.count_th = 5
         else:
+            # for testing
             init_pose = [0, 0, 0, 0, 0]
             self.goal_pos_trz = self.sample_goal(self.count_eps)
             self.count_th = 3
@@ -162,9 +161,6 @@ class UnrealCvRobotArm_base(gym.Env):
         if close==True:
             self.unreal.close()
         return self.unrealcv.img_color
-
-    def get_action_size(self):
-        return len(self.action)
 
     def get_distance(self, target, current, norm=False, n=3):
         error = np.array(target[:n]) - np.array(current[:n])
@@ -195,22 +191,9 @@ class UnrealCvRobotArm_base(gym.Env):
             yaws = [0, -45, 45]
             length = [150, 200, 250]
             heights = [20, 20, 20]
-            goal = np.array([yaws[self.count_eps / 3 % 3],
-                             length[self.count_eps % 3],
-                             heights[self.count_eps % 3]])
+            goal = np.array([yaws[int(self.count_eps / 3 % 3)],
+                             length[int(self.count_eps % 3)],
+                             heights[int(self.count_eps % 3)]])
         return goal
 
-    def load_env_setting(self, filename):
-        f = open(self.get_settingpath(filename))
-        type = os.path.splitext(filename)[1]
-        if type == '.json':
-            import json
-            setting = json.load(f)
-        else:
-            print ('unknown type')
-        return setting
 
-    def get_settingpath(self, filename):
-        import gym_unrealcv
-        gympath = os.path.dirname(gym_unrealcv.__file__)
-        return os.path.join(gympath, 'envs/setting', filename)

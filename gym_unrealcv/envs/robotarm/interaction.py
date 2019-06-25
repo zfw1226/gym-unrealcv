@@ -13,8 +13,6 @@ class Robotarm(UnrealCv):
                 grip=np.zeros(3),
                 high=np.array(pose_range['high']),
                 low=np.array(pose_range['low']),
-                QR=np.zeros(4),
-                flag_grip=False,
         )
         super(Robotarm, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
 
@@ -88,6 +86,16 @@ class Robotarm(UnrealCv):
         self.arm['pose'] = np.array(pose)
         return self.arm['pose']
 
+    def get_tip_pose(self):
+        cmd = 'vget /arm/RobotArmActor_1/tip_pose'
+        result = None
+        while result is None:
+            result = self.client.request(cmd)
+        pose = np.array([float(i) for i in result.split()])
+        pose[1] = -pose[1]
+        self.arm['grip'] = pose[:3]
+        return pose
+
     def define_observation(self, cam_id, observation_type, setting):
         if observation_type == 'Color':
             observation_space = spaces.Box(low=0, high=255., shape=setting['color_shape'])
@@ -121,7 +129,7 @@ class Robotarm(UnrealCv):
         return state
 
     def check_collision(self, obj='RobotArmActor_1'):
-        # cmd : vget /arm/RobotArmActor_1/query collision
+        'cmd : vget /arm/RobotArmActor_1/query collision'
         cmd = 'vget /arm/{obj}/query collision'
         res = self.client.request(cmd.format(obj=obj))
         if res == 'true':
