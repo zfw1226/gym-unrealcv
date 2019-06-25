@@ -1,6 +1,6 @@
 {
-	"env_name": "Urbancity",
-	"env_bin": "tracking2p_urban/urbancity/Binaries/Linux/urbancity",
+	"env_name": "UrbanRoad",
+	"env_bin": "UrbanCity_2P/urbancity/Binaries/Linux/urbancity",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
@@ -11,7 +11,7 @@
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
-	"interval": 10,
+	"interval": 50,
 	"targets": [
         "targetbp", "targetbp2"
 	],

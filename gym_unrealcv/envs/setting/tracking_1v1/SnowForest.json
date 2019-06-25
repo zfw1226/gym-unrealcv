@@ -1,19 +1,19 @@
 {
-	"env_name": "Urbancity",
-	"env_bin": "tracking2p_urban/urbancity/Binaries/Linux/urbancity",
+	"env_name": "SnowForest",
+	"env_bin": "SnowForest_2P/snowforest/Binaries/Linux/snowforest",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": 100,
+	"height": -1950,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
-	"interval": 10,
+	"interval": 50,
 	"targets": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
 		[ 100,  0],
@@ -25,9 +25,9 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-	[  -250, -250,  100]
+		[  2000,  12000,  -1950]
     ],
-	"reset_area" : [-1500, 1000, -1500, 1000],
+	"reset_area" : [1000, 3000, 11000, 13000],
 	"continous_actions": {
 		"high": [100,    45],
 		"low":  [-100,     -45]
