@@ -31,3 +31,16 @@ def get_direction(current_pose, target_pose):
     if angle_now < -180:
         angle_now += 360
     return angle_now
+
+def get_textures(texture_dir, docker):
+    import gym_unrealcv
+    gym_path = os.path.dirname(gym_unrealcv.__file__)
+    texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
+    textures_list = os.listdir(texture_dir)
+    # relative to abs
+    for i in range(len(textures_list)):
+        if docker:
+            textures_list[i] = os.path.join('/unreal', texture_dir, textures_list[i])
+        else:
+            textures_list[i] = os.path.join(texture_dir, textures_list[i])
+    return textures_list
