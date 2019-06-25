@@ -1,6 +1,6 @@
 {
 	"env_name": "Garden",
-	"env_bin": "garden/neighborhood/Binaries/Linux/neighborhood",
+	"env_bin": "Garden_2P/neighborhood/Binaries/Linux/neighborhood",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [5, 6],
@@ -11,7 +11,7 @@
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
-	"interval": 10,
+	"interval": 50,
 	"targets": [
         "targetBP", "targetBP2"
 	],

@@ -1,17 +1,17 @@
 {
 	"env_name": "Forest",
-	"env_bin": "tracking2p_forest/nature/Binaries/Linux/nature",
+	"env_bin": "Forest_2P/nature/Binaries/Linux/nature",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": [1, 2],
-	"height": -680,
+	"height": -600,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 1200,
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 500,
-	"interval": 10,
+	"interval": 50,
 	"targets": [
         "targetBP", "targetBP2"
 	],
