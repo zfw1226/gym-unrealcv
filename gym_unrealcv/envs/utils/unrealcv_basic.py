@@ -22,7 +22,7 @@ class UnrealCv(object):
         self.ip = ip
         print (self.ip)
         self.cam = dict()
-        for i in range(5):
+        for i in range(6):
             self.cam[i] = dict(
                  location=[0, 0, 0],
                  rotation=[0, 0, 0],
@@ -44,7 +44,6 @@ class UnrealCv(object):
         # self.client.request('vrun r.ScreenPercentage 10')
         # self.client.request('vrun t.maxFPS 100')
         time.sleep(1)
-        #  self.get_pose(cam_id,'hard')
         self.get_rotation(cam_id, 'hard')
         self.get_location(cam_id, 'hard')
         self.client.message_handler = self.message_handler
