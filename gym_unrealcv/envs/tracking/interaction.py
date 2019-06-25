@@ -1,20 +1,14 @@
 from gym_unrealcv.envs.navigation.interaction import Navigation
 import numpy as np
-import cv2
 import math
-import random
 import time
+
+
 class Tracking(Navigation):
     def __init__(self, env, cam_id=0, port=9000,
-                 ip='127.0.0.1', targets = None, resolution=(160, 120)):
+                 ip='127.0.0.1', resolution=(160, 120)):
         super(Tracking, self).__init__(env=env, port=port, ip=ip, cam_id=cam_id, resolution=resolution)
         self.obstacles = []
-
-    def random_character(self, target, num):  # apperance, speed, acceleration
-        self.set_speed(target, np.random.randint(60, 160))
-        self.set_acceleration(target, np.random.randint(100, 500))
-        self.set_maxdis2goal(target, np.random.randint(1000, 3000))
-        self.set_appearance(target, np.random.randint(0, num))
 
     def random_texture(self, backgrounds, img_dirs, num=5):
         if num < 0:
@@ -35,17 +29,10 @@ class Tracking(Navigation):
                              img_dir, np.random.randint(2, 6), id)
             time.sleep(0.03)
 
-    def set_picture(self, target, dir):
-        cmd = 'vbp {target} set_pic {dir}'
-        res = self.client.request(cmd.format(target=target, dir=dir))
-        #print (cmd.format(target=target, dir=dir))
-        return res
-
-    def set_color(self, target, param):
-        cmd = 'vbp {target} set_color {r} {g} {b} {meta} {spec}'
-        #cmd = 'vbp {target} setcolor {r} {g} {b} {meta} {spec} {rough}'
-        self.client.request(cmd.format(target=target, r=param[0], g=param[1], b=param[2], meta=param[3], spec=param[4]))
-        return param
+    def random_character(self, target):  # appearance, speed, acceleration
+        self.set_speed(target, np.random.randint(40, 100))
+        self.set_acceleration(target, np.random.randint(100, 300))
+        self.set_maxdis2goal(target, np.random.randint(200, 3000))
 
     # functions for character setting
     def set_speed(self, target, speed):
@@ -62,6 +49,13 @@ class Tracking(Navigation):
             res = self.client.request(cmd.format(target=target, acc=acc))
         return acc
 
+    def set_maxdis2goal(self, target, dis):
+        cmd = 'vbp {target} set_maxrange {dis}'
+        res = None
+        while res is None:
+            res = self.client.request(cmd.format(target=target, dis=dis))
+        return dis
+
     def set_appearance(self, target, id, spline=False):
         if spline:
             cmd = 'vbp {target} set_app {id}'
@@ -71,13 +65,6 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd.format(target=target, id=id))
         return id
-
-    def set_maxdis2goal(self, target, dis):
-        cmd = 'vbp {target} set_maxrange {dis}'
-        res = None
-        while res is None:
-            res = self.client.request(cmd.format(target=target, dis=dis))
-        return dis
 
     def start_walking(self, target):
         cmd = 'vbp {target} start'
@@ -121,17 +108,6 @@ class Tracking(Navigation):
         else:
             return True
 
-    def get_location_new(self,cam_id, mode='hard'):
-        if mode == 'soft':
-            return self.cam[cam_id]['location']
-        if mode == 'hard':
-            cmd = 'vget /sensor/{cam_id}/location'
-            location = None
-            while location is None:
-                location = self.client.request(cmd.format(cam_id=cam_id))
-            self.cam[cam_id]['location'] = [float(i) for i in location.split()]
-            return self.cam[cam_id]['location']
-
     def get_startpoint(self, target_pos, distance, reset_area, exp_height=200, direction=None):
         count = 0
         while True:  # searching a safe point
@@ -170,14 +146,6 @@ class Tracking(Navigation):
         for obj in objects:
             self.set_phy(obj, 1)
 
-    def random_layout(self, objects, reset_area):
-        sample_index = np.random.choice(len(objects), 5)
-        for id in sample_index:
-            object_loc = [0, 0, 150]
-            object_loc[0] = np.random.uniform(reset_area[0], reset_area[1])
-            object_loc[1] = np.random.uniform(reset_area[2], reset_area[3])
-            self.set_object_location(objects[id], object_loc)
-
     def set_move(self, target, angle, velocity):
         cmd = 'vbp {target} set_move {angle} {velocity}'.format(target=target, angle=angle, velocity=velocity)
         res = None
@@ -193,6 +161,20 @@ class Tracking(Navigation):
             return True
         if 'false' in res:
             return False
+
+    def random_lit(self, light_list):
+        for lit in light_list:
+            if 'sky' in lit:
+                self.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5, 2))
+            else:
+                lit_direction = np.random.uniform(-1, 1, 3)
+                if 'directional' in lit:
+                    lit_direction[0] = lit_direction[0] * 60
+                    lit_direction[1] = lit_direction[1] * 80
+                    lit_direction[2] = lit_direction[2] * 60
+                else:
+                    lit_direction *= 180
+                self.set_light(lit, lit_direction, np.random.uniform(1, 4), np.random.uniform(0.1, 1, 3))
 
     def set_random(self, target, value=1):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
@@ -245,8 +227,8 @@ class Tracking(Navigation):
 
     def new_obj(self, obj_type, loc, rot=[0, 0, 0]):
         # return obj name
-        cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2],
-                                                                              roll=rot[0], pitch=rot[1], yaw=rot[2])
+        cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(
+            obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2], roll=rot[0], pitch=rot[1], yaw=rot[2])
         res = None
         while res is None:
             res = self.client.request(cmd)
