@@ -3,7 +3,7 @@ from operator import itemgetter
 import math
 import numpy as np
 class ResetPoint():
-    def __init__(self, setting, type, test, init_pose):
+    def __init__(self, setting, type, init_pose):
         self.reset_type = type
         #self.testpoints = setting['test_xy']
         self.waypoints = []
