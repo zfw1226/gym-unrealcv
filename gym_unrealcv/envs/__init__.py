@@ -1,9 +1,10 @@
 from gym_unrealcv.envs.unrealcv_search_base import UnrealCvSearch_base
-from gym_unrealcv.envs.unrealcv_search_3d import UnrealCvSearch_3d
-from gym_unrealcv.envs.unrealcv_arm_new import UnrealCvRobotArm_base
-from gym_unrealcv.envs.unrealcv_tracking import UnrealCvTracking_base
-from gym_unrealcv.envs.unrealcv_tracking_new import UnrealCvTracking_base_random
+from gym_unrealcv.envs.unrealcv_arm_reach import UnrealCvRobotArm_reach
+from gym_unrealcv.envs.unrealcv_tracking_spline import UnrealCvTracking_spline
+from gym_unrealcv.envs.unrealcv_tracking_random import UnrealCvTracking_random
 from gym_unrealcv.envs.unrealcv_tracking_1v1 import UnrealCvTracking_1v1
+
+# developing environments
 from gym_unrealcv.envs.unrealcv_tracking_1vn import UnrealCvTracking_1vn
 from gym_unrealcv.envs.unrealcv_MCMT import UnrealCvMCMT
 from gym_unrealcv.envs.unrealcv_MC import UnrealCvMC
