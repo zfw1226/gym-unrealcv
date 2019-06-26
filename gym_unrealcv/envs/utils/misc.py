@@ -1,6 +1,7 @@
 import os
 import numpy as np
 
+
 def load_env_setting(filename):
     f = open(get_settingpath(filename))
     type = os.path.splitext(filename)[1]
@@ -31,6 +32,7 @@ def get_direction(current_pose, target_pose):
     if angle_now < -180:
         angle_now += 360
     return angle_now
+
 
 def get_textures(texture_dir, docker):
     import gym_unrealcv
