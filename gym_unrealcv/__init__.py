@@ -95,8 +95,9 @@ for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Fo
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for nav in ['Random', 'Goal', 'GoalBase', 'GoalShort', 'GoalFix', 'Internal', 'PZR', 'Adv']:
-                    name = 'UnrealTracking{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                for target in ['Random', 'Goal', 'GoalBase', 'GoalShort', 'GoalFix', 'Internal', 'PZR', 'Adv']:
+                    name = 'UnrealTracking{env}-{action}{obs}{target}-v{reset}'.format(
+                        env=env, action=action, obs=obs, target=target, reset=i)
                     setting_file = 'tracking_1v1/{env}.json'.format(env=env)
                     register(
                         id=name,
@@ -107,7 +108,7 @@ for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Fo
                                 'observation_type': obs,
                                 'reward_type': 'distance',
                                 'docker': use_docker,
-                                'nav': nav
+                                'target': target
                                 },
                         max_episode_steps=500
                     )
@@ -118,11 +119,11 @@ for env in ['MCMTRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for nav in ['Random', 'Goal', 'Internal', 'None',
+                for target in ['Random', 'Goal', 'Internal', 'None',
                             'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
 
-                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-                    if 'Interval' in nav:
+                    name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                    if 'Interval' in target:
                         setting_file = 'MCMT/{env}_interval.json'.format(env=env)
                     else:
                         setting_file = 'MCMT/{env}.json'.format(env=env)
@@ -135,7 +136,7 @@ for env in ['MCMTRoom']:
                                 'observation_type': obs,
                                 'reward_type': 'distance',
                                 'docker': use_docker,
-                                'nav': nav
+                                'target': target
                                 },
                         max_episode_steps=500
                     )
@@ -145,10 +146,10 @@ for env in ['FlexibleRoom', 'BaseRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
-                for nav in ['Random', 'Goal', 'GoalBase', 'Internal',
+                for target in ['Random', 'Goal', 'GoalBase', 'Internal',
                             'PZR', 'Adv']:
 
-                    name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
 
                     setting_file = 'tracking_1vn/{env}.json'.format(env=env)
                     register(
@@ -160,7 +161,7 @@ for env in ['FlexibleRoom', 'BaseRoom']:
                                 'observation_type': obs,
                                 'reward_type': 'distance',
                                 'docker': use_docker,
-                                'nav': nav
+                                'target': target
                                 },
                         max_episode_steps=500
                     )
