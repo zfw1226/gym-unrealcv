@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-e", "--env_id", nargs='?', default='UnrealTrackingMPRoom-DiscreteColor-v2',
                         help='Select the environment to run')
-    parser.add_argument("-r", "--render", default=False, metavar='G', help='show env using cv2')
+    parser.add_argument("-r", '--render', dest='render', action='store_true', help='show env using cv2')
     args = parser.parse_args()
     env = gym.make(args.env_id)
     agents_num = len(env.action_space)
@@ -31,8 +31,8 @@ if __name__ == '__main__':
 
     done = False
     Total_rewards = 0
+    env.seed(0)
     for eps in range(1, episode_count):
-        env.seed()
         obs = env.reset()
         count_step = 0
         t0 = time.time()
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                 cv2.imshow('show', img)
                 cv2.waitKey(1)
             if done:
-                fps = count_step / (time.time() - t0)
+                fps = count_step/(time.time() - t0)
                 Total_rewards += C_rewards[0]
                 print ('Fps:' + str(fps), 'R:'+str(C_rewards), 'R_ave:'+str(Total_rewards/eps))
                 break
