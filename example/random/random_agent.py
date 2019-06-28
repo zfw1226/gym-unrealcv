@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-e", "--env_id", nargs='?', default='RobotArm-Discrete-v0',
                         help='Select the environment to run')
-    parser.add_argument("-r", "--render", default=False, metavar='G', help='show env using cv2')
+    parser.add_argument("-r", '--render', dest='render', action='store_true', help='show env using cv2')
     args = parser.parse_args()
     env = gym.make(args.env_id)
 
