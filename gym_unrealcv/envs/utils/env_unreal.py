@@ -5,6 +5,7 @@ from multiprocessing import Process
 
 # api for running unrealenv
 
+
 class RunUnreal():
     def __init__(self, ENV_BIN, ENV_MAP=None):
 
@@ -12,8 +13,11 @@ class RunUnreal():
         self.env_map = ENV_MAP
         self.path2env = self.get_path2UnrealEnv()
         self.path2binary = os.path.join(self.path2env, self.env_bin)
+        assert os.path.exists(self.path2binary), \
+            'Please load env binary in UnrealEnv and Check the env_bin in setting file!'
 
     def start(self, docker, resolution=(160, 160)):
+        # check binary exist
         port = self.read_port(self.path2binary)
         self.write_resolution(self.path2binary, resolution)
         self.use_docker = docker
@@ -62,22 +66,22 @@ class RunUnreal():
         username = getpass.getuser()
         os.system(cmd.format(USER=username, ENV_PATH=path))
 
-    def read_port(self,bin_path):
+    def read_port(self, bin_path):
         s = bin_path.split('/')
         s[-1] = 'unrealcv.ini'
         delimiter = '/'
         ini_path = delimiter.join(s)
-        with open(ini_path,'r') as f:
+        with open(ini_path, 'r') as f:
             s=f.read()
             ss = s.split()
         return int(ss[1][-4:])
 
-    def write_port(self,bin_path,port):
+    def write_port(self, bin_path, port):
         s = bin_path.split('/')
         s[-1] = 'unrealcv.ini'
         delimiter = '/'
         ini_path = delimiter.join(s)
-        with open(ini_path,'r') as f:
+        with open(ini_path, 'r') as f:
             s=f.read()
             ss = s.split('\n')
         with open(ini_path, 'w') as f:
@@ -87,17 +91,17 @@ class RunUnreal():
             s_new = d.join(ss)
             f.write(s_new)
 
-    def write_resolution(self,bin_path,resolution):
+    def write_resolution(self, bin_path, resolution):
         s = bin_path.split('/')
         s[-1] = 'unrealcv.ini'
         delimiter = '/'
         ini_path = delimiter.join(s)
-        with open(ini_path,'r') as f:
+        with open(ini_path, 'r') as f:
             s = f.read()
             ss = s.split('\n')
         with open(ini_path, 'w') as f:
-            ss[2] = 'Width={width}'.format(width = resolution[0])
-            ss[3] = 'Height={height}'.format(height = resolution[1])
+            ss[2] = 'Width={width}'.format(width=resolution[0])
+            ss[3] = 'Height={height}'.format(height=resolution[1])
             d = '\n'
             s_new = d.join(ss)
             f.write(s_new)
