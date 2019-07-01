@@ -30,7 +30,7 @@ class RunUnreal():
             env_ip = '127.0.0.1'
             while not self.isPortFree(env_ip, port):
                 port += 1
-            self.write_port(self.path2binary, port)
+                self.write_port(self.path2binary, port)
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
             self.env.start()
@@ -71,10 +71,13 @@ class RunUnreal():
         s[-1] = 'unrealcv.ini'
         delimiter = '/'
         ini_path = delimiter.join(s)
-        with open(ini_path, 'r') as f:
-            s=f.read()
-            ss = s.split()
-        return int(ss[1][-4:])
+        if os.path.exists(ini_path):
+            with open(ini_path, 'r') as f:
+                s=f.read()
+                ss = s.split()
+            return int(ss[1][-4:])
+        else:
+            return 9000
 
     def write_port(self, bin_path, port):
         s = bin_path.split('/')
@@ -96,15 +99,16 @@ class RunUnreal():
         s[-1] = 'unrealcv.ini'
         delimiter = '/'
         ini_path = delimiter.join(s)
-        with open(ini_path, 'r') as f:
-            s = f.read()
-            ss = s.split('\n')
-        with open(ini_path, 'w') as f:
-            ss[2] = 'Width={width}'.format(width=resolution[0])
-            ss[3] = 'Height={height}'.format(height=resolution[1])
-            d = '\n'
-            s_new = d.join(ss)
-            f.write(s_new)
+        if os.path.exists(ini_path):
+            with open(ini_path, 'r') as f:
+                s = f.read()
+                ss = s.split('\n')
+            with open(ini_path, 'w') as f:
+                ss[2] = 'Width={width}'.format(width=resolution[0])
+                ss[3] = 'Height={height}'.format(height=resolution[1])
+                d = '\n'
+                s_new = d.join(ss)
+                f.write(s_new)
 
     def isPortFree(self, ip, port):
         import socket
