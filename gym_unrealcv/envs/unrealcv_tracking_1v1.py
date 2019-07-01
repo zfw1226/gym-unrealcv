@@ -2,8 +2,8 @@ import time
 import gym
 import numpy as np
 from gym import spaces
-from gym_unrealcv.envs.tracking import reward
-from gym_unrealcv.envs.utils import env_unreal, misc, baseline
+from gym_unrealcv.envs.tracking import reward, baseline
+from gym_unrealcv.envs.utils import env_unreal, misc
 from gym_unrealcv.envs.tracking.interaction import Tracking
 
 ''' 
