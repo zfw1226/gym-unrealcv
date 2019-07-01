@@ -10,7 +10,7 @@ class VideoTracking_base(gym.Env):
                  dataset_root='/home/ubuntu/codes/VOTchallenge',
                  year='vot2013',
                  seq='woman',  # gymnastics, woman, sunshade, iceskater jogging
-                 setting_file='tracking_multi/MPRoom_interval.json',
+                 setting_file='tracking_1v1/DuelingRoom.json',
                  ):
         self.dataset_dir = os.path.join(dataset_root, year, seq)
         self.img_list = os.listdir(self.dataset_dir)
