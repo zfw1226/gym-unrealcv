@@ -1,6 +1,7 @@
 from gym_unrealcv.envs.utils import misc
 import numpy as np
 
+
 class RandomAgent(object):
     """The world's simplest agent!"""
     def __init__(self, action_space):
