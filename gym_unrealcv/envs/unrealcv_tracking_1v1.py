@@ -26,7 +26,7 @@ class UnrealCvTracking_1v1(gym.Env):
                  reward_type='distance',  # distance
                  docker=False,
                  resolution=(160, 120),
-                 target='Random',  #Rule for target: Random, Goal, Internal
+                 target='Ram',  #Rule for target: Ram, Goal, Internal
                  ):
         self.docker = docker
         self.reset_type = reset_type
@@ -102,9 +102,9 @@ class UnrealCvTracking_1v1(gym.Env):
         self.unrealcv.set_rotation(0, [0, -180, -90])
 
         # config target
-        if 'Random' in self.target:
+        if 'Ram' in self.target:
             self.random_agent = baseline.RandomAgent(action_space_forward)
-        if 'Goal' in self.target:
+        if 'Nav' in self.target:
             self.random_agent = baseline.GoalNavAgent(self.continous_actions_forward, self.reset_area, self.target)
         if 'Internal' in self.target:
             self.unrealcv.random_character(self.target_list[1])
@@ -140,12 +140,12 @@ class UnrealCvTracking_1v1(gym.Env):
             (velocity0, angle0) = actions[0]
             (velocity1, angle1) = actions[1]
 
-        if 'Random' in self.target:
+        if 'Ram' in self.target:
             if self.action_type == 'Discrete':
                 (velocity1, angle1) = self.discrete_actions[self.random_agent.act(self.target_pos)]
             else:
                 (velocity1, angle1) = self.random_agent.act(self.target_pos)
-        if 'Goal' in self.target:
+        if 'Nav' in self.target:
             (velocity1, angle1) = self.random_agent.act(self.target_pos)
 
         self.unrealcv.set_move(self.target_list[0], angle0, velocity0)
@@ -284,7 +284,7 @@ class UnrealCvTracking_1v1(gym.Env):
         self.states = np.array([state_0, state_1])
 
         # start target
-        if 'Random' in self.target or 'Goal' in self.target:
+        if 'Ram' in self.target or 'Nav' in self.target:
             self.random_agent.reset()
         if 'Internal' in self.target:
             self.unrealcv.random_character(self.target_list[1])
