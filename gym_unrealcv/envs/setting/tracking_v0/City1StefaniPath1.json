@@ -4,9 +4,9 @@
 	"cam_id": 0,
 	"height": 40,
 	"max_steps": 1000,
-	"max_distance": 300,
+	"max_distance": 500,
 	"max_direction": 90,
-	"exp_distance": 150,
+	"exp_distance": 200,
 	"targets": [
         "BP_Stefani_C_0"
 	],
