@@ -9,6 +9,7 @@ source = dict(
     Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
     RealisticRoom='https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip',
     Textures='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Textures.zip',
+    Arm='https://cs.jhu.edu/~qiuwch/craves/sim/arm-0610.zip'
 )
 
 
