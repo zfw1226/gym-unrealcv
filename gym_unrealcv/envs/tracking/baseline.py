@@ -89,6 +89,23 @@ class GoalNavAgent(object):
             velocity = self.velocity * (1 + 0.2*np.random.random())
         return (velocity, self.angle)
 
+    def act2(self, pose):
+        if self.pose_last == None or self.fix:
+            self.pose_last = pose
+            d_moved = 100
+        else:
+            d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
+            self.pose_last = pose
+        if d_moved < 10:
+            self.step_counter += 1
+        if self.step_counter > 3:
+            self.goal = self.generate_goal(None, self.fix)
+            self.velocity = (self.velocity_high + self.velocity_low) / 2
+            self.step_counter = 0
+            return (self.velocity, 0), self.goal
+        else:
+            return (0, 0), None
+
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
@@ -98,13 +115,14 @@ class GoalNavAgent(object):
         self.pose_last = None
 
     def generate_goal(self, goal_area, fixed=False):
+        if goal_area==None:
+            goal_area = self.goal_area
         goal_list = [[goal_area[0], goal_area[2]], [goal_area[0], goal_area[3]],
                      [goal_area[1], goal_area[3]], [goal_area[1], goal_area[2]]]
-
+        np.random.seed()
         if fixed:
-            goal = np.array(goal_list[self.goal_id%len(goal_list)])/2
+            goal = np.array(goal_list[self.goal_id % len(goal_list)])/2
             self.goal_id += 1
-
         else:
             x = np.random.randint(goal_area[0], goal_area[1])
             y = np.random.randint(goal_area[2], goal_area[3])
