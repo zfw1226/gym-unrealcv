@@ -6,7 +6,7 @@ use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 # Searching/Navigation
 # -------------------------------------------------
-for env in ['RealisticRoom', 'Arch1', 'Arch2']:
+for env in ['RealisticRoom', 'Arch1']:
     setting_file = 'searching/{env}.json'.format(env=env)
     settings = load_env_setting(setting_file)
     for i, reset in enumerate(['random', 'waypoint', 'testpoint']):
