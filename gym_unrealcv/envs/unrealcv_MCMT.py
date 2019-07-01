@@ -29,12 +29,12 @@ class UnrealCvMCMT(gym.Env):
                  reward_type='distance',  # distance
                  docker=False,
                  resolution=(320, 240),
-                 nav='Random',  # Random, Goal, Internal
+                 target='Ram',  # Random, Goal, Internal
                  ):
         self.docker = docker
         self.reset_type = reset_type
         self.roll = 0
-        self.nav = nav
+        self.target = target
         setting = self.load_env_setting(setting_file)
         self.env_name = setting['env_name']
         self.cam_id = setting['cam_id']
@@ -112,14 +112,14 @@ class UnrealCvMCMT(gym.Env):
         self.person_id = 0
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
-        if 'Random' in self.nav:
+        if 'Ram' in self.target:
             self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
-        if 'Goal' in self.nav:
+        if 'Nav' in self.target:
             self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area) for i in range(self.num_target)]
-        if 'Internal' in self.nav:
+        if 'Internal' in self.target:
             self.unrealcv.set_random(self.target_list[0])
             self.unrealcv.set_maxdis2goal(target=self.target_list[0], dis=500)
-        if 'Interval' in self.nav:
+        if 'Interval' in self.target:
             self.unrealcv.set_interval(30)
 
     def step(self, actions):
@@ -140,12 +140,12 @@ class UnrealCvMCMT(gym.Env):
 
         actions2target = []
         for i in range(len(self.target_list)):
-            if 'Random' in self.nav:
+            if 'Ram' in self.target:
                 if self.action_type == 'Discrete':
                     actions2target.append(self.discrete_actions_player[self.random_agents[i].act()])
                 else:
                     actions2target.append(self.random_agents[i].act())
-            if 'Goal' in self.nav:
+            if 'Nav' in self.target:
                     actions2target.append(self.random_agents[i].act(self.target_pos[i]))
 
         for i, target in enumerate(self.target_list):
@@ -264,10 +264,10 @@ class UnrealCvMCMT(gym.Env):
             states.append(self.unrealcv.get_observation(cam, self.observation_type, 'fast'))
 
         self.count_steps = 0
-        if 'Random' in self.nav or 'Goal' in self.nav:
+        if 'Ram' in self.target or 'Nav' in self.target:
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
-        if 'Internal' in self.nav:
+        if 'Internal' in self.target:
             self.unrealcv.set_speed(self.target_list[0], np.random.randint(30, 200))
 
         return states

@@ -95,7 +95,7 @@ for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Fo
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for target in ['Random', 'Goal', 'GoalBase', 'GoalShort', 'GoalFix', 'Internal', 'PZR', 'Adv']:
+                for target in ['Ram', 'Nav', 'NavBase', 'NavShort', 'NavFix', 'Internal', 'PZR', 'Adv']:
                     name = 'UnrealTracking{env}-{action}{obs}{target}-v{reset}'.format(
                         env=env, action=action, obs=obs, target=target, reset=i)
                     setting_file = 'tracking_1v1/{env}.json'.format(env=env)
@@ -119,8 +119,8 @@ for env in ['MCMTRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for target in ['Random', 'Goal', 'Internal', 'None',
-                            'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
+                for target in ['Ram', 'Nav', 'Internal', 'None',
+                            'RandomInterval', 'NavInterval', 'InternalInterval', 'NoneInterval']:
 
                     name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
                     if 'Interval' in target:
@@ -146,8 +146,7 @@ for env in ['FlexibleRoom', 'BaseRoom']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
-                for target in ['Random', 'Goal', 'GoalBase', 'Internal',
-                            'PZR', 'Adv']:
+                for target in ['Ram', 'Nav', 'NavBase', 'Internal', 'PZR', 'Adv']:
 
                     name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
 
