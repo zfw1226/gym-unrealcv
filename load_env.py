@@ -2,13 +2,19 @@ import os
 import argparse
 
 source = dict(
-    RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
-    DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
+    # for searching
+    RealisticRoom='https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip',
+    Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
+    # env with spline target for tracking
     SplineCharacterA='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
     SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
-    Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
-    RealisticRoom='https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip',
+    # training env for tracking
+    RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
+    DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
     Textures='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Textures.zip',
+    # realistic testing env for tracking
+    Garage='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip',\
+    # Arm env
     Arm='https://cs.jhu.edu/~qiuwch/craves/sim/arm-0610.zip'
 )
 
