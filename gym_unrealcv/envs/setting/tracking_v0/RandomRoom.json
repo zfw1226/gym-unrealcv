@@ -1,16 +1,16 @@
 {
-	"env_name": "MetaRoom",
-	"env_bin": "meta_tracking/tracking/Binaries/Linux/tracking",
+	"env_name": "RandomRoom",
+	"env_bin": "RandomRoom/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"target_num": 10,
 	"cam_id": 0,
 	"height": 220,
 	"pitch": 0,
-	"max_steps": 1000,
-	"max_distance": 500,
+	"max_steps": 500,
+	"max_distance": 600,
 	"min_distance": 80,
 	"max_direction": 90,
-	"exp_distance": 200,
+	"exp_distance": 250,
 	"targets": [
         "targetbp"
 	],
@@ -34,9 +34,6 @@
 		"high": [80,    20],
 		"low":  [-80,  -20]
 	},
-	"objects_list": [
-		"Cube1", "Cube2", "Cube3", "Cube4"
-	],
     "backgrounds": [
       "FLOOR","wall1","wall2","wall3","wall4"
     ],

@@ -4,7 +4,7 @@
 	"cam_id": 0,
 	"height": 40,
 	"max_steps": 1000,
-	"max_distance": 400,
+	"max_distance": 500,
 	"max_direction": 90,
 	"exp_distance": 200,
 	"targets": [
@@ -24,8 +24,18 @@
 		"low":  [-80,  -20]
 	},
 	"objects_list": [
-		"Building_2_02_19", "Building_6_02_32",
-		"building_1_02_5", "Building_3_01_15", "Building_4_50",
-		"Building_9_01_47", "Building_7_01_35", "Building_7_02_38"
+		"building_1_01_2", "building_1_02_5", "Building_2_01_8", "Building_5_01_11", "Building_3_01_15",
+		"Building_2_02_19", "Building_4_01_26", "Building_6_01_29", "Building_6_02_32", "Building_7_01_35",
+		"Building_7_02_38", "Building_8_01_41", "Building_9_01_47", "Building_4_50",
+		"road_A_55", "road_B_58", "road_B2_61", "road_B3_67", "road_B4_70", "road_B5",
+		"flg_tree_01_74", "flg_tree_02_80", "flg_tree_03_83", "flg_tree_89", "flg_tree_92",
+		"flg_tree_95", "flg_tree_98", "flg_tree_101", "flg_tree_104", "flg_tree_107",
+		"flg_bush_02_114", "flg_bush_01_117", "flg_bush_120", "flg_fern_123", "flg_fern2_127",
+		"flg_bush_31", "flg_bush_34", "flg_fern3", "flg_fern4", "flg_tree_39", "flg_tree_10", "flg_tree_11",
+		"flg_tree_58", "flg_bush_64", "flg_bush_67", "flg_bush_70", "flg_tree_76", "flg_tree_15", "flg_tree_16",
+		"flg_tree_17", "flg_tree_18", "flg_tree_19", "Floor_1",
+		"prp_tableUmbrella_7", "prp_table_10", "prp_chair_15", "prp_chair2_18", "prp_trafficLight_27",
+		 "gardenPlanter_A_51", "gardenPlanter_B_55",  "flg_tree_79", "gardenPlanter_A2", "flg_groundLeaves_91",
+		"StoreSign_4_mdl_94", "StoreSign_2_mdl_97", "Sign_4_mdl_128", "StoreSign_1_mdl_131", "StoreSign_3_mdl_137"
 	]
 }
