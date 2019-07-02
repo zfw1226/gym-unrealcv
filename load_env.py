@@ -13,7 +13,9 @@ source = dict(
     DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
     Textures='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Textures.zip',
     # realistic testing env for tracking
-    Garage='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip',\
+    UrbanCity='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/UrbanCity_2P.zip',
+    SnowForest='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SnowForest_2P.zip',
+    Garage='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip',
     # Arm env
     Arm='https://cs.jhu.edu/~qiuwch/craves/sim/arm-0610.zip'
 )
