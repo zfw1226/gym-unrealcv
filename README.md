@@ -32,7 +32,7 @@ We recommend you to use [anaconda](https://www.continuum.io/downloads) to instal
 ## Install Gym-UnrealCV
 
 It is easy to install gym-unrealcv, just run
-```buildoutcfg
+```
 git clone https://github.com/zfw1226/gym-unrealcv.git
 cd gym-unrealcv
 pip install -e . 
@@ -40,31 +40,22 @@ pip install -e .
 While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), unrealcv, numpy and matplotlib are installed.
 `Opencv` is should be installed additionally. 
 If you use ```anaconda```,you can run
-```buildoutcfg
+```
 conda update conda
 conda install --channel menpo opencv
 ```
 
-## Prepare Unreal Environment
-You need prepare an unreal environment to run the demo envirnment. 
-You can do it by running the script [RealisticRendering.sh](RealisticRendering.sh)
-```buildoutcfg
-sh RealisiticRendering.sh
+## Prepare Unreal Binary
+You need prepare an unreal binary to run the environment. 
+You can do it by running [load_env.py](load_env.py)
 ```
-or manually download the `RealisticRendering` env from this [link](https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip), 
-then unzip and move it to the [UnrealEnv](gym_unrealcv/envs/UnrealEnv) directory.
+python load_env.py -e {ENV_NAME}
+```
+`ENV_NAME` can be `RealisticRoom`, `RandomRoom`, `Arm`, etc. 
+After that, it will automatically download a related env binary from [here](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries) 
+to the [UnrealEnv](gym_unrealcv/envs/UnrealEnv) directory.
 
-**Note that you can download more environments from [UnrealCV Model Zoo](http://docs.unrealcv.org/en/master/reference/model_zoo.html).**
-
-There are two ways to launch the unreal environment in gym-unrealcv, called ```docker-based``` and ```docker-free```.
-The ```docker-based``` way depends on [docker](https://docs.docker.com/engine/installation/linux/ubuntu/#install-from-a-package) and [nvidia-docker](https://github.com/NVIDIA/nvidia-docker).
-The ```docker-free``` way launches the env binary directly.
-The ```docker-based``` way promise more stable unrealcv connection and support to run the env parallelly.
-On the contrast, the ```docker-free``` way only support running an unreal environment in the same time.
-So the ```docker-based``` way is highly recommended to get better experience.
-You can learn to install and use the ```docker-based``` way in this [page](doc/run_docker.md).
-
-**Note that the default config runs in the ``Docker-free`` way.**
+**Please refer the ``binary_list`` in [load_env.py](load_env.py) for more available example environments.**
 
 # Usage
 ## Run a random agent
@@ -72,11 +63,10 @@ You can learn to install and use the ```docker-based``` way in this [page](doc/r
 Once ```gym-unrealcv``` is installed successfully, you will see that your agent is walking randomly in first-person view to find a door, after you run:
 ```
 cd example/random
-python random_agent.py -e 'Search-RrDoorDiscrete-v0'
+python random_agent.py -e UnrealSearch-RealisticRoomDoor-DiscreteColor-v0
 ```
-It will take a few minutes for the image to pull if you runs environment based on docker at the first time. 
-After that, if all goes well，a pre-defined gym environment ```Search-RrDoorDiscrete-v0``` will be launched.
-And then you will see that your agent is moving around the realistic room randomly.
+After that, if all goes well，a pre-defined gym environment ```UnrealSearch-RealisticRoomDoor-DiscreteColor-v0``` will be launched.
+And then you will see that your agent is moving around the room randomly.
 
 We list the pre-defined environments in this [page](doc/EnvLists.md), for object searching and active object tracking. 
 # Tutorials
@@ -92,7 +82,7 @@ Besides, we also provide examples, such as [DQN](doc/dqn.md) and [DDPG](doc/ddpg
  
 ## Cite
 If you use Gym-UnrealCV in your academic research, we would be grateful if you could cite it as follow:
-```buildoutcfg
+```
 @misc{gymunrealcv2017,
     author = {Fangwei Zhong, Weichao Qiu, Tingyun Yan, Alan Yuille, Yizhou Wang},
     title = {Gym-UnrealCV: Realistic virtual worlds for visual reinforcement learning},
