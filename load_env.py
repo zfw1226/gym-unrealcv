@@ -1,7 +1,7 @@
 import os
 import argparse
 
-source = dict(
+binary_list = dict(
     # for searching
     RealisticRoom='https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip',
     Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
@@ -26,9 +26,9 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--env", nargs='?', default='RobotArm-Discrete-v0',
                         help='Select the environment to run')
     args = parser.parse_args()
-    cmd_load = 'wget '+source[args.env]
+    cmd_load = 'wget '+binary_list[args.env]
     os.system(cmd_load)
-    name_zip = source[args.env].split('/')[-1]
+    name_zip = binary_list[args.env].split('/')[-1]
     cmd_unzip = 'unzip -n {zipfile} -d {dir}'.format(zipfile=name_zip, dir='gym_unrealcv/envs/UnrealEnv')
     os.system(cmd_unzip)
     os.system('rm ' + name_zip)
