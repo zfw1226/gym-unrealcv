@@ -14,7 +14,7 @@ for env in ['RealisticRoom', 'Arch1']:
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
                 for category in settings['targets']:
                     register(
-                        id='UnrealSearch{env}{category}-{action}{obs}-v{reset}'.format(env=env, category=category, action=action, obs=obs, reset=i),
+                        id='UnrealSearch-{env}{category}-{action}{obs}-v{reset}'.format(env=env, category=category, action=action, obs=obs, reset=i),
                         entry_point='gym_unrealcv.envs:UnrealCvSearch_base',
                         kwargs={'setting_file': 'searching/{env}.json'.format(env=env),
                                 'category': category,
@@ -55,7 +55,7 @@ for env in ['City1', 'City2']:
                 for path in ['Path1', 'Path2']:  # observation type
                     for i, reset in enumerate(['Static', 'Random']):
                         register(
-                            id='UnrealTracking{env}{target}{path}-'
+                            id='UnrealTrack-{env}{target}{path}-'
                                '{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
                                                                action=action, obs=obs, reset=i),
                             entry_point='gym_unrealcv.envs:UnrealCvTracking_spline',
@@ -76,7 +76,7 @@ for env in ['RandomRoom']:
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
                 register(
-                    id='UnrealTracking{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
+                    id='UnrealTrack-{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
                     entry_point='gym_unrealcv.envs:UnrealCvTracking_random',
                     kwargs={'setting_file': 'tracking_v0/{env}.json'.format(env=env),
                             'reset_type': i,
@@ -94,9 +94,9 @@ for env in ['RandomRoom']:
 for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Forest', 'Garden']:
     for i in range(6):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
-            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+            for obs in ['Color', 'Depth', 'Rgbd']:  # observation type
                 for target in ['Ram', 'Nav', 'NavBase', 'NavShort', 'NavFix', 'Internal', 'PZR', 'Adv']:
-                    name = 'UnrealTracking{env}-{action}{obs}{target}-v{reset}'.format(
+                    name = 'UnrealTrack-{env}{target}-{action}{obs}-v{reset}'.format(
                         env=env, action=action, obs=obs, target=target, reset=i)
                     setting_file = 'tracking_1v1/{env}.json'.format(env=env)
                     register(
