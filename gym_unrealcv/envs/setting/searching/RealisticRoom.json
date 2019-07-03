@@ -13,7 +13,8 @@
 	"targets": {
 		"Door": ["SM_Door_37", "SM_Door_39", "SM_Door_41"],
 		"Couch": ["Couch_13", "SM_Couch_1seat_5"],
-		"Plant": ["SM_Plant_7", "SM_Plant_8"]
+		"Plant": ["SM_Plant_7", "SM_Plant_8"],
+		"Sofa": ["SM_sofa_2"]
 	},
 	"reset_area":[-150, 120, -200, 280, 40, 45],
 	"test_xy": [
