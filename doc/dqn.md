@@ -28,7 +28,7 @@ if you set ```SHOW``` to ```True```, You will see a window like this to monitor 
 
 <div align="center">
 
-![show](./show.PNG)
+![show](figs/show.PNG)
 
 </div>
 
@@ -39,7 +39,7 @@ if you set ```Map``` to ```True```, you will see a window showing the trajectory
 
 <div align="center">
 
-![map](./map.gif)
+![map](figs/map.gif)
 
 </div>
 
@@ -60,7 +60,7 @@ You can display a graph showing the history episode rewards by running the follo
 cd example/visualization
 python reward.py -p ../dqn/log/monitor/tmp -a -d
 ```
-![reward](./reward.png)
+![reward](figs/reward.png)
 
 
 You can also display a graph showing the trajectory by running the following script:
@@ -68,7 +68,7 @@ You can also display a graph showing the trajectory by running the following scr
 cd example/visualization
 python trajectory.py -p ../dqn/log/trajectory.csv
 ```
-![trajectory](./trajectory.png)
+![trajectory](figs/trajectory.png)
 
 - The ```green points``` represent where the agents realized that they had found a good view to observe the target object and got positive reward from  the environment.At the same time, the episode is finished. 
 - The ```purple points``` represnet where collision detected collision, agents got negative reward. At the same time, the episode terminated. 
