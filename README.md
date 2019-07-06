@@ -3,13 +3,9 @@ Gym-UnrealCV: Realistic virtual worlds for visual reinforcement learning
 
 # Introduction
 **This project integrates Unreal Engine with OpenAI Gym for visual reinforcement learning based on [UnrealCV](http://unrealcv.org/).**
-In this project, you can run your RL algorithms in various realistic UE4 environments easily without any knowledge of Unreal Engine and UnrealCV.
-The framework of this project is shown as below:
+In this project, you can run RL algorithms in various realistic UE4 environments easily without any knowledge of Unreal Engine and UnrealCV.
 
-![framework](doc/figs/framework.JPG)
-
-- ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as TensorFlow or PyTorch. 
+A number of environments have been released for robotic vision tasks, e.g. `Searching for objects`, `Active object tracking`, and `Control a robotic arm`.
 
 <table>
    <tr>
@@ -18,7 +14,14 @@ The framework of this project is shown as below:
 <td><img src="./doc/figs/arm/reach-virtual.gif" width="240" height="180"></td>
    </tr>
 </table>
-Snapshots of Gym-UnrealCV for object search, active tracking, and robotic arm control.
+
+The framework of this project is shown as below:
+![framework](doc/figs/framework.JPG)
+
+- ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
+- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as TensorFlow or PyTorch. 
+
+
 
 # Installation
 ## Dependencies
