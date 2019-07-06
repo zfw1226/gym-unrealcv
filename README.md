@@ -9,12 +9,15 @@ The framework of this project is shown as below:
 ![framework](doc/figs/framework.JPG)
 
 - ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as Tensorflow or Theano. 
+- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as TensorFlow or PyTorch. 
 
-<img src="./doc/figs/search/search2.gif" width="240" height="180" />
-<img src="./doc/figs/track/icml_test.gif" width="240" height="180">
-<img src="./doc/figs/arm/reach-virtual.gif" width="240" height="180">
-
+<table>
+   <tr>
+<td><img src="./doc/figs/search/search2.gif" width="240" height="180"></td>
+<td><img src="./doc/figs/track/icml_test.gif" width="240" height="180"></td>
+<td><img src="./doc/figs/arm/reach-virtual.gif" width="240" height="180"></td>
+   </tr>
+</table>
 Snapshots of Gym-UnrealCV for object search, active tracking, and robotic arm control.
 
 # Installation
