@@ -3,11 +3,11 @@ import argparse
 
 binary_list = dict(
     # for searching
-    RealisticRoom='https://s3-us-west-1.amazonaws.com/unreal-rl/RealisticRendering_RL_3.10.zip',
+    RealisticRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RealisticRendering_RL_3.10.zip',
     Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
     # env with spline target for tracking
     SplineCharacterA='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
-    SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
+    SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterF.zip',
     # training env for tracking
     RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
     DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
