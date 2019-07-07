@@ -1,18 +1,18 @@
-#Env list of Gym-UnrealCV
+# Environment List
 
-we provide a set of pre-defined gym environments for various tasks, including objects searching, active object tracking, and robotic arm control.
+we provide a set of pre-defined gym environments for various tasks, including **objects searching**, **active object tracking**, and **robotic arm control**.
 The ``Action Spaces`` could be Discrete and Continuous, and the ``Observation Spaces`` could be Depth, Color, RGB-D image.
 
 The details about these environments are shown in [the register file](../gym_unrealcv/__init__.py). We summarize the environments as below:
 
-## Object Searching and Obstacle Avoidance
-Goal: find target object and avoid obstacle.
+## Object Searching
+Goal: find the target object and avoid collision.
 
 Binaries: [RealisticRoom](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RealisticRendering_RL_3.10.zip), [Arch1](https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip)
 
 Naming rule: `UnrealSearch-{Scene}{Target}-{ActionSpace}{ObsSpace}-{Version}`
 - `{Scene}`: RealisticRoom, Arch1
-- `Target`: Door, Plant(Only in RealisticRoom), Coach(Only in RealisticRoom)
+- `{Target}`: Door, Plant(Only in RealisticRoom), Coach(Only in RealisticRoom)
 - `{Version}`: v0~v2, three different rules to sample start location.
 
 Example Environments:
@@ -33,7 +33,6 @@ Specifically, these variables could be:
 An example usage is [Zuo et al., 2019](https://arxiv.org/abs/1812.00725), which use ``UnrealArm-ContinuousPose-vo`` to 
 train a DDPG controller for robotic arm control.
 
-## Citation
 If you use these robotic arm environments in your research work, we would be grateful if you could cite this paper:
 ```
 @inproceedings{zuo2019craves,
@@ -101,11 +100,8 @@ Naming rule: `UnrealTrack-{Scene}{Target}-{ActionSpace}{ObsSpace}-{Versrion}`.
 `Ram`, `Nav`, `NavShort`, `Internal` are four different rules to control the target. 
 
 An example usage is [Zhong et al., 2019](https://openreview.net/pdf?id=HkgYmhR9KX), 
-which formulate a multi-agent adversarial game between target and tracker to learn a stronger tracker in ``DuelingRoom``.  
+which formulate a multi-agent adversarial game between target and tracker to learn a stronger tracker in ``DuelingRoom``.  `UrbanCity`, `Garage`, `SnowForest` are built for evaluating the generalization of the learned tracker.
 
-**UrbanCity, Garage, SnowForest** are built for evaluating the generalization of the learned tracker.
-
-## Citation
 If you use these active tracking environments in your research work, we would be grateful if you could cite them as follow:
 ```
 @inproceedings{luo2018end,
