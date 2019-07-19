@@ -1,27 +1,27 @@
 {
-	"env_name": "MPRoom",
-	"env_bin": "tracking_goto/tracking/Binaries/Linux/tracking",
+	"env_name": "SnowForest_Multi",
+	"env_bin": "snow_new/snowforest/Binaries/Linux/snowforest",
     "imgs_dir": "textures",
 	"max_player_num": 8,
-	"cam_id": [1, 2, 0],
-	"height": 220,
+	"cam_id": [0, 1, 2],
+	"height": -1950,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,
 	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 250,
-	"interval": 10,
+	"interval": 50,
 	"players": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
-		[ 125,  0],
-		[-125,  0],
-		[  75, 15],
-		[  75,-15],
-		[ -75, 15],
-		[ -75,-15],
+		[ 110,  0],
+		[-110,  0],
+		[  60, 15],
+		[  60,-15],
+		[ -60, 15],
+		[ -60,-15],
 		[  0,  45],
 		[  0, -45],
 		[  0,   0]
@@ -38,14 +38,13 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -600, -200,  220],
-		[  -100, -200,  220],
-		[ -1100, -200,  220],
-		[  -600, -700,  220],
-		[  -600,  300,  220],
-		[     0,    0,  220]
+		[  2000,  12000,  -1950],
+		[  1000,  12000,  -1950],
+		[  3000,  12000,  -1950],
+		[  2000,  11000,  -1950],
+		[  2000,  13000,  -1950]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450, 135, 140],
+	"reset_area" : [1000, 3000, 11000, 13000],
 	"continous_actions": {
 		"high": [100,     30],
 		"low":  [-100,   -30]
@@ -55,10 +54,7 @@
 		"low":  [50,     -30]
 	},
 	"objects_list": [
-		"cube1", "cube2_7", "cube3", "cube4", "cube5",
-		"sphere1", "sphere2", "sphere3", "sphere4", "sphere5",
-		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
-		"cone1", "cone2", "cone3", "cone4", "cone5"
+		"cube1", "cube2_7", "cube3", "cube4", "cube5"
 	],
     "backgrounds": [
       "FLOOR","wall1","wall2","wall3","wall4"
