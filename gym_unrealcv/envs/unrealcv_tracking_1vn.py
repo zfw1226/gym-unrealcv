@@ -1,4 +1,3 @@
-import math
 import os
 import time
 import gym
@@ -246,10 +245,9 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
         np.random.seed()
-        if 'Fix' in self.target:
-            self.unrealcv.set_obj_location(self.player_list[1], [self.reset_area[0]/2, self.reset_area[2]/2, self.safe_start[0][-1]])
-        else:
-            self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
+
+        # reset target location
+        self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
         if self.reset_type >= 1:
             for obj in self.player_list[1:]:
                 if self.env_name == 'MPRoom':
@@ -277,12 +275,8 @@ class UnrealCvTracking_1vn(gym.Env):
         if self.reset_type >= 3:
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
-        # moving objs
-        # if self.reset_type >= 3: #TOOD
-        #     self.unrealcv.new_obj(4, [0, 0, 0])
-
         # obstacle
-        if self.reset_type >= 5:
+        if self.reset_type >= 4:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            20, self.reset_area, self.start_area)
@@ -299,11 +293,9 @@ class UnrealCvTracking_1vn(gym.Env):
         self.obj_pos = [tracker_pos, target_pos]
 
         # new obj
-        # self.player_num = np.random.randint(2, self.max_player_num)
-        # self.player_num = self.max_player_num
+        # self.player_num is set by env.seed()
         while len(self.player_list) < self.player_num:
             name = self.unrealcv.new_obj(4, self.safe_start[1])
-            # if 'Nav' not in self.target:
             self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
             self.cam_id.append(self.cam_id[-1]+1)
@@ -318,7 +310,6 @@ class UnrealCvTracking_1vn(gym.Env):
                                                                 self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
             self.rotate2exp(yaw_exp, obj, 30)
-            # self.obj_pos.append(self.unrealcv.get_obj_pose(obj))
 
         # cam on top of tracker
 
@@ -330,9 +321,7 @@ class UnrealCvTracking_1vn(gym.Env):
         else:
             states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], 'lit', 'bmp')
         states = np.array(states)
-        # cv2.imshow('tracker', states[0])
-        # cv2.imshow('target', states[1])
-        # cv2.waitKey(1)
+
         # get pose state
         pose_obs = []
         for j in range(self.player_num):
