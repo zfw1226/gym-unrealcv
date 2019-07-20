@@ -1,8 +1,8 @@
 {
-	"env_name": "MCMTRoom",
-	"env_bin": "tracking_mask/tracking/Binaries/Linux/tracking",
+	"env_name": "MCRoom",
+	"env_bin": "tracking_multicam/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
-	"target_num": 10,
+	"max_player_num": 10,
 	"cam_id": [1, 2, 3, 4],
 	"height": 220,
 	"pitch": 0,
@@ -12,8 +12,8 @@
 	"max_direction": 90,
 	"max_obstacles": 5,
 	"exp_distance": 250,
-	"targets": [
-        "targetbp2"
+	"players": [
+        "targetbp"
 	],
 	"discrete_actions": [
 		[ 0,  0],
