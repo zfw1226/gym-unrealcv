@@ -115,21 +115,17 @@ for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Fo
 
 # -----------------------------------------------------------------------
 # Developing Environments
-for env in ['MCMTRoom']:
+for env in ['MCRoom', 'Garden']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
-                for target in ['Ram', 'Nav', 'Internal', 'None',
-                            'RandomInterval', 'NavInterval', 'InternalInterval', 'NoneInterval']:
+                for target in ['Ram', 'Nav', 'Adv']:
 
-                    name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
-                    if 'Interval' in target:
-                        setting_file = 'MCMT/{env}_interval.json'.format(env=env)
-                    else:
-                        setting_file = 'MCMT/{env}.json'.format(env=env)
+                    name = 'UnrealMC-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                    setting_file = 'MCMT/{env}.json'.format(env=env)
                     register(
                         id=name,
-                        entry_point='gym_unrealcv.envs:UnrealCvMCMT',
+                        entry_point='gym_unrealcv.envs:UnrealCvMC',
                         kwargs={'setting_file': setting_file,
                                 'reset_type': i,
                                 'action_type': action,
@@ -142,13 +138,13 @@ for env in ['MCMTRoom']:
                     )
 
 
-for env in ['FlexibleRoom', 'BaseRoom']:
+for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
                 for target in ['Ram', 'Nav', 'NavBase', 'Internal', 'PZR', 'Adv']:
 
-                    name = 'Unreal{env}-{action}{obs}{target}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                    name = 'UnrealTrackMulti-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
 
                     setting_file = 'tracking_1vn/{env}.json'.format(env=env)
                     register(
