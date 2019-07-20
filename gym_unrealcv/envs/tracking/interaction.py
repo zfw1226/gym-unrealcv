@@ -161,6 +161,21 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd_list)
 
+    def set_move_with_cam_batch(self, objs_list, action_list, cam_ids, cam_rots):
+        cmd_move = 'vbp {obj} set_move {angle} {velocity}'
+        cmd_rot_cam = 'vset /camera/{cam_id}/rotation {pitch} {yaw} {roll}'
+        cmd_list = []
+        for i in range(len(objs_list)):
+            cmd_list.append(cmd_move.format(obj=objs_list[i], angle=action_list[i][1], velocity=action_list[i][0]))
+        for i in range(len(cam_ids)):
+            rot = cam_rots[i]
+            cam_id = cam_ids[i]
+            self.client.request(cmd_rot_cam.format(cam_id=cam_id, roll=rot[0], yaw=rot[1], pitch=rot[2]))
+            self.cam[cam_id]['rotation'] = rot
+        res = None
+        while res is None:
+            res = self.client.request(cmd_list)
+
     def get_hit(self, target):
         cmd = 'vbp {target} get_hit'.format(target=target)
         res = None
@@ -257,16 +272,20 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def get_pose_img_batch(self, objs_list, cam_ids, viewmode, mode='bmp'):
+    def get_pose_img_batch(self, objs_list, cam_ids, viewmode, mode='bmp', cam_rot=False):
         cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
         cmd_loc = 'vget /object/{obj}/location'
         cmd_rot = 'vget /object/{obj}/rotation'
+        cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
         cmd_list = []
         for i in range(len(objs_list)):
             cmd_list.append(cmd_loc.format(obj=objs_list[i]))
             cmd_list.append(cmd_rot.format(obj=objs_list[i]))
         for cam_id in cam_ids:
             cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
+        if cam_rot:
+            for cam_id in cam_ids:
+                cmd_list.append(cmd_cam_rot.format(cam_id=cam_id))
         res_list = None
         while res_list is None:
             res_list = self.client.request(cmd_list)
@@ -280,5 +299,13 @@ class Tracking(Navigation):
         for i in range(len(cam_ids)):
             image = self.decode_bmp(res_list[len(objs_list)*2+i])[:, :, :-1]
             img_list.append(image)
-        return img_list, pose_list
+        if cam_rot:
+            cam_loc_list = []
+            for i in range(len(cam_ids)):
+                rot = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i].split()]
+                rot.reverse()
+                cam_loc_list.append(rot)
+            return img_list, pose_list, cam_loc_list
+        else:
+            return img_list, pose_list
 
