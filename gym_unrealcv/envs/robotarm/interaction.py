@@ -126,7 +126,6 @@ class Robotarm(UnrealCv):
             state = np.append(self.img_color, self.img_depth, axis=2)
         elif observation_type == 'Pose':
             self.target_pose = np.array(target_pose)
-            print (self.arm['pose'], self.target_pose, action)
             state = np.concatenate((self.arm['pose'], self.target_pose, action))
         return state
 
