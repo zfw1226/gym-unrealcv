@@ -286,8 +286,9 @@ class UnrealCvTracking_1vn(gym.Env):
         res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
-        self.rotate2exp(yaw_exp, self.player_list[0])
-
+        time.sleep(0.3)
+        yaw_real = self.rotate2exp(yaw_exp, self.player_list[0])
+        print(yaw_real)
         # tracker's pose
         tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
         self.obj_pos = [tracker_pos, target_pos]
@@ -309,7 +310,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, self.max_distance, self.reset_area,
                                                                 self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
-            self.rotate2exp(yaw_exp, obj, 30)
+            self.rotate2exp(yaw_exp, obj, 10)
 
         # cam on top of tracker
 
@@ -321,7 +322,7 @@ class UnrealCvTracking_1vn(gym.Env):
         else:
             states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], 'lit', 'bmp')
         states = np.array(states)
-
+        self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
         pose_obs = []
         for j in range(self.player_num):
@@ -344,7 +345,7 @@ class UnrealCvTracking_1vn(gym.Env):
     def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
-        return self.unrealcv.img_color/255.0
+        return self.unrealcv.img_color
 
     def seed(self, seed=None):
         if seed is not None:
