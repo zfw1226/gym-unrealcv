@@ -286,9 +286,8 @@ class UnrealCvTracking_1vn(gym.Env):
         res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
-        time.sleep(0.3)
-        yaw_real = self.rotate2exp(yaw_exp, self.player_list[0])
-        print(yaw_real)
+        time.sleep(0.5)
+        self.rotate2exp(yaw_exp, self.player_list[0])
         # tracker's pose
         tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
         self.obj_pos = [tracker_pos, target_pos]
