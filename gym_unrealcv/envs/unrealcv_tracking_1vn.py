@@ -229,7 +229,7 @@ class UnrealCvTracking_1vn(gym.Env):
             self.count_close = 0
 
         if self.count_close > 20 or self.count_steps > self.max_steps:
-           info['Done'] = True
+            info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
     def reset(self, ):
@@ -306,8 +306,8 @@ class UnrealCvTracking_1vn(gym.Env):
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
-            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, self.max_distance, self.reset_area,
-                                                                self.height, None)
+            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance, self.max_distance),
+                                                                self.reset_area, self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
             self.rotate2exp(yaw_exp, obj, 10)
 
