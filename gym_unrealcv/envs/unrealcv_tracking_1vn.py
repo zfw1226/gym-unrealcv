@@ -199,6 +199,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
+        info['d_in'] = 0
         self.mis_lead = False
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
@@ -212,8 +213,9 @@ class UnrealCvTracking_1vn(gym.Env):
                     r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
                     rewards.append(r_target)
                 else:
-                    r_d, mislead, r_distract = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
+                    r_d, mislead, r_distract, observed = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
+                    info['d_in'] += observed
                     if mislead:
                         self.mis_lead = True
                         rewards[0] -= r_distract
