@@ -27,7 +27,7 @@ class UnrealCvTracking_1vn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 160),
+                 resolution=(80, 80),
                  target='Nav',  # Ram, Nav, Internal
                  ):
         self.docker = docker
@@ -225,10 +225,12 @@ class UnrealCvTracking_1vn(gym.Env):
                     rewards.append(r_d)
             info['Reward'] = np.array(rewards)
 
-        if self.mis_lead or r_tracker <= -0.99:
+        if self.mis_lead:
             info['in_area'] = np.array([0])
-        else:
+        elif r_tracker <= -0.99:
             info['in_area'] = np.array([1])
+        else:
+            info['in_area'] = np.array([2])
 
         '''
         if r_tracker > 0.5:
