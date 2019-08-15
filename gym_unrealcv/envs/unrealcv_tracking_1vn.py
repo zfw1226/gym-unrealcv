@@ -208,8 +208,6 @@ class UnrealCvTracking_1vn(gym.Env):
                 if i == 0:
                     rewards.append(r_tracker)
                 elif i == 1:
-                    if 'Ram' in self.target or 'Nav' in self.target:
-                        break
                     r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
                     rewards.append(r_target)
                 else:
@@ -244,6 +242,9 @@ class UnrealCvTracking_1vn(gym.Env):
             self.count_close += 1
         else:
             self.count_close = 0
+
+        if 'Ram' in self.target or 'Nav' in self.target:
+            info['Reward'] = info['Reward'][:1]
 
         if self.count_close > 20 or self.count_steps > self.max_steps:
             info['Done'] = True
