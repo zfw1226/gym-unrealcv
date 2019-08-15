@@ -225,12 +225,12 @@ class UnrealCvTracking_1vn(gym.Env):
                     rewards.append(r_d)
             info['Reward'] = np.array(rewards)
 
-        if self.mis_lead:
-            info['in_area'] = np.array([0])
-        elif r_tracker <= -0.99:
+        if r_tracker <= -0.99 and info['d_in'] == 0:# lost
             info['in_area'] = np.array([1])
-        else:
+        elif r_tracker <= -0.99 or self.mis_lead:
             info['in_area'] = np.array([2])
+        else:
+            info['in_area'] = np.array([0])
 
         '''
         if r_tracker > 0.5:
