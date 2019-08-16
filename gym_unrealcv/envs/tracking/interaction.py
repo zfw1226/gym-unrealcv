@@ -206,8 +206,11 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def set_interval(self, interval):
-        cmd = 'vbp set_interval {value}'.format(value=interval)
+    def set_interval(self, interval, target=None):
+        if target is None:
+            cmd = 'vbp set_interval {value}'.format(value=interval)
+        else:
+            cmd = 'vbp {target} set_interval {value}'.format(target=target, value=interval)
         res = None
         while res is None:
             res = self.client.request(cmd)

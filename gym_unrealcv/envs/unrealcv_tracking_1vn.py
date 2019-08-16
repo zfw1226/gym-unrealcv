@@ -59,6 +59,7 @@ class UnrealCvTracking_1vn(gym.Env):
         texture_dir = os.path.join(gym_path, 'envs', 'UnrealEnv', texture_dir)
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
+        self.interval = setting['interval']
         self.start_area = self.get_start_area(self.safe_start[0], 500)
         self.top = False
         self.person_id = 0
@@ -125,7 +126,8 @@ class UnrealCvTracking_1vn(gym.Env):
         elif 'Nav' in self.target:
             self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target) for i in range(self.max_player_num)]
 
-        self.unrealcv.set_interval(50)
+        for player in self.player_list:
+            self.unrealcv.set_interval(self.interval, player)
 
         self.player_num = self.max_player_num
 
@@ -237,7 +239,6 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-
         if r_tracker <= -0.99 or info['Collision']:
             self.count_close += 1
         else:
@@ -316,6 +317,7 @@ class UnrealCvTracking_1vn(gym.Env):
             name = self.unrealcv.new_obj(4, self.safe_start[1])
             self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
+            self.unrealcv.set_interval(self.interval, name)
             self.cam_id.append(self.cam_id[-1]+1)
         while len(self.player_list) > self.player_num:
             name = self.player_list.pop()
