@@ -20,7 +20,7 @@ class Reward():
             dis_exp = self.dis_exp
         self.dis2target = dis2target_now
         self.angle2target = direction_error
-        direction_error = abs(direction_error/45.0)
+        direction_error = abs(direction_error)/45.0
         e_dis = abs(dis_exp - dis2target_now)
         #  e_dis_relative = e_dis / self.dis_exp
         e_dis_relative = e_dis / dis_exp
@@ -46,20 +46,82 @@ class Reward():
     def reward_distractor(self, dis2distractor, direction_error, num, dis_exp=None):
         if dis_exp is None:
             dis_exp = self.dis_exp
-        mislead = False
+        mislead = 0
         direction_error_abs = abs(direction_error)
         relative_dis = abs(dis2distractor - dis_exp)
         r_dis = 0
         observed = 0
-        if relative_dis < self.dis_max and abs(direction_error) < 45:
+
+        if dis2distractor < self.dis_max and direction_error_abs < 45:
             # observed but not absolute
             # reward = abs(dis2distractor) / self.dis_max
-            relative_target = abs(self.dis2target - dis_exp)
-            if relative_target - relative_dis > 0 and self.angle2target - direction_error_abs > 0:
-                r_dis = max(relative_target - relative_dis, 0)/self.dis_max + max(self.angle2target - direction_error_abs, 0)/90
-                mislead = True
+            observed = 1
+            collision = 0
+            if abs(self.angle2target) < 45 and self.dis2target < self.dis_max:  # target is observed
+                relative_target = abs(self.dis2target - dis_exp)
+                if abs(self.angle2target - direction_error) < 10:
+                    # occluded by target
+                    if self.dis2target < dis2distractor:
+                        mislead = 0
+                        observed = 0
+                    else:  # dis2distractor < self.dis2target
+                        # print ('target is occluded')
+                        mislead = 1
+                        # closer to expected position, higher
+                        distance_factor = abs(self.dis2target - dis_exp)/dis_exp
+                        angle_factor = direction_error_abs / 45
+                        r_dis = max(1 - (distance_factor + angle_factor), 0)
+                else: # no overlap, the one closer to the expected location
+                    r_dis = max(relative_target - relative_dis, 0) / dis_exp + \
+                            max(abs(self.angle2target) - direction_error_abs, 0) / 45
+                    if r_dis > 0.5:
+                        mislead = 2
+                        # print ('DR')
+                        # print (r_dis)
+                    else:
+                        mislead = 0  # appear but not cause mislead
+            else:  # target is not observed
+                distance_factor = abs(self.dis2target - dis_exp) / self.dis_exp
+                angle_factor = direction_error_abs / 45
+                r_dis = max(1 - (distance_factor + angle_factor), 0)
+                mislead = 3
+            if dis2distractor < 80 and direction_error_abs < 45:
+                collision = 1
+            if observed == 1:
+                reward = min(1-self.r_tracker + r_dis, 2)
+                # print (reward)
+            elif collision == 1:
+                reward = -1
+            else:
+                reward = 0
+            '''
+            elif direction_error_abs < 10:
+
+            if direction_error_abs < 10 and direction_error_abs < abs(self.angle2target):  # potential mislead
+                # if self.dis2target < dis2distractor and abs(self.angle2target) < direction_error_abs:
+                if abs(self.angle2target - direction_error) < 10:
+                    if dis2distractor >= self.dis2target:
+                        # occluded by target, skip this case
+                        mislead =False
+                    else:
+                        print ('occluded')
+                        mislead = True
+                else:
+                    relative_target = abs(self.dis2target - dis_exp)
+                    if relative_target - relative_dis > 0 and self.angle2target - direction_error_abs > 0:
+                        r_dis = max(relative_target - relative_dis, 0) / dis_exp + max(
+                            self.angle2target - direction_error_abs, 0) / 40
+                        mislead = True
+
+                    distance_factor = max(abs(self.dis2target - dis_exp) / self.dis_exp, 0)
+                    angle_factor = max(abs(self.angle2target) - direction_error_abs, 0) / 45
+                    r_dis = distance_factor + angle_factor
+                    print (r_dis)
+                    mislead = True
+                    print ('mislead')
             reward = 1-self.r_tracker + r_dis
             observed = 1
+            '''
         else:
             # reward = -1.0
             direction_error = max(abs(direction_error)-45, 0) / 180.0

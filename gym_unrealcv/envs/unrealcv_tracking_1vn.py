@@ -124,7 +124,12 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target:
             self.random_agents = [baseline.RandomAgent(player_action_space) for i in range(self.max_player_num)]
         elif 'Nav' in self.target:
-            self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target) for i in range(self.max_player_num)]
+            if 'Goal' in self.target:
+                th = 0.5
+            else:
+                th = 0
+            self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target, th
+                                                        ) for i in range(self.max_player_num)]
 
         for player in self.player_list:
             self.unrealcv.set_interval(self.interval, player)
@@ -160,11 +165,10 @@ class UnrealCvTracking_1vn(gym.Env):
                     else:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
                 if 'Nav' in self.target:
-                    # (v, a), goal = self.random_agents[i].act2(self.obj_pos[i])
-                    # if goal is not None:
-                    #     self.unrealcv.move_goal(self.player_list[i], goal)
-                    #     self.unrealcv.set_speed(self.player_list[i], v)
-                    actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                    if i == 1:
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                    else:
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i], self.random_agents[1].goal))
 
         self.unrealcv.set_move_batch(self.player_list, actions2player)
         self.count_steps += 1
@@ -216,18 +220,17 @@ class UnrealCvTracking_1vn(gym.Env):
                     r_d, mislead, r_distract, observed = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
                     info['d_in'] += observed
-                    if mislead:
-                        self.mis_lead = True
+                    if mislead > 0:
+                        self.mis_lead = max(mislead, self.mis_lead)
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
                         rewards[0] = max(rewards[0], -1)
                         rewards[1] = min(rewards[1], 1)
                     rewards.append(r_d)
             info['Reward'] = np.array(rewards)
-
-        if r_tracker <= -0.99 and info['d_in'] == 0:# lost
+        if r_tracker <= -0.99 and info['d_in'] == 0: # lost
             info['in_area'] = np.array([1])
-        elif r_tracker <= -0.99 or self.mis_lead:
+        elif r_tracker <= -0.99 or self.mis_lead > 0:
             info['in_area'] = np.array([2])
         else:
             info['in_area'] = np.array([0])
@@ -239,7 +242,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or info['Collision']:
+        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 2:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -247,7 +250,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target or 'Nav' in self.target:
             info['Reward'] = info['Reward'][:1]
 
-        if self.count_close > 20 or self.count_steps > self.max_steps:
+        if self.count_close > 30 or self.count_steps > self.max_steps:
             info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
@@ -326,8 +329,11 @@ class UnrealCvTracking_1vn(gym.Env):
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
-            cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance, self.max_distance),
-                                                                self.reset_area, self.height, None)
+            if 'Far' in self.target:
+                cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, None, self.reset_area, self.height, None)
+            else:
+                cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance*1.1, self.max_distance*1.5),
+                                                                     self.reset_area, self.height, None)
             self.unrealcv.set_obj_location(obj, cam_pos_exp)
             self.rotate2exp(yaw_exp, obj, 10)
 

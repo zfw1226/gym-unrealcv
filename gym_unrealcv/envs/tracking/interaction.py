@@ -115,15 +115,19 @@ class Tracking(Navigation):
                 direction = 2 * np.pi * np.random.sample(1)
             else:
                 direction = direction % (2 * np.pi)
-            dx = float(distance * np.cos(direction))
-            dy = float(distance * np.sin(direction))
-            x = dx + target_pos[0]
-            y = dy + target_pos[1]
+            if distance == None:
+                x = np.random.randint(reset_area[0], reset_area[1])
+                y = np.random.randint(reset_area[2], reset_area[3])
+            else:
+                dx = float(distance * np.cos(direction))
+                dy = float(distance * np.sin(direction))
+                x = dx + target_pos[0]
+                y = dy + target_pos[1]
             cam_pos_exp = [x, y, exp_height]
             yaw = float(direction / np.pi * 180 - 180)
             if reset_area[0] < x < reset_area[1] and reset_area[2] < y < reset_area[3]:
-                cam_pos_exp[0] = dx + target_pos[0]
-                cam_pos_exp[1] = dy + target_pos[1]
+                cam_pos_exp[0] = x
+                cam_pos_exp[1] = y
                 return [cam_pos_exp, yaw]
             else:
                 count += 1

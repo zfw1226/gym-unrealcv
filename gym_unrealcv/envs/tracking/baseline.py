@@ -35,7 +35,7 @@ class RandomAgent(object):
 
 
 class GoalNavAgent(object):
-    def __init__(self, action_space, goal_area, nav):
+    def __init__(self, action_space, goal_area, nav, random_th=0):
         self.step_counter = 0
         self.keep_steps = 0
         self.velocity_high = action_space['high'][0]
@@ -43,6 +43,7 @@ class GoalNavAgent(object):
         self.angle_high = action_space['high'][1]
         self.angle_low = action_space['low'][1]
         self.goal_area = goal_area
+        self.random_th = random_th
         # self.goal = self.generate_goal(self.goal_area)
         if 'Base' in nav:
             self.discrete = True
@@ -57,7 +58,7 @@ class GoalNavAgent(object):
         else:
             self.fix = False
 
-    def act(self, pose):
+    def act(self, pose, ref_goal=None):
         self.step_counter += 1
         if self.pose_last == None or self.fix:
             self.pose_last = pose
@@ -66,7 +67,10 @@ class GoalNavAgent(object):
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
         if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
-            self.goal = self.generate_goal(self.goal_area, self.fix)
+            if ref_goal is None or np.random.random() > self.random_th:
+                self.goal = self.generate_goal(self.goal_area, self.fix)
+            else:
+                self.goal = ref_goal
             if self.discrete or self.fix:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
