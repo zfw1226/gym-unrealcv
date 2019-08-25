@@ -231,7 +231,6 @@ class UnrealCvTracking_1vn(gym.Env):
         target_inarea = self.reward_function.target_inarea()
         if r_tracker <= -0.99 or self.mis_lead >= 2 or not target_inarea:  # lost/mislead
             info['in_area'] = np.array([1])
-            print ('out', rewards[0], self.mis_lead)
         else:
             info['in_area'] = np.array([0])
 
