@@ -250,7 +250,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target or 'Nav' in self.target:
             info['Reward'] = info['Reward'][:1]
 
-        if self.count_close > 30 or self.count_steps > self.max_steps:
+        if self.count_close > 20 or self.count_steps > self.max_steps:
             info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
