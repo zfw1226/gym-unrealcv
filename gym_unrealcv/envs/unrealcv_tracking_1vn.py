@@ -228,10 +228,10 @@ class UnrealCvTracking_1vn(gym.Env):
                         rewards[1] = min(rewards[1], 1)
                     rewards.append(r_d)
             info['Reward'] = np.array(rewards)
-        if r_tracker <= -0.99 and info['d_in'] == 0: # lost
+        target_inarea = self.reward_function.target_inarea()
+        if r_tracker <= -0.99 or self.mis_lead >= 2 or not target_inarea:  # lost/mislead
             info['in_area'] = np.array([1])
-        elif r_tracker <= -0.99 or self.mis_lead > 0:
-            info['in_area'] = np.array([2])
+            print ('out', rewards[0], self.mis_lead)
         else:
             info['in_area'] = np.array([0])
 
@@ -242,7 +242,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 2:
+        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 3:
             self.count_close += 1
         else:
             self.count_close = 0
