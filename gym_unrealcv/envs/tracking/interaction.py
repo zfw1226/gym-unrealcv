@@ -279,12 +279,17 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def get_pose_img_batch(self, objs_list, cam_ids, viewmode, mode='bmp', cam_rot=False):
+    def get_pose_img_batch(self, objs_list, cam_ids, obs_type='lit', mode='fast', cam_rot=False):
         cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
         cmd_loc = 'vget /object/{obj}/location'
         cmd_rot = 'vget /object/{obj}/rotation'
         cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
         cmd_list = []
+        if obs_type == 'Color':
+            viewmode = 'lit'
+        elif obs_type == 'Mask':
+            viewmode = 'object_mask'
+
         for i in range(len(objs_list)):
             cmd_list.append(cmd_loc.format(obj=objs_list[i]))
             cmd_list.append(cmd_rot.format(obj=objs_list[i]))

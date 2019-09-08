@@ -98,7 +98,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # define observation space,
         # color, depth, rgbd,...
         self.observation_type = observation_type
-        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']
+        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']
         self.observation_space = [self.unrealcv.define_observation(self.cam_id[0], self.observation_type, 'fast')
                                   for i in range(self.max_player_num)]
         self.unrealcv.pitch = self.pitch
@@ -178,9 +178,9 @@ class UnrealCvTracking_1vn(gym.Env):
         relative_pose = []
 
         if 'Ram' in self.target or 'Nav' in self.target:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], 'lit', 'bmp')
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'fast')
         else:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], 'lit', 'bmp')
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], self.observation_type, 'fast')
         states = np.array(states)
 
         for j in range(self.player_num):
@@ -342,9 +342,9 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # get state
         if 'Ram' in self.target or 'Nav' in self.target:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], 'lit', 'bmp')
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'bmp')
         else:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], 'lit', 'bmp')
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], self.observation_type, 'bmp')
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state

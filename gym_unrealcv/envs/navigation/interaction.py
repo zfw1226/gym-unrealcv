@@ -37,11 +37,13 @@ class Navigation(UnrealCv):
             self.img_gray = self.img_color.mean(2)
             self.img_gray = np.expand_dims(self.img_gray, -1)
             state = np.concatenate((self.img_color, self.img_gray), axis=2)
+        elif observation_type == 'Mask':
+            state = self.read_image(cam_id, 'object_mask', mode)
         return state
 
     def define_observation(self, cam_id, observation_type, mode='direct'):
         state = self.get_observation(cam_id, observation_type, mode)
-        if observation_type == 'Color' or observation_type == 'CG':
+        if observation_type == 'Color' or observation_type == 'CG' or observation_type == 'Mask':
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
             else:

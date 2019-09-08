@@ -141,7 +141,7 @@ for env in ['MCRoom', 'Garden']:
 for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
-            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG']:  # observation type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type
                 for target in ['Ram', 'Nav', 'NavBase', 'NavGoal', 'Internal', 'PZR', 'Adv']:
                     for reset_mode in ['', 'Far']:
                         target = target+reset_mode
@@ -164,7 +164,7 @@ for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
 
 # test video image
 register(
-    id='Tracking-Video-v0',
+    id='UnrealTracking-Video-v0',
     entry_point='gym_unrealcv.envs:VideoTracking_base',
     max_episode_steps=1000
 )
