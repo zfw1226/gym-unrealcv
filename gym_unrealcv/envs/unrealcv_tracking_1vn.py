@@ -245,11 +245,12 @@ class UnrealCvTracking_1vn(gym.Env):
             self.count_close += 1
         else:
             self.count_close = 0
+            self.live_time = time.time()
 
         if 'Ram' in self.target or 'Nav' in self.target:
             info['Reward'] = info['Reward'][:1]
-
-        if self.count_close > 20 or self.count_steps > self.max_steps:
+        lost_time = time.time() - self.live_time
+        if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
@@ -361,6 +362,7 @@ class UnrealCvTracking_1vn(gym.Env):
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         self.pose = []
+        self.live_time = time.time()
         return states
 
     def close(self):
