@@ -164,6 +164,7 @@ class UnrealCvTracking_1vn(gym.Env):
                         actions2player.append(self.discrete_actions_player[self.random_agents[i].act(self.obj_pos[i])])
                     else:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                        # self.discrete_actions[self.action_space[i].sample()]
                 if 'Nav' in self.target:
                     if i == 1:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
@@ -187,6 +188,10 @@ class UnrealCvTracking_1vn(gym.Env):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
+                yaw = self.obj_pos[j][4]/180*np.pi
+                abs_loc = [self.obj_pos[i][0]/self.exp_distance, self.obj_pos[i][1]/self.exp_distance,
+                           self.obj_pos[i][2]/self.exp_distance, np.cos(yaw), np.sin(yaw)]
+                obs = obs + abs_loc
                 vectors.append(obs)
                 if j==0:
                     relative_pose.append([distance, direction])
@@ -354,6 +359,10 @@ class UnrealCvTracking_1vn(gym.Env):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
+                yaw = self.obj_pos[j][4]/180*np.pi
+                abs_loc = [self.obj_pos[i][0]/self.exp_distance, self.obj_pos[i][1]/self.exp_distance,
+                           self.obj_pos[i][2]/self.exp_distance, np.cos(yaw), np.sin(yaw)]
+                obs = obs + abs_loc
                 vectors.append(obs)
             pose_obs.append(vectors)
         self.pose_obs = np.array(pose_obs)
