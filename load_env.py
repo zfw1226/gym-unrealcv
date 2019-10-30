@@ -7,7 +7,7 @@ binary_list = dict(
     Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
     # env with spline target for tracking
     SplineCharacterA='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
-    SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
+    SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterF.zip',
     # training env for tracking
     RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
     DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
