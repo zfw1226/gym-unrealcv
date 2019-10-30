@@ -31,7 +31,6 @@ class VideoTracking_base(gym.Env):
         self.folder =seq
         if not os.path.exists(self.folder):
             os.mkdir(seq)
-
         with open(os.path.join(self.dataset_dir, 'groundtruth.txt')) as f:
             for line in f:
                 xy = line.split(',')
@@ -79,8 +78,6 @@ class VideoTracking_base(gym.Env):
 
         self.truth.append([action, self.size[self.img_id], self.x_center[self.img_id], self.y_center[self.img_id]])
         #print [self.size[self.img_id],self.x_center[self.img_id],self.y_center[self.img_id]]
-        # cv2.imshow('state', cv_img)
-        # cv2.waitKey(1)
         self.img_id += self.skip_step
         color_list = ['b', 'c', 'r', 'g', 'm', 'y', 'k']
         mark_list = ['d', 'd', 'd', 'd', 'o', 'o', 's']
@@ -99,11 +96,12 @@ class VideoTracking_base(gym.Env):
 
             plt.legend(handles=legend)
             plt.show()
-
         else:
             done = False
         reward = 0
         info = dict()
+        info['Pose_Obs'] = np.zeros((1, 1, 5))
+        info['d_in'] = np.array([0])
         return state, reward, done, info
     def _reset(self):
         self.img_id = 0
