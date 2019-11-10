@@ -231,6 +231,8 @@ class UnrealCvTracking_1vn(gym.Env):
                         reset_id.append(self.player_list[i])
                     info['d_in'] += observed
                     info['Collision'] = max(collision, info['Collision'])
+                    if collision == 1:
+                        rewards[0] = -1
                     if mislead > 0:
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
@@ -255,7 +257,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or info['Collision'] == 1 or max(self.mis_lead) >= 1:
+        if r_tracker <= -0.99 or max(self.mis_lead) >= 1:
             self.count_close += 1
         else:
             self.count_close = 0
