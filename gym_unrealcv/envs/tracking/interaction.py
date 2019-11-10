@@ -109,8 +109,7 @@ class Tracking(Navigation):
             return True
 
     def get_startpoint(self, target_pos, distance, reset_area, exp_height=200, direction=None):
-        count = 0
-        while True:  # searching a safe point
+        for i in range(5):  # searching a safe point
             if direction == None:
                 direction = 2 * np.pi * np.random.sample(1)
             else:
@@ -129,10 +128,7 @@ class Tracking(Navigation):
                 cam_pos_exp[0] = x
                 cam_pos_exp[1] = y
                 return [cam_pos_exp, yaw]
-            else:
-                count += 1
-                if count > 5:
-                    return False
+            return []
 
     def reset_target(self, target):
         cmd = 'vbp {target} reset'

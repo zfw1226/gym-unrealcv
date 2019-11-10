@@ -212,6 +212,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cv2.waitKey(1)
         info['d_in'] = 0
         self.mis_lead = False
+        reset_id = []
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             rewards = []
@@ -224,6 +225,8 @@ class UnrealCvTracking_1vn(gym.Env):
                 else:
                     r_d, mislead, r_distract, observed = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
+                    if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
+                        reset_id.append(self.player_list[i])
                     info['d_in'] += observed
                     if mislead > 0:
                         self.mis_lead = max(mislead, self.mis_lead)
@@ -246,7 +249,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 3:
+        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 1:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -257,6 +260,17 @@ class UnrealCvTracking_1vn(gym.Env):
         lost_time = time.time() - self.live_time
         if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
+        if 'Far' not in self.target:
+            for obj in reset_id:
+                min_dis = max(info['Distance'], self.exp_distance)*1.1
+                start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)
+                res = self.unrealcv.get_startpoint(self.obj_pos[1], start_distance, self.reset_area, self.height)
+                if len(res) == 2:
+                    cam_pos_exp, yaw_exp = res
+                    self.unrealcv.set_obj_location(obj, cam_pos_exp)
+                    self.rotate2exp(yaw_exp, obj, 10)
+                else:
+                    info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
     def reset(self, ):
@@ -310,7 +324,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
         # init tracker
-        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height, self.direction)
+        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height)
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         time.sleep(0.5)
@@ -345,7 +359,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cam on top of tracker
 
         self.set_topview(self.obj_pos[0], self.cam_id[0])
-
+        time.sleep(0.5)
         # get state
         if 'Ram' in self.target or 'Nav' in self.target:
             states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'bmp')
