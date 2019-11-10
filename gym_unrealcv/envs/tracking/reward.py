@@ -51,12 +51,11 @@ class Reward():
         relative_dis = abs(dis2distractor - dis_exp)
         r_dis = 0
         observed = 0
-
+        collision = 0
         if dis2distractor < self.dis_max and direction_error_abs < 45:
             # observed but not absolute
             # reward = abs(dis2distractor) / self.dis_max
             observed = 1
-            collision = 0
             if self.target_inarea:  # target is observed
                 relative_target = abs(self.dis2target - dis_exp)
                 if abs(self.angle2target - direction_error) < 10:
@@ -128,7 +127,7 @@ class Reward():
             e_dis = max(relative_dis-self.dis_max, 0) / self.dis_max
             reward = (-e_dis - direction_error)/2
             reward = max(reward, -1)
-        return reward, mislead, r_dis, observed
+        return reward, mislead, r_dis, observed, collision
 
     def target_inarea(self):
         if abs(self.angle2target) < 45 and self.dis2target < self.dis_max:

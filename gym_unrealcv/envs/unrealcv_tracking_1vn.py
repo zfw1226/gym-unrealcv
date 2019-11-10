@@ -138,7 +138,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
     def step(self, actions):
         info = dict(
-            Collision=False,
+            Collision=0,
             Done=False,
             Trigger=0.0,
             Reward=0.0,
@@ -158,6 +158,8 @@ class UnrealCvTracking_1vn(gym.Env):
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
                     actions2player.append(actions[i])
+                if self.count_freeze[i] > 5:
+                    actions2player[i] = self.discrete_actions_player[-1]
             else:
                 if 'Ram' in self.target:
                     if self.action_type == 'Discrete':
@@ -211,7 +213,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
         info['d_in'] = 0
-        self.mis_lead = False
+        self.mis_lead = [0]
         reset_id = []
         if 'distance' in self.reward_type:
             r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
@@ -223,25 +225,29 @@ class UnrealCvTracking_1vn(gym.Env):
                     r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
                     rewards.append(r_target)
                 else:
-                    r_d, mislead, r_distract, observed = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
+                    r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
                     if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
                         reset_id.append(self.player_list[i])
                     info['d_in'] += observed
+                    info['Collision'] = max(collision, info['Collision'])
                     if mislead > 0:
-                        self.mis_lead = max(mislead, self.mis_lead)
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
                         rewards[0] = max(rewards[0], -1)
                         rewards[1] = min(rewards[1], 1)
                     rewards.append(r_d)
+                    if mislead >= 1:
+                        self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
+                    elif mislead == 0:
+                        self.count_freeze[i] = max(0, self.count_freeze[i] - 1)
+                    self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)
         target_inarea = self.reward_function.target_inarea()
-        if r_tracker <= -0.99 or self.mis_lead >= 2 or not target_inarea:  # lost/mislead
+        if r_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
             info['in_area'] = np.array([1])
         else:
             info['in_area'] = np.array([0])
-
         '''
         if r_tracker > 0.5:
             cv2.imshow('good', states[0])
@@ -249,7 +255,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or info['Collision'] or self.mis_lead >= 1:
+        if r_tracker <= -0.99 or info['Collision'] == 1 or max(self.mis_lead) >= 1:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -258,7 +264,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target or 'Nav' in self.target:
             info['Reward'] = info['Reward'][:1]
         lost_time = time.time() - self.live_time
-        if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
+        if (self.count_close > 30 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
         if 'Far' not in self.target:
             for obj in reset_id:
@@ -380,7 +386,7 @@ class UnrealCvTracking_1vn(gym.Env):
                 vectors.append(obs)
             pose_obs.append(vectors)
         self.pose_obs = np.array(pose_obs)
-
+        self.count_freeze = [0 for i in range(self.player_num)]
         if 'Ram' in self.target or 'Nav' in self.target:
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
