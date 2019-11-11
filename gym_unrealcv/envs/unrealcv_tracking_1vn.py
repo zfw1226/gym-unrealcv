@@ -229,10 +229,12 @@ class UnrealCvTracking_1vn(gym.Env):
                                                                           self.player_num - 2)
                     if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
                         reset_id.append(self.player_list[i])
+                        self.count_freeze[i] = 0
                     info['d_in'] += observed
                     info['Collision'] = max(collision, info['Collision'])
                     if collision == 1:
                         rewards[0] = -1
+                        print('Collision')
                     if mislead > 0:
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
@@ -241,8 +243,8 @@ class UnrealCvTracking_1vn(gym.Env):
                     rewards.append(r_d)
                     if mislead >= 1:
                         self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
-                    elif mislead == 0:
-                        self.count_freeze[i] = max(0, self.count_freeze[i] - 1)
+                    # elif mislead == 0:
+
                     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)
         target_inarea = self.reward_function.target_inarea()
