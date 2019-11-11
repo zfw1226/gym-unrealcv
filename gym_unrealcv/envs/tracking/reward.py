@@ -84,7 +84,7 @@ class Reward():
                 angle_factor = direction_error_abs / 45
                 r_dis = max(1 - (distance_factor + angle_factor), 0)
                 mislead = 3
-            if dis2distractor < 80 and direction_error_abs < 45:
+            if dis2distractor < 90 and direction_error_abs < 45:
                 collision = 1
             if observed == 1:
                 reward = min(1-self.r_tracker + r_dis, 2)
