@@ -158,7 +158,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
                     actions2player.append(actions[i])
-                if self.count_freeze[i] > 5:
+                if self.count_freeze[i] > 5 and 'Freeze' in self.target:
                     actions2player[i] = self.discrete_actions_player[-1]
             else:
                 if 'Ram' in self.target:
@@ -272,7 +272,7 @@ class UnrealCvTracking_1vn(gym.Env):
         lost_time = time.time() - self.live_time
         if (self.count_close > 30 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
-        if 'Far' not in self.target:
+        if 'Freeze' in self.target and self.player_num == 3:
             for obj in reset_id:
                 min_dis = max(info['Distance'], self.exp_distance)*1.1
                 start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)
