@@ -361,12 +361,14 @@ class UnrealCvTracking_1vn(gym.Env):
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
             if 'Far' in self.target:
-                cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, None, self.reset_area, self.height, None)
+                res = self.unrealcv.get_startpoint(target_pos, None, self.reset_area, self.height, None)
             else:
-                cam_pos_exp, yaw_exp = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance*1.1, self.max_distance*1.5),
+                res = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance*1.1, self.max_distance*1.5),
                                                                      self.reset_area, self.height, None)
-            self.unrealcv.set_obj_location(obj, cam_pos_exp)
-            self.rotate2exp(yaw_exp, obj, 10)
+            if len(res) == 2:
+                cam_pos_exp, yaw_exp = res
+                self.unrealcv.set_obj_location(obj, cam_pos_exp)
+                self.rotate2exp(yaw_exp, obj, 10)
 
         # cam on top of tracker
 
