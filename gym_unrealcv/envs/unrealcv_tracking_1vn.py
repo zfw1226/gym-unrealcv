@@ -180,11 +180,15 @@ class UnrealCvTracking_1vn(gym.Env):
         pose_obs = []
         relative_pose = []
 
-        if 'Ram' in self.target or 'Nav' in self.target:
+        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2],
+                                                                self.observation_type, 'fast')
+        if 'Ram' in self.target or 'Nav' in self.target or 'Adv' in self.target:
             states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'fast')
         else:
             states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], self.observation_type, 'fast')
         states = np.array(states)
+        if 'Adv' in self.target:
+            states = np.repeat(states, self.player_num, axis=0)
 
         for j in range(self.player_num):
             vectors = []
@@ -234,16 +238,14 @@ class UnrealCvTracking_1vn(gym.Env):
                     info['Collision'] = max(collision, info['Collision'])
                     if collision == 1:
                         rewards[0] = -1
-                        print('Collision')
                     if mislead > 0:
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
                         rewards[0] = max(rewards[0], -1)
                         rewards[1] = min(rewards[1], 1)
                     rewards.append(r_d)
-                    if mislead >= 1:
+                    if mislead >= 1 or collision == 1:
                         self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
-                    # elif mislead == 0:
 
                     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)
