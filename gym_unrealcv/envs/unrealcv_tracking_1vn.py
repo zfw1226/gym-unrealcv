@@ -158,7 +158,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
                     actions2player.append(actions[i])
-                if self.count_freeze[i] > 5 and 'Freeze' in self.target:
+                if self.count_freeze[i] > 5 and 'Fix' in self.target:
                     actions2player[i] = self.discrete_actions_player[-1]
             else:
                 if 'Ram' in self.target:
@@ -180,12 +180,12 @@ class UnrealCvTracking_1vn(gym.Env):
         pose_obs = []
         relative_pose = []
 
-        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2],
-                                                                self.observation_type, 'fast')
-        if 'Ram' in self.target or 'Nav' in self.target or 'Adv' in self.target:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'fast')
+        if 'PZR' in self.target:
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:],
+                                                                    self.observation_type, 'fast')
         else:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], self.observation_type, 'fast')
+            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'fast')
+
         states = np.array(states)
         if 'Adv' in self.target:
             states = np.repeat(states, self.player_num, axis=0)
@@ -231,20 +231,22 @@ class UnrealCvTracking_1vn(gym.Env):
                 else:
                     r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                                                                           self.player_num - 2)
-                    if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
-                        reset_id.append(self.player_list[i])
-                        self.count_freeze[i] = 0
                     info['d_in'] += observed
-                    info['Collision'] = max(collision, info['Collision'])
-                    if collision == 1:
-                        rewards[0] = -1
                     if mislead > 0:
                         rewards[0] -= r_distract
                         rewards[1] += r_distract
                         rewards[0] = max(rewards[0], -1)
                         rewards[1] = min(rewards[1], 1)
                     rewards.append(r_d)
-                    if mislead >= 1 or collision == 1:
+                    if 'Nav' in self.target:
+                        continue
+                    info['Collision'] = max(collision, info['Collision'])
+                    if collision == 1:
+                         rewards[0] = -1
+                    if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
+                        reset_id.append(self.player_list[i])
+                        self.count_freeze[i] = 0
+                    if mislead == 1 or collision == 1:
                         self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
 
                     self.mis_lead.append(mislead)
@@ -270,9 +272,9 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target or 'Nav' in self.target:
             info['Reward'] = info['Reward'][:1]
         lost_time = time.time() - self.live_time
-        if (self.count_close > 30 and lost_time > 5) or self.count_steps > self.max_steps:
+        if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
-        if 'Freeze' in self.target and self.player_num == 3:
+        if 'Res' in self.target:
             for obj in reset_id:
                 min_dis = max(info['Distance'], self.exp_distance)*1.1
                 start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)

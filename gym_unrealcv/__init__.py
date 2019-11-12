@@ -142,25 +142,25 @@ for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type
-                for target in ['Ram', 'Nav', 'NavBase', 'NavGoal', 'Internal', 'PZR', 'Adv', 'AdvFreeze']:
+                for target in ['Ram', 'Nav', 'NavBase', 'NavGoal', 'Internal', 'PZR', 'Adv', 'AdvFix', 'AdvRes']:
                     for reset_mode in ['', 'Far']:
-                        target = target+reset_mode
-                        name = 'UnrealTrackMulti-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                            target = target+reset_mode
+                            name = 'UnrealTrackMulti-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
 
-                        setting_file = 'tracking_1vn/{env}.json'.format(env=env)
-                        register(
-                            id=name,
-                            entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
-                            kwargs={'setting_file': setting_file,
-                                    'reset_type': i,
-                                    'action_type': action,
-                                    'observation_type': obs,
-                                    'reward_type': 'distance',
-                                    'docker': use_docker,
-                                    'target': target
-                                    },
-                            max_episode_steps=500
-                        )
+                            setting_file = 'tracking_1vn/{env}.json'.format(env=env)
+                            register(
+                                id=name,
+                                entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
+                                kwargs={'setting_file': setting_file,
+                                        'reset_type': i,
+                                        'action_type': action,
+                                        'observation_type': obs,
+                                        'reward_type': 'distance',
+                                        'docker': use_docker,
+                                        'target': target
+                                        },
+                                max_episode_steps=500
+                            )
 
 # test video image
 register(
