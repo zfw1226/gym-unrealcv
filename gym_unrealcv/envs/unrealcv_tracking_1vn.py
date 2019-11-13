@@ -263,7 +263,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if r_tracker <= -0.99 or max(self.mis_lead) >= 1:
+        if not target_inarea or max(self.mis_lead) >= 2:
             self.count_close += 1
         else:
             self.count_close = 0
