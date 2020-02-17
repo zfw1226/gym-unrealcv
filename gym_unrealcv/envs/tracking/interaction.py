@@ -201,16 +201,20 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def random_obstacles(self, objects, img_dirs, num, area, start_area):
+    def random_obstacles(self, objects, img_dirs, num, area, start_area, obstacle_scales=None):
         sample_index = np.random.choice(len(objects), num, replace=False)
-        for id in sample_index:
+        for k, id in enumerate(sample_index):
             obstacle = objects[id]
             self.obstacles.append(obstacle)
             # texture
             img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
             self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             # scale
-            self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
+            if obstacle_scales == None:
+                obs_scale = [0.3, 3]
+            else:
+                obs_scale = obstacle_scales[k]
+            self.set_obj_scale(obstacle, np.random.uniform(obs_scale[0], obs_scale[1], 3))
             # location
             obstacle_loc = [start_area[0], start_area[2], 0]
             while start_area[0] <= obstacle_loc[0] <= start_area[1] and start_area[2] <= obstacle_loc[1] <= start_area[3]:

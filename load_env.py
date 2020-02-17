@@ -11,11 +11,15 @@ binary_list = dict(
     # training env for tracking
     RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
     DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
+    MCRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/MCRoom.zip',
     Textures='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Textures.zip',
     # realistic testing env for tracking
     UrbanCity='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/UrbanCity_2P.zip',
     SnowForest='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SnowForest_2P.zip',
     Garage='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip',
+    # multi camera
+    UrbanTree='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/urban_cam.zip',
+    Garden='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/neighborhood.zip',
     # Arm env
     Arm='https://cs.jhu.edu/~qiuwch/craves/sim/arm-0610.zip'
 )

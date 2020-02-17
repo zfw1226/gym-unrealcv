@@ -50,6 +50,8 @@ class GoalNavAgent(object):
             self.discrete = False
         if 'Short' in nav:
             self.max_len = 30
+        elif 'Mid' in nav:
+            self.max_len = 100
         else:
             self.max_len = 1000
         if 'Fix' in nav:
@@ -133,3 +135,81 @@ class GoalNavAgent(object):
         error = np.array(now[:2]) - np.array(goal[:2])
         distance = np.linalg.norm(error)
         return distance < 50
+
+class GoalNavAgentTest(object):
+    def __init__(self, action_space, goal_list=None):
+        self.step_counter = 0
+        self.keep_steps = 0
+        self.goal_id = 0
+        self.velocity_high = action_space['high'][0]
+        self.velocity_low = action_space['low'][0]
+        self.angle_high = action_space['high'][1]
+        self.angle_low = action_space['low'][1]
+        self.goal_list = goal_list
+
+        self.goal = self.generate_goal()
+        self.discrete = False
+        self.max_len = 1000
+
+    def act(self, pose):
+
+        self.step_counter += 1
+        if self.pose_last == None:
+            self.pose_last = pose
+            d_moved = 100
+        else:
+            d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
+            self.pose_last = pose
+        if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
+            self.goal = self.generate_goal()
+            if self.discrete:
+                self.velocity = (self.velocity_high + self.velocity_low) / 2
+            else:
+                self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+            self.step_counter = 0
+
+        delt_yaw = self.get_direction(pose, self.goal)
+        if self.discrete:
+            if abs(delt_yaw) > self.angle_high:
+                velocity = 0
+            else:
+                velocity = self.velocity
+            if delt_yaw > 3:
+                self.angle = self.angle_high / 2
+            elif delt_yaw < -3:
+                self.angle = self.angle_low / 2
+        else:
+            self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
+            velocity = self.velocity * (1 + 0.2 * np.random.random())
+
+        return (velocity, self.angle)
+
+    def reset(self):
+        self.step_counter = 0
+        self.keep_steps = 0
+        self.goal_id = 0
+        self.goal = self.generate_goal()
+        self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+        self.pose_last = None
+
+    def generate_goal(self):
+        index = self.goal_id % len(self.goal_list)
+        goal = np.array(self.goal_list[index])
+
+        self.goal_id += 1
+        return goal
+
+    def check_reach(self, goal, now):
+        error = np.array(now[:2]) - np.array(goal[:2])
+        distance = np.linalg.norm(error)
+        return distance < 50
+
+    def get_direction(self, current_pose, target_pose):
+        y_delt = target_pose[1] - current_pose[1]
+        x_delt = target_pose[0] - current_pose[0]
+        angle_now = np.arctan2(y_delt, x_delt) / np.pi * 180 - current_pose[4]
+        if angle_now > 180:
+            angle_now -= 360
+        if angle_now < -180:
+            angle_now += 360
+        return angle_now

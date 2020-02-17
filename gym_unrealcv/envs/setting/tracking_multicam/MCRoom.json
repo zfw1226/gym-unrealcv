@@ -1,0 +1,68 @@
+{
+	"env_name": "MCRoom",
+	"env_bin": "MCRoom/tracking/Binaries/Linux/tracking",
+    "imgs_dir": "textures",
+	"target_num": 10,
+	"cam_id": [1, 2, 3, 4],
+	"height": 350,
+	"pitch": 0,
+	"max_steps": 500,
+	"max_obstacles": 3,
+	"targets": [
+        "targetbp2"
+	],
+	"discrete_actions": [
+		[ 0,  0],
+		[ 0,  10],
+		[ 0, -10],
+		[ 15,  0],
+		[ 15,  10],
+		[ 15, -10],
+		[-15,  0],
+		[-15,  10],
+		[-15, -10],
+		[1],
+		[-1]
+	],
+	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+	"safe_start" :[
+		[  0,    0,  220],
+		[-10000, 10000, 10000]
+    ],
+	"reset_area" : [-1850, 940, -1450, 1450, 135, 140],
+	"cam_area" : [[-1300,-700,  -800, -200, 250, 600],
+	[-1300,-700,  200,  800, 250, 600],
+	[ -200, 400,   200,  800, 250, 600],
+	[ -200, 400,  -800, -200, 250, 600]],
+	"continous_actions": {
+		"high": [ 5,   5],
+		"low":  [-5,  -5]
+	},
+	"continous_actions_player": {
+		"high": [100,     30],
+		"low":  [50,     -30]
+	},
+	"objects_list": [
+		"cube1", "cube2_7", "cube3", "cube4", "cube5",
+		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
+		"cone1", "cone2", "cone3", "cone4", "cone5"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ],
+	"target_move": [200, 200],
+    "camera_move": [200, 200],
+	"scale_rate": 0 ,
+	"pose_rate": 0.5
+}

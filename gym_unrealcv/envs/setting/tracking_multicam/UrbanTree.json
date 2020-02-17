@@ -1,0 +1,94 @@
+{
+	"env_name": "Urban",
+	"env_bin": "urban_cam/urbancity/Binaries/Linux/urbancity",
+    "imgs_dir": "textures",
+	"target_num": 10,
+	"cam_id": [1, 2, 3, 4],
+	"height": 220,
+	"pitch": 0,
+	"max_steps": 500,
+  	"max_distance": 600,
+	"min_distance": 100,
+	"max_direction": 90,
+	"exp_distance": 250,
+	"max_obstacles": 0,
+	"targets": [
+        "targetBP"
+	],
+
+
+	"discrete_actions": [
+		[ 0,  0],
+		[ 0,  10],
+		[ 0, -10],
+		[ 15,  0],
+		[ 15,  10],
+		[ 15, -10],
+		[-15,  0],
+		[-15,  10],
+		[-15, -10],
+		[1],
+		[-1]
+	],
+
+	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+
+	"safe_start" :[
+		[ 1946, -3934, 180],
+		[-6000, 0, 220]
+    ],
+
+	"camera_loc" : [
+		[1108, -3771, 300],
+		[1866, -2830, 300],
+		[2786, -3761, 300],
+		[2178,-4565,300]
+	],
+
+	"camera_rot": [
+		[0,67, -10],
+		[0, 17, -10],
+		[0, -91, -10],
+		[0, -165, -10]
+	],
+
+	"goal_list" : [
+		[1501, -3602],
+		[1783, -2818],
+		[2974, -3978],
+		[2514, -4576]
+	],
+
+	"continous_actions": {
+		"high": [20,    20],
+		"low":  [-20,  -20]
+	},
+	"continous_actions_player": {
+		"high": [50,     30],
+		"low":  [30,     -30]
+	},
+	"objects_list": [
+		"cube1", "cube2_7", "cube3", "cube4", "cube5",
+		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
+		"cone1", "cone2", "cone3", "cone4", "cone5"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ],
+	"target_move": [0, 1000],
+    "camera_move": [0, 0],
+	"scale_rate": 0.8,
+	"pose_rate": 2
+
+}
