@@ -153,7 +153,7 @@ class UnrealCvTracking_1vn(gym.Env):
         )
         actions2player = []
         for i in range(len(self.player_list)):
-            if i == 0 or ('Ram' not in self.target and 'Nav' not in self.target):
+            if i < self.controable_agent:
                 if self.action_type == 'Discrete':
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
@@ -180,17 +180,17 @@ class UnrealCvTracking_1vn(gym.Env):
         pose_obs = []
         relative_pose = []
 
-        if 'PZR' in self.target:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:],
-                                                                    self.observation_type, 'fast')
-        else:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'fast')
 
-        states = np.array(states)
+        cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
-            states = np.repeat(states, self.player_num, axis=0)
+            cam_id_max = 2
+        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
+                                                                    self.observation_type, 'bmp')
+        states = np.array(states)
+        if cam_id_max < self.controable_agent + 1:
+            states = np.repeat(states, self.controable_agent, axis=0)
 
-        for j in range(self.player_num):
+        for j in range(self.controable_agent):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
@@ -250,7 +250,7 @@ class UnrealCvTracking_1vn(gym.Env):
                         self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
 
                     self.mis_lead.append(mislead)
-            info['Reward'] = np.array(rewards)
+            info['Reward'] = np.array(rewards)[:self.controable_agent]
         target_inarea = self.reward_function.target_inarea()
         if r_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
             info['in_area'] = np.array([1])
@@ -269,8 +269,6 @@ class UnrealCvTracking_1vn(gym.Env):
             self.count_close = 0
             self.live_time = time.time()
 
-        if 'Ram' in self.target or 'Nav' in self.target:
-            info['Reward'] = info['Reward'][:1]
         lost_time = time.time() - self.live_time
         if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
@@ -376,16 +374,22 @@ class UnrealCvTracking_1vn(gym.Env):
 
         self.set_topview(self.obj_pos[0], self.cam_id[0])
         time.sleep(0.5)
+
+        # set controllable agent number
+        self.controable_agent = 1
+        if 'Adv' in self.target or 'PZR' in self.target:
+            self.controable_agent = self.player_num
+            if 'Nav' in self.target or 'Ram' in self.target:
+                self.controable_agent = 2
+
         # get state
-        if 'Ram' in self.target or 'Nav' in self.target:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:2], self.observation_type, 'bmp')
-        else:
-            states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:], self.observation_type, 'bmp')
+        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
+                                                                self.observation_type, 'bmp')
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
         pose_obs = []
-        for j in range(self.player_num):
+        for j in range(self.controable_agent):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
@@ -397,7 +401,7 @@ class UnrealCvTracking_1vn(gym.Env):
             pose_obs.append(vectors)
         self.pose_obs = np.array(pose_obs)
         self.count_freeze = [0 for i in range(self.player_num)]
-        if 'Ram' in self.target or 'Nav' in self.target:
+        if 'Nav' in self.target or 'Ram' in self.target:
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         self.pose = []
