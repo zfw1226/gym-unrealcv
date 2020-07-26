@@ -6,7 +6,7 @@ use_docker = False  # True: use nvidia docker   False: do not use nvidia-docker
 
 # Searching/Navigation
 # -------------------------------------------------
-for env in ['RealisticRoom', 'Arch1']:
+for env in ['RealisticRoom', 'BPRoom', 'Arch1', 'Arch2']:
     setting_file = 'searching/{env}.json'.format(env=env)
     settings = load_env_setting(setting_file)
     for i, reset in enumerate(['random', 'waypoint', 'testpoint']):
@@ -71,7 +71,7 @@ for env in ['City1', 'City2']:
                             )
 
 # "End-to-end Active Object Tracking and Its Real-world Deployment via Reinforcement Learning", IEEE TPAMI
-for env in ['RandomRoom']:
+for env in ['RandomRoom', 'BPRoom', 'Arch2']:
     for i in range(5):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd']:  # observation type

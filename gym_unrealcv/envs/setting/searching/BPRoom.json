@@ -1,0 +1,44 @@
+{
+	"env_name": "BProom",
+	"env_bin": "bwroom_setphy/BW_room/Binaries/Linux/BW_room",
+	"cam_id": 0,
+	"height": 150,
+	"pitch": -15,
+	"maxsteps": 100,
+	"trigger_th": 0.6,
+	"reward_th": 0.1,
+	"reward_factor": 10,
+	"collision_th": 50,
+	"waypoint_th": 200,
+	"targets": {
+		"Sofa": ["sofa"],
+		"Bed": ["bed"],
+		"TV": ["tv"],
+		"Person": ["targetbp"],
+        "Chair": ["chair1", "chair10", "chair2", "chair3", "chair4", "chair5", "chair6", "chair7", "chair8", "chair9"],
+		"Table": ["table1", "table2", "table3"],
+		"Fridge": ["fridge_1"],
+		"Door": ["DOOR"]
+	},
+	"reset_area":[-900, -100, 100, 5000, 140, 160],
+	"test_xy": [
+		[-106.195, 437.424],
+		[27.897, -162.437 ],
+		[10.832, 135.126  ],
+		[67.903, 26.995   ],
+		[-23.558, -187.354],
+		[-80.312, 254.579 ]
+	],
+	"discrete_actions": [
+		[50,   0, 0],
+		[30,  15, 0],
+		[30, -15, 0],
+		[15,  30, 0],
+		[15, -30, 0],
+		[0,    0, 1]
+	],
+	"continous_actions": {
+		"high": [100,   45, 1],
+		"low":  [  0,  -45, 0]
+	}
+}
