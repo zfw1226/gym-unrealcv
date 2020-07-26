@@ -1,0 +1,39 @@
+{
+	"env_name": "ArchinteriorsVol2Sceen1",
+	"env_bin": "arch2_tracking/ArchinteriorsVol2Scene2/Binaries/Linux/ArchinteriorsVol2Scene2",
+	"cam_id": 0,
+	"height": 150,
+	"pitch": -15,
+	"maxsteps": 100,
+	"trigger_th": 0.6,
+	"reward_th": 0.1,
+	"reward_factor": 10,
+	"collision_th": 50,
+	"waypoint_th": 200,
+	"targets": {
+		"Sofa": ["sofa_0_0", "sofa_0_1", "sofa_1_0", "sofa_1_1"],
+		"TV": ["tv_0"],
+		"Person": ["splinecharacter"],
+        "Chair": ["chair1", "chair10", "chair5", "chair6", "chair7", "chair8", "chair9"],
+		"Table": ["Table_0"]
+	},
+	"reset_area":[-350, -100, 0, 150, 140, 160],
+	"test_xy": [
+     [ -350,  150],
+     [ -350,  0],
+     [ -100,  150],
+     [ -100,  0]
+    ],
+	"discrete_actions": [
+		[50,   0, 0],
+		[30,  15, 0],
+		[30, -15, 0],
+		[15,  30, 0],
+		[15, -30, 0],
+		[0,    0, 1]
+	],
+	"continous_actions": {
+		"high": [100, 45, 1],
+		"low":  [0, -45, 0]
+	}
+}
