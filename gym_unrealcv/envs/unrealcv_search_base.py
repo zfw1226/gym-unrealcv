@@ -6,6 +6,7 @@ from gym_unrealcv.envs.navigation import reward, reset_point
 from gym_unrealcv.envs.navigation.visualization import show_info
 from gym_unrealcv.envs.utils import env_unreal
 from gym_unrealcv.envs.navigation.interaction import Navigation
+import random
 '''
 It is a general env for searching target object.
 
@@ -86,6 +87,7 @@ class UnrealCvSearch_base(gym.Env):
         self.count_steps = 0
 
         self.targets_pos = self.unrealcv.build_pose_dic(self.target_list)
+        self.trajectory = []
 
         # for reset point generation and selection
         self.reset_module = reset_point.ResetPoint(setting, reset_type, current_pose)
@@ -172,11 +174,16 @@ class UnrealCvSearch_base(gym.Env):
 
         # double check the resetpoint, it is necessary for random reset type
         collision = True
-        while collision:
+        for i in range(4):
             current_pose = self.reset_module.select_resetpoint()
             self.unrealcv.set_pose(self.cam_id, current_pose)
-            collision = self.unrealcv.move_2d(self.cam_id, 0, 100)
-        self.unrealcv.set_pose(self.cam_id, current_pose)
+            collision = self.unrealcv.move_2d(self.cam_id, 90, 100)
+            if not collision:
+                break
+        if collision:
+            current_pose = self.reset_module.reset_testpoint()
+            self.unrealcv.set_location(self.cam_id, current_pose[:3])
+            self.unrealcv.set_rotation(self.cam_id, current_pose[-3:])
 
         state = self.unrealcv.get_observation(self.cam_id, self.observation_type)
 
