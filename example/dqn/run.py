@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     env.rendering = SHOW
     # must be discrete action
-    assert env.action_type == 'discrete'
+    # assert env.action_type == 'discrete'
 
     ACTION_SIZE = env.action_space.n
     #ACTION_LIST = env.discrete_actions
