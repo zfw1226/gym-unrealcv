@@ -252,22 +252,35 @@ class Tracking(Navigation):
             self.set_obj_location(obj, self.objects_dict[obj])
         self.obstacles = []
 
-    def new_obj(self, obj_type, loc, rot=[0, 0, 0]):
-        # return obj name
-        cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(
-            obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2], roll=rot[0], pitch=rot[1], yaw=rot[2])
-        res = None
-        while res is None:
-            res = self.client.request(cmd)
-        return res[12:-3]
+    # def new_obj(self, obj_type, loc, rot=[0, 0, 0]):
+    #     # return obj name
+    #     cmd_list = []
+    #     cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(
+    #        obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2], roll=rot[0], pitch=rot[1], yaw=rot[2])
+    #     res = None
+    #     while res is None:
+    #         res = self.client.request(cmd)
+    #     return res[12:-3]
 
-    def destroy_obj(self, obj):
-        # return obj name
-        cmd = 'vbp {obj} destroy'.format(obj=obj)
+    def new_obj(self, obj_type, obj_name, loc, rot=[0, 0, 0]):
+        # spawn, set obj pose, enable physics
+        cmd = ['vset /objects/spawn {0} {1}'.format(obj_type, obj_name),
+               'vset /object/{0}/location {1} {2} {3}'.format(obj_name, loc[0], loc[1], loc[2]),
+               'vset /object/{0}/rotation {1} {2} {3}'.format(obj_name, rot[0], rot[1], rot[2]),
+               'vbp {0} set_phy 1'.format(obj_name)
+               ]
         res = None
         while res is None:
             res = self.client.request(cmd)
-        return res[12:-3]
+        return obj_name
+
+    # def destroy_obj(self, obj):
+    #     # return obj name
+    #     cmd = 'vbp {obj} destroy'.format(obj=obj)
+    #     res = None
+    #     while res is None:
+    #         res = self.client.request(cmd)
+    #     return res[12:-3]
 
     def move_goal(self, obj, goal):
         cmd = 'vbp {obj} move_to_goal {x} {y}'.format(obj=obj, x=goal[0] , y=goal[1])
@@ -317,3 +330,12 @@ class Tracking(Navigation):
         else:
             return img_list, pose_list
 
+    def set_cam(self, obj, loc=[0, 30, 70], rot=[0, 0, 0]):
+        # set the camera pose relative to a actor
+        x, y, z = loc
+        row, pitch, yaw = rot
+        cmd = 'vbp {0} set_cam {1} {2} {3} {4} {5} {6}'.format(obj, x, y, z, row, pitch, yaw)
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        return res

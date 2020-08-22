@@ -22,7 +22,7 @@ class UnrealCv(object):
         self.ip = ip
         print (self.ip)
         self.cam = dict()
-        for i in range(6):
+        for i in range(20):
             self.cam[i] = dict(
                  location=[0, 0, 0],
                  rotation=[0, 0, 0],
@@ -95,16 +95,16 @@ class UnrealCv(object):
                 image = image_rgba[:, :, :-1]  # delete alpha channel
             return image
 
-    def read_depth(self, cam_id):
-
+    def read_depth(self, cam_id, inverse=True):
         cmd = 'vget /camera/{cam_id}/depth npy'
         res = self.client.request(cmd.format(cam_id=cam_id))
         depth = np.fromstring(res, np.float32)
         depth = depth[-self.resolution[1] * self.resolution[0]:]
-        depth = depth.reshape(self.resolution[1], self.resolution[0],1)
-        depth = depth/depth.max()
-        #cv2.imshow('depth',depth/depth.max())
-        #cv2.waitKey(10)
+        depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+        if inverse:
+            depth = 1/depth
+        # cv2.imshow('depth', depth/depth.max())
+        # cv2.waitKey(10)
         return depth
 
     def decode_png(self, res):
@@ -161,7 +161,7 @@ class UnrealCv(object):
         self.client.request(cmd.format(cam_id=cam_id, x=loc[0], y=loc[1], z=loc[2]))
         self.cam[cam_id]['location'] = loc
 
-    def get_location(self,cam_id, mode='hard'):
+    def get_location(self, cam_id, mode='hard'):
         if mode == 'soft':
             return self.cam[cam_id]['location']
         if mode == 'hard':
@@ -334,3 +334,6 @@ class UnrealCv(object):
     def set_fov(self, fov, cam_id=0):
         cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
         self.client.request(cmd.format(cam_id=cam_id, FOV=fov))
+
+    def destroy_obj(self, obj):
+        self.client.request('vset /object/{obj}/destroy'.format(obj=obj))

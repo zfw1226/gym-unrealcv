@@ -88,6 +88,8 @@ class UnrealCvTracking_1vn(gym.Env):
         if self.action_type == 'Discrete':
             self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.max_player_num)]
             player_action_space = spaces.Discrete(len(self.discrete_actions_player))
+            self.discrete_actions = np.array(self.discrete_actions)
+            self.discrete_actions_player = np.array(self.discrete_actions_player)
         elif self.action_type == 'Continuous':
             self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
                                       high=np.array(self.continous_actions['high'])) for i in range(self.max_player_num)]
@@ -155,6 +157,10 @@ class UnrealCvTracking_1vn(gym.Env):
         for i in range(len(self.player_list)):
             if i < self.controable_agent:
                 if self.action_type == 'Discrete':
+                    # fix camera
+                    # actions[0] = 6
+                    # add noise on movement
+                    # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     actions2player.append(self.discrete_actions[actions[i]])
                 else:
                     actions2player.append(actions[i])
@@ -186,6 +192,7 @@ class UnrealCvTracking_1vn(gym.Env):
             cam_id_max = 2
         states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp')
+        self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
         states = np.array(states)
         if cam_id_max < self.controable_agent + 1:
             states = np.repeat(states, self.controable_agent, axis=0)
@@ -342,13 +349,15 @@ class UnrealCvTracking_1vn(gym.Env):
         time.sleep(0.5)
         self.rotate2exp(yaw_exp, self.player_list[0])
         # tracker's pose
-        tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
+        # tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
+        tracker_pos = self.unrealcv.get_pose(self.cam_id[1])
         self.obj_pos = [tracker_pos, target_pos]
 
         # new obj
         # self.player_num is set by env.seed()
         while len(self.player_list) < self.player_num:
-            name = self.unrealcv.new_obj(4, self.safe_start[1])
+            name = self.unrealcv.new_obj('target_C', 'target_C_{0}'.format(len(self.player_list)), self.safe_start[1])
+            self.unrealcv.set_obj_color(name, np.random.randint(0, 255, 3))
             self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
             self.unrealcv.set_interval(self.interval, name)
@@ -382,6 +391,11 @@ class UnrealCvTracking_1vn(gym.Env):
             if 'Nav' in self.target or 'Ram' in self.target:
                 self.controable_agent = 2
 
+        # randomize view point
+        height = np.random.randint(-40, 80)
+        pitch = -0.1 * height + np.random.randint(-5, 5)
+        self.unrealcv.set_cam(self.player_list[0], [40, 0, height],
+                              [np.random.randint(-3, 3), pitch, 0])
         # get state
         states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
                                                                 self.observation_type, 'bmp')
