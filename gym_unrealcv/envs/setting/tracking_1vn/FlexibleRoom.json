@@ -1,9 +1,9 @@
 {
 	"env_name": "MPRoom",
-	"env_bin": "tracking_multi/tracking/Binaries/Linux/tracking",
+	"env_bin": "tracking_multi_v2/tracking/Binaries/Linux/tracking",
     "imgs_dir": "textures",
 	"max_player_num": 8,
-	"cam_id": [0, 1, 2],
+	"cam_id": [0, 4, 5],
 	"height": 220,
 	"pitch": 0,
 	"max_steps": 1000,
