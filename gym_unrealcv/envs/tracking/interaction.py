@@ -189,7 +189,7 @@ class Tracking(Navigation):
     def random_lit(self, light_list):
         for lit in light_list:
             if 'sky' in lit:
-                self.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5, 2))
+                self.set_skylight(lit, [1, 1, 1], np.random.uniform(1, 10))
             else:
                 lit_direction = np.random.uniform(-1, 1, 3)
                 if 'directional' in lit:
@@ -198,7 +198,9 @@ class Tracking(Navigation):
                     lit_direction[2] = lit_direction[2] * 60
                 else:
                     lit_direction *= 180
-                self.set_light(lit, lit_direction, np.random.uniform(1, 4), np.random.uniform(0.1, 1, 3))
+                color = np.random.uniform(0.99, 1, 3)
+                color /= color.max()
+                self.set_light(lit, lit_direction, np.random.uniform(1, 6), color) # np.random.uniform(0.1, 1, 3)
 
     def set_random(self, target, value=1):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
