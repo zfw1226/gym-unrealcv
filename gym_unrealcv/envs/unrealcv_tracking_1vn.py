@@ -263,6 +263,10 @@ class UnrealCvTracking_1vn(gym.Env):
             info['in_area'] = np.array([1])
         else:
             info['in_area'] = np.array([0])
+        if info['d_in'] == 0 and max(self.mis_lead) == 0 and self.reward_function.target_incenter():
+            info['perfect'] = 1
+        else:
+            info['perfect'] = 0
         '''
         if r_tracker > 0.5:
             cv2.imshow('good', states[0])

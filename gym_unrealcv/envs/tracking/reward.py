@@ -58,7 +58,7 @@ class Reward():
             observed = 1
             if self.target_inarea:  # target is observed
                 relative_target = abs(self.dis2target - dis_exp)
-                if abs(self.angle2target - direction_error) < 10:
+                if abs(self.angle2target - direction_error) < 15:
                     # occluded by target
                     if self.dis2target < dis2distractor:
                         mislead = 0
@@ -131,6 +131,12 @@ class Reward():
 
     def target_inarea(self):
         if abs(self.angle2target) < 45 and self.dis2target < self.dis_max:
+            return True
+        else:
+            return False
+
+    def target_incenter(self):
+        if abs(self.angle2target) < 15 and abs(self.dis2target - self.dis_exp)/self.dis_exp < 0.3:
             return True
         else:
             return False
