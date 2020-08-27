@@ -161,7 +161,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     # actions[0] = 6
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
-                    actions2player.append(self.discrete_actions[actions[i]])
+                    actions2player.append(self.discrete_actions[actions[i]]*self.action_factor)
                 else:
                     actions2player.append(actions[i])
                 if self.count_freeze[i] > 5 and 'Fix' in self.target:
@@ -175,9 +175,9 @@ class UnrealCvTracking_1vn(gym.Env):
                         # self.discrete_actions[self.action_space[i].sample()]
                 if 'Nav' in self.target:
                     if i == 1:
-                        actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i])*self.action_factor)
                     else:
-                        actions2player.append(self.random_agents[i].act(self.obj_pos[i], self.random_agents[1].goal))
+                        actions2player.append(self.random_agents[i].act(self.obj_pos[i], self.random_agents[1].goal)*self.action_factor)
 
         self.unrealcv.set_move_batch(self.player_list, actions2player)
         self.count_steps += 1
@@ -309,7 +309,8 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
         np.random.seed()
-
+        self.action_factor = np.random.uniform(1.0, 2.0, 2)
+        print(self.action_factor)
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
         if self.reset_type >= 1:

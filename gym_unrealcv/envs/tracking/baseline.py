@@ -1,6 +1,6 @@
 from gym_unrealcv.envs.utils import misc
 import numpy as np
-
+from random import choice
 
 class RandomAgent(object):
     """The world's simplest agent!"""
@@ -78,6 +78,14 @@ class GoalNavAgent(object):
             # self.velocity = 70
             self.step_counter = 0
 
+        if np.random.random() < 0.05:
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+        if np.random.random() < 0.01 and self.angle_noise_step == 0:  # noise angle
+            self.angle = choice([1, -1])*self.angle_high*(1 + 0.2*np.random.random())
+            self.angle_noise_step = np.random.randint(5, 20)
+        else:
+            self.angle_noise_step = 0
+
         delt_yaw = misc.get_direction(pose, self.goal)
         if self.discrete:
             if abs(delt_yaw) > self.angle_high:
@@ -89,9 +97,13 @@ class GoalNavAgent(object):
             elif delt_yaw < -3:
                 self.angle = self.angle_low / 2
         else:
-            self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
+            if self.angle_noise_step > 0:
+                angle = self.angle
+                self.angle_noise_step -= 1
+            else:
+                angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
             velocity = self.velocity * (1 + 0.2*np.random.random())
-        return (velocity, self.angle)
+        return (velocity, angle)
 
     def act2(self, pose):
         if self.pose_last == None or self.fix:
