@@ -7,10 +7,10 @@
 	"height": 100,
 	"pitch": 0,
 	"max_steps": 1000,
-	"max_distance": 600,
-	"min_distance": 100,
-	"max_direction": 90,
-	"exp_distance": 250,
+	"max_distance": 700,
+	"min_distance": 150,
+	"max_direction": 60,
+	"exp_distance": 350,
 	"interval": 10,
 	"players": [
         "targetBP", "targetBP2"

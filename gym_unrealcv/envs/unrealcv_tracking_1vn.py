@@ -309,7 +309,7 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
         np.random.seed()
-        self.action_factor = np.random.uniform(1.0, 2.0, 2)
+        self.action_factor = np.random.uniform(1.0, 1.75, 2)
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
         if self.reset_type >= 1:
@@ -347,7 +347,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
         # init tracker
-        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height)
+        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         time.sleep(0.5)
