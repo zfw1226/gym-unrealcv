@@ -376,7 +376,7 @@ class UnrealCvTracking_1vn(gym.Env):
             if 'Far' in self.target:
                 res = self.unrealcv.get_startpoint(target_pos, None, self.reset_area, self.height, None)
             else:
-                res = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance*1.1, self.max_distance*1.5),
+                res = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.max_distance, self.max_distance*2),
                                                                      self.reset_area, self.height, None)
             if len(res) == 2:
                 cam_pos_exp, yaw_exp = res
