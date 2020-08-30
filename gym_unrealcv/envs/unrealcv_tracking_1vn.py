@@ -309,7 +309,8 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
         np.random.seed()
-        self.action_factor = np.random.uniform(1.0, 1.75, 2)
+        self.action_factor = np.array([np.random.uniform(0.8, 1.5), np.random.uniform(0.5, 1.2)])
+        # self.action_factor = np.array([1,1])
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
         if self.reset_type >= 1:
