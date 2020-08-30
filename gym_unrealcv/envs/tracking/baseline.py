@@ -125,6 +125,7 @@ class GoalNavAgent(object):
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
+        self.angle_noise_step = 0
         self.goal_id = 0
         self.goal = self.generate_goal(self.goal_area, self.fix)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
