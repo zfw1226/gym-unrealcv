@@ -67,6 +67,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_steps = 0
         self.count_close = 0
         self.direction = None
+        self.freeze_list = []
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -360,8 +361,14 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # new obj
         # self.player_num is set by env.seed()
+        print(self.player_list)
         while len(self.player_list) < self.player_num:
-            name = self.unrealcv.new_obj('target_C', 'target_C_{0}'.format(len(self.player_list)), self.safe_start[1])
+            name = 'target_C_{0}'.format(len(self.player_list)+1)
+            print('add:target_C_{0}'.format(len(self.player_list)+1))
+            if name in self.freeze_list:
+                self.freeze_list.remove(name)
+            else:
+                self.unrealcv.new_obj('target_C', name, self.safe_start[1])
             self.unrealcv.set_obj_color(name, np.random.randint(0, 255, 3))
             self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
@@ -370,7 +377,9 @@ class UnrealCvTracking_1vn(gym.Env):
         while len(self.player_list) > self.player_num:
             name = self.player_list.pop()
             self.cam_id.pop()
-            self.unrealcv.destroy_obj(name)
+            self.freeze_list.append(name)
+            # self.unrealcv.destroy_obj(name)
+            print('destroy:{0}'.format(name))
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
