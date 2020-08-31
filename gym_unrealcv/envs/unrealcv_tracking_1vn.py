@@ -361,10 +361,8 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # new obj
         # self.player_num is set by env.seed()
-        print(self.player_list)
         while len(self.player_list) < self.player_num:
             name = 'target_C_{0}'.format(len(self.player_list)+1)
-            print('add:target_C_{0}'.format(len(self.player_list)+1))
             if name in self.freeze_list:
                 self.freeze_list.remove(name)
             else:
@@ -379,7 +377,6 @@ class UnrealCvTracking_1vn(gym.Env):
             self.cam_id.pop()
             self.freeze_list.append(name)
             # self.unrealcv.destroy_obj(name)
-            print('destroy:{0}'.format(name))
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
