@@ -1,6 +1,6 @@
 {
 	"env_name": "ParkingLot_Multi",
-	"env_bin": "parking_new/garage/Binaries/Linux/garage",
+	"env_bin": "garage_422/garage/Binaries/Linux/garage",
     "imgs_dir": "textures",
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],
@@ -13,7 +13,7 @@
 	"exp_distance": 350,
 	"interval": 10,
 	"players": [
-        "targetBP", "targetBP2"
+        "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
 		[ 120,  0],
