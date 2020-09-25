@@ -162,7 +162,9 @@ class UnrealCvTracking_1vn(gym.Env):
                     # actions[0] = 6
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
-                    actions2player.append(self.discrete_actions[actions[i]]*self.action_factor)
+                    act_now = self.discrete_actions[actions[i]]*self.action_factor
+                    self.act_smooth[i] = self.act_smooth[i]*0.7 + act_now*0.3
+                    actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
                 if self.count_freeze[i] > 5 and 'Fix' in self.target:
@@ -430,6 +432,7 @@ class UnrealCvTracking_1vn(gym.Env):
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         self.pose = []
+        self.act_smooth = [np.zeros(2) for i in range(self.controable_agent)]
         self.live_time = time.time()
         return states
 
