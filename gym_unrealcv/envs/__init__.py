@@ -6,6 +6,7 @@ from gym_unrealcv.envs.unrealcv_tracking_1v1 import UnrealCvTracking_1v1
 
 # developing environments
 from gym_unrealcv.envs.unrealcv_tracking_1vn import UnrealCvTracking_1vn
+from gym_unrealcv.envs.unrealcv_tracking_nvn import UnrealCvTracking_nvn
 from gym_unrealcv.envs.unrealcv_MCMT import UnrealCvMCMT
 from gym_unrealcv.envs.unrealcv_MC import UnrealCvMC
 from gym_unrealcv.envs.video_tracking import VideoTracking_base

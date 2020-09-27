@@ -108,7 +108,7 @@ class Tracking(Navigation):
         else:
             return True
 
-    def get_startpoint(self, target_pos, distance, reset_area, exp_height=200, direction=None):
+    def get_startpoint(self, target_pos=[], distance=None, reset_area=[], exp_height=200, direction=None):
         for i in range(5):  # searching a safe point
             if direction == None:
                 direction = 2 * np.pi * np.random.sample(1)
@@ -295,6 +295,7 @@ class Tracking(Navigation):
         cmd_loc = 'vget /object/{obj}/location'
         cmd_rot = 'vget /object/{obj}/rotation'
         cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
+        cmd_cam_loc = 'vget /camera/{cam_id}/location'
         cmd_list = []
         if obs_type == 'Color':
             viewmode = 'lit'
@@ -308,6 +309,7 @@ class Tracking(Navigation):
             cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
         if cam_rot:
             for cam_id in cam_ids:
+                cmd_list.append(cmd_cam_loc.format(cam_id=cam_id))
                 cmd_list.append(cmd_cam_rot.format(cam_id=cam_id))
         res_list = None
         while res_list is None:
@@ -323,12 +325,14 @@ class Tracking(Navigation):
             image = self.decode_bmp(res_list[len(objs_list)*2+i])[:, :, :-1]
             img_list.append(image)
         if cam_rot:
-            cam_loc_list = []
+            cam_pose_list = []
             for i in range(len(cam_ids)):
-                rot = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i].split()]
+                loc = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i*2].split()]
+                rot = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i*2+1].split()]
                 rot.reverse()
-                cam_loc_list.append(rot)
-            return img_list, pose_list, cam_loc_list
+                pose = loc + rot
+                cam_pose_list.append(pose)
+            return img_list, pose_list, cam_pose_list
         else:
             return img_list, pose_list
 
