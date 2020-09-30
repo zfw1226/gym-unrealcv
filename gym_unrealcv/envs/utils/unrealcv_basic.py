@@ -22,6 +22,7 @@ class UnrealCv(object):
         self.ip = ip
         print (self.ip)
         self.cam = dict()
+        self.color_dict = dict()
         for i in range(20):
             self.cam[i] = dict(
                  location=[0, 0, 0],
@@ -234,6 +235,7 @@ class UnrealCv(object):
     def set_obj_color(self, obj, color):
         cmd = 'vset /object/{obj}/color {r} {g} {b}'
         self.client.request(cmd.format(obj=obj, r=color[0], g=color[1], b=color[2]))
+        self.color_dict[obj] = color
 
     def set_obj_location(self, obj, loc):
         cmd = 'vset /object/{obj}/location {x} {y} {z}'
@@ -289,6 +291,7 @@ class UnrealCv(object):
         for obj in objects:
             color = self.get_obj_color(obj)
             color_dict[obj] = color
+        self.color_dict = color_dict
         return color_dict
 
     def get_obj_location(self, obj):

@@ -101,9 +101,13 @@ class UnrealCvTracking_nvn(gym.Env):
         # define observation space,
         # color, depth, rgbd,...
         self.observation_type = observation_type
-        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']
+        assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask', 'MaskDepth']
         self.observation_space = [self.unrealcv.define_observation(self.cam_id[0], self.observation_type, 'fast')
                                   for i in range(self.max_player_num)]
+        if self.observation_type == 'MaskDepth':
+            self.maskdepth = True
+        else:
+            self.maskdepth = False
         self.unrealcv.pitch = self.pitch
         # define reward type
         # distance, bbox, bbox_distance,
@@ -138,6 +142,7 @@ class UnrealCvTracking_nvn(gym.Env):
             self.unrealcv.set_interval(self.interval, player)
 
         self.player_num = self.max_player_num
+        self.unrealcv.build_color_dic(self.player_list)
 
     def step(self, actions):
         info = dict(
@@ -163,7 +168,7 @@ class UnrealCvTracking_nvn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    self.act_smooth[i] = self.act_smooth[i]*0.7 + act_now*0.3
+                    self.act_smooth[i] = self.act_smooth[i]*0.01 + act_now*0.99
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
@@ -187,18 +192,23 @@ class UnrealCvTracking_nvn(gym.Env):
         pose_obs = []
         relative_pose = []
 
-
         cam_id_max = self.controable_agent + 1
         if 'Adv' in self.target:
             cam_id_max = len(self.tracker_list) + 1
         # TODO: Teacher use depth+mask
-        states, self.obj_pos, cam_pose = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
+        states, self.obj_pos, cam_pose, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp', True)
-
         self.obj_pos[:len(self.tracker_list)] = cam_pose[:len(self.tracker_list)]
-        # for i, img in enumerate(states):
-        #     cv2.imshow('view_{}'.format(str(i)), img)
-        #     cv2.waitKey(1)
+        if self.maskdepth:
+            for i, state in enumerate(states):
+                if i < self.tracker_num:
+                    mask = self.unrealcv.get_mask(state, self.target_list[i])
+                else:
+                    mask = self.unrealcv.get_mask(state, self.tracker_list[i-self.tracker_num])
+                mask = np.expand_dims(mask, -1)/255
+                dep = depth_list[i]
+                states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
+
         states = np.array(states)
         if cam_id_max < self.controable_agent + 1:
             states = np.repeat(states, self.controable_agent, axis=0)
@@ -432,8 +442,20 @@ class UnrealCvTracking_nvn(gym.Env):
             #     self.controable_agent = self.tracker_num
 
         # get state
-        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
-                                                                self.observation_type, 'bmp')
+
+        states, self.obj_pos, cam_pose, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
+                                                                    self.observation_type, 'bmp', True)
+
+        if self.maskdepth:
+            for i, state in enumerate(states):
+                if i < self.tracker_num:
+                    mask = self.unrealcv.get_mask(state, self.target_list[i])
+                else:
+                    mask = self.unrealcv.get_mask(state, self.tracker_list[i-self.tracker_num])
+                mask = np.expand_dims(mask, -1)/255
+                dep = depth_list[i]
+                states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
+
         # TODO: use object_mask to get the instance
         # for i, img in enumerate(states):
         #     cv2.imshow('view_{}'.format(str(i)), img)

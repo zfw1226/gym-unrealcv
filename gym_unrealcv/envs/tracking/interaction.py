@@ -292,6 +292,7 @@ class Tracking(Navigation):
 
     def get_pose_img_batch(self, objs_list, cam_ids, obs_type='lit', mode='fast', cam_rot=False):
         cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
+        cmd_depth = 'vget /camera/{cam_id}/depth npy'
         cmd_loc = 'vget /object/{obj}/location'
         cmd_rot = 'vget /object/{obj}/rotation'
         cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
@@ -299,14 +300,20 @@ class Tracking(Navigation):
         cmd_list = []
         if obs_type == 'Color':
             viewmode = 'lit'
-        elif obs_type == 'Mask':
+        elif 'Mask' in obs_type:
             viewmode = 'object_mask'
+        if 'Depth' in obs_type:
+            use_depth = True
+        else:
+            use_depth = False
 
         for i in range(len(objs_list)):
             cmd_list.append(cmd_loc.format(obj=objs_list[i]))
             cmd_list.append(cmd_rot.format(obj=objs_list[i]))
         for cam_id in cam_ids:
             cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
+            if use_depth:
+                cmd_list.append(cmd_depth.format(cam_id=cam_id))
         if cam_rot:
             for cam_id in cam_ids:
                 cmd_list.append(cmd_cam_loc.format(cam_id=cam_id))
@@ -316,25 +323,52 @@ class Tracking(Navigation):
             res_list = self.client.request(cmd_list)
         pose_list = []
         img_list = []
+        depth_list = []
         for i in range(len(objs_list)):
             loc = [float(j) for j in res_list[i*2].split()]
             rot = [float(j) for j in res_list[i*2+1].split()]
             pose = loc + rot
             pose_list.append(pose)
+        start_point = len(objs_list)*2
         for i in range(len(cam_ids)):
-            image = self.decode_bmp(res_list[len(objs_list)*2+i])[:, :, :-1]
+            p = int(start_point+i*(1+use_depth))
+            image = self.decode_bmp(res_list[p])[:, :, :-1]
             img_list.append(image)
+            if use_depth:
+                depth = np.fromstring(res_list[p+1], np.float32)
+                depth = depth[-self.resolution[1] * self.resolution[0]:]
+                depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+                depth = 200/depth
+                depth_list.append(depth)
+        start_point = int(len(objs_list)*2+len(cam_ids)*(1+use_depth))
         if cam_rot:
             cam_pose_list = []
             for i in range(len(cam_ids)):
-                loc = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i*2].split()]
-                rot = [float(j) for j in res_list[len(objs_list)*2+len(cam_ids)+i*2+1].split()]
+                loc = [float(j) for j in res_list[start_point+i*2].split()]
+                rot = [float(j) for j in res_list[start_point+i*2+1].split()]
                 rot.reverse()
                 pose = loc + rot
                 cam_pose_list.append(pose)
-            return img_list, pose_list, cam_pose_list
+            return img_list, pose_list, cam_pose_list, depth_list
         else:
-            return img_list, pose_list
+            return img_list, pose_list, depth_list
+    def get_depth_batch(self, cam_ids, inverse=True):
+        cmd_list = []
+        cmd_depth = 'vget /camera/{cam_id}/depth npy'
+        for cam_id in cam_ids:
+            cmd_list.append(cmd_depth.format(cam_id=cam_id))
+        res_list = None
+        while res_list is None:
+            res_list = self.client.request(cmd_list)
+        depth_list = []
+        for res in res_list:
+            depth = np.fromstring(res, np.float32)
+            depth = depth[-self.resolution[1] * self.resolution[0]:]
+            depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+            if inverse:
+                depth = 1/depth
+            depth_list.append(depth)
+        return depth_list
 
     def set_cam(self, obj, loc=[0, 30, 70], rot=[0, 0, 0]):
         # set the camera pose relative to a actor
