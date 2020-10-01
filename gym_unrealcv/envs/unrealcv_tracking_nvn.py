@@ -432,7 +432,9 @@ class UnrealCvTracking_nvn(gym.Env):
         self.obj_pos = self.tracker_pos + self.target_pos
 
         # cam on top of tracker
-        self.set_topview(self.obj_pos[0], self.cam_id[0])
+        # self.set_topview(self.obj_pos[0], self.cam_id[0])
+        center_pos = [(self.reset_area[0]+self.reset_area[1])/2, (self.reset_area[2]+self.reset_area[3])/2, 2000]
+        self.set_topview(center_pos, self.cam_id[0])
         time.sleep(0.5)
         # set controllable agent number
         self.controable_agent = self.tracker_num
@@ -504,8 +506,7 @@ class UnrealCvTracking_nvn(gym.Env):
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
         cam_loc[-1] = current_pose[-1]+800
-        cam_rot = current_pose[-3:]
-        cam_rot[-1] = -90
+        cam_rot = [-90, -90, -90]
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
 
