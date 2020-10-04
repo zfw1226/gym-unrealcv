@@ -193,9 +193,8 @@ class UnrealCvTracking_nvn(gym.Env):
         relative_pose = []
 
         cam_id_max = self.controable_agent + 1
-        if 'Adv' in self.target:
-            cam_id_max = len(self.tracker_list) + 1
-        # TODO: Teacher use depth+mask
+        # if 'Adv' in self.target:
+        #     cam_id_max = len(self.tracker_list) + 1
         states, self.obj_pos, cam_pose, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp', True)
         self.obj_pos[:len(self.tracker_list)] = cam_pose[:len(self.tracker_list)]
@@ -208,11 +207,10 @@ class UnrealCvTracking_nvn(gym.Env):
                 mask = np.expand_dims(mask, -1)/255
                 dep = depth_list[i]
                 states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
+                # cv2.imshow('mask_{}'.format(i), states[i])
+                # cv2.waitKey(1)
 
         states = np.array(states)
-        if cam_id_max < self.controable_agent + 1:
-            states = np.repeat(states, self.controable_agent, axis=0)
-
         for j in range(self.controable_agent):
             vectors = []
             for i in range(self.player_num):
@@ -243,7 +241,7 @@ class UnrealCvTracking_nvn(gym.Env):
         info['Relative_Pose'] = relative_pose
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
-
+        print(info['Direction'])
         info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
@@ -288,6 +286,7 @@ class UnrealCvTracking_nvn(gym.Env):
                 #
                 #     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
+            print(info['Reward'])
         # target_inarea = self.reward_function.target_inarea()
         # if rs_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
         #     info['in_area'] = np.array([1])
