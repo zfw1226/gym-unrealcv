@@ -166,7 +166,7 @@ for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask', 'MaskDepth']:  # observation type
-                for target in ['Ram', 'Nav', 'NavBase', 'NavGoal', 'Internal', 'PZRNav', 'AdvNav', 'PZR', 'Adv', 'AdvFix', 'AdvRes', 'AdvResFix']:
+                for target in ['Ram', 'Nav', 'NavBase', 'NavGoal', 'Internal', 'PZRNav', 'AdvNav', 'PZR', 'Adv', 'AdvShare']:
                     for reset_mode in ['', 'Far']:
                             target = target+reset_mode
                             name = 'UnrealTracknvn-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)

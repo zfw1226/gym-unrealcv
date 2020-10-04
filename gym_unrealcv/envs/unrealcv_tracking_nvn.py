@@ -241,7 +241,6 @@ class UnrealCvTracking_nvn(gym.Env):
         info['Relative_Pose'] = relative_pose
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
-        print(info['Direction'])
         info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
@@ -262,6 +261,9 @@ class UnrealCvTracking_nvn(gym.Env):
                     rs_target.append(r_target)
                 else:
                     break
+            if 'Share' in self.target:
+                ave_target = np.mean(rs_target)
+                rs_target = [0.5*r + 0.5*ave_target for r in rs_target]
             rewards = rs_tracker + rs_target
                 # else:
                 #     r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
@@ -286,7 +288,6 @@ class UnrealCvTracking_nvn(gym.Env):
                 #
                 #     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
-            print(info['Reward'])
         # target_inarea = self.reward_function.target_inarea()
         # if rs_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
         #     info['in_area'] = np.array([1])
