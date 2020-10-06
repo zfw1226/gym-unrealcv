@@ -168,7 +168,7 @@ class UnrealCvTracking_nvn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    self.act_smooth[i] = self.act_smooth[i]*0.01 + act_now*0.99
+                    self.act_smooth[i] = self.act_smooth[i]*0.7 + act_now*0.3
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
@@ -359,8 +359,14 @@ class UnrealCvTracking_nvn(gym.Env):
                     # map_id = [6, 7, 8, 9]
                 self.unrealcv.set_appearance(obj, app_id, spline)
 
-        # target appearance
+        # obstacle
         if self.reset_type >= 2:
+            self.unrealcv.clean_obstacles()
+            self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
+                                           20, self.reset_area, self.start_area)
+
+        # target appearance
+        if self.reset_type >= 3:
             if self.env_name == 'MPRoom':  # random target texture
                 for obj in self.player_list[1:]:
                     self.unrealcv.random_player_texture(obj, self.textures_list, 3)
@@ -368,14 +374,8 @@ class UnrealCvTracking_nvn(gym.Env):
             self.unrealcv.random_lit(self.light_list)
 
         # texture
-        if self.reset_type >= 3:
-            self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
-
-        # obstacle
         if self.reset_type >= 4:
-            self.unrealcv.clean_obstacles()
-            self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
-                                           20, self.reset_area, self.start_area)
+            self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
         # new players
         # self.player_num is set by env.seed()

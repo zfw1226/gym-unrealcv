@@ -11,7 +11,7 @@
 	"min_distance": 150,
 	"max_direction": 60,
 	"exp_distance": 250,
-	"interval": 10,
+	"interval": 150,
 	"players": [
         "targetbp", "targetbp2"
 	],
@@ -29,8 +29,8 @@
 		[-100,  0],
 		[  50, 15],
 		[  50,-15],
-		[  0,  30],
-		[  0, -30],
+		[  30, 60],
+		[  30,-60],
 		[  0,   0]
 	],
 	"safe_start" :[
