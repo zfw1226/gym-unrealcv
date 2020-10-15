@@ -230,14 +230,15 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def random_obstacles(self, objects, img_dirs, num, area, start_area):
+    def random_obstacles(self, objects, img_dirs, num, area, start_area, texture=False):
         sample_index = np.random.choice(len(objects), num, replace=False)
         for id in sample_index:
             obstacle = objects[id]
             self.obstacles.append(obstacle)
             # texture
-            img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-            self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
+            if texture:
+                img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
+                self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             # scale
             self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
             # location
@@ -247,7 +248,7 @@ class Tracking(Navigation):
                 obstacle_loc[1] = np.random.uniform(area[2]+100, area[3]-100)
                 obstacle_loc[2] = np.random.uniform(area[4], area[5])
             self.set_obj_location(obstacle, obstacle_loc)
-            time.sleep(0.03)
+            time.sleep(0.01)
 
     def clean_obstacles(self):
         for obj in self.obstacles:

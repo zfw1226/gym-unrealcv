@@ -16,22 +16,22 @@
         "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
+		[ 200,  0],
+		[-200,  0],
+		[ 100, 15],
+		[ 100,-15],
 		[  0,  30],
 		[  0, -30],
 		[  0,   0]
 	],
   	"discrete_actions_player": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
-		[  30, 60],
-		[  30,-60],
-		[  0,   0]
+		[  5,  0],
+		[ -5,  0],
+		[  5,  5],
+		[  5, -5],
+		[ -5,  5],
+		[ -5, -5],
+		[  0,  0]
 	],
 	"safe_start" :[
 		[ -1000, -600,  150],
@@ -43,16 +43,15 @@
     ],
 	"reset_area" : [-1800, 900, -1400, 1200, 135, 140],
 	"continous_actions": {
-		"high": [100,     30],
-		"low":  [-100,   -30]
+		"high": [200,     30],
+		"low":  [-200,   -30]
 	},
 	"continous_actions_player": {
-		"high": [100,     30],
+		"high": [200,     30],
 		"low":  [50,     -30]
 	},
 	"objects_list": [
 		"cube1", "cube2_7", "cube3", "cube4", "cube5",
-		"sphere1", "sphere2", "sphere3", "sphere4", "sphere5",
 		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
 		"cone1", "cone2", "cone3", "cone4", "cone5"
 	],

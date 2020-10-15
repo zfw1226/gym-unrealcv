@@ -116,7 +116,7 @@ class UnrealCvTracking_nvn(gym.Env):
 
         self.rendering = False
 
-        if self.reset_type >= 4:
+        if self.reset_type >= 2:
             self.unrealcv.init_objects(self.objects_env)
 
         self.count_close = 0
@@ -161,7 +161,7 @@ class UnrealCvTracking_nvn(gym.Env):
         )
         actions2player = []
         for i in range(len(self.player_list)):
-            if i < self.controable_agent:
+            if i < self.tracker_num:
                 if self.action_type == 'Discrete':
                     # fix camera
                     # actions[0] = 6
@@ -172,6 +172,11 @@ class UnrealCvTracking_nvn(gym.Env):
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
+            elif i < self.controable_agent: # controllable target
+                self.act_smooth[i] += self.discrete_actions_player[actions[i]]*self.action_factor
+                self.act_smooth[i][0] = np.clip(self.act_smooth[i][0], -200, 200)
+                self.act_smooth[i][1] = np.clip(self.act_smooth[i][1], -90,  90)
+                actions2player.append(self.act_smooth[i])
             else:
                 if 'Ram' in self.target:
                     if self.action_type == 'Discrete':
@@ -312,7 +317,8 @@ class UnrealCvTracking_nvn(gym.Env):
 
         lost_time = time.time() - self.live_time
         # TODO: use agent-wise done condition
-        if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
+        # if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
+        if self.count_steps > self.max_steps:
             info['Done'] = True
         # if 'Res' in self.target:
         #     for obj in reset_id:
@@ -363,7 +369,7 @@ class UnrealCvTracking_nvn(gym.Env):
         if self.reset_type >= 2:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
-                                           20, self.reset_area, self.start_area)
+                                           10, self.reset_area, self.start_area)
 
         # target appearance
         if self.reset_type >= 3:
@@ -459,9 +465,9 @@ class UnrealCvTracking_nvn(gym.Env):
                 states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
 
         # TODO: use object_mask to get the instance
-        # for i, img in enumerate(states):
-        #     cv2.imshow('view_{}'.format(str(i)), img)
-        #     cv2.waitKey(1)
+        for i, img in enumerate(states):
+            cv2.imshow('view_{}'.format(str(i)), img)
+            cv2.waitKey(1)
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
@@ -482,7 +488,7 @@ class UnrealCvTracking_nvn(gym.Env):
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         self.pose = []
-        self.act_smooth = [np.zeros(2) for i in range(self.controable_agent)]
+        self.act_smooth = [np.array([0.0, 0.0]) for i in range(self.controable_agent)]
         self.live_time = time.time()
         return states
 
