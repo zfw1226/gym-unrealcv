@@ -369,7 +369,7 @@ class UnrealCvTracking_nvn(gym.Env):
         if self.reset_type >= 2:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
-                                           10, self.reset_area, self.start_area)
+                                           10, self.reset_area, self.start_area, self.reset_type >= 4)
 
         # target appearance
         if self.reset_type >= 3:
@@ -465,9 +465,9 @@ class UnrealCvTracking_nvn(gym.Env):
                 states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
 
         # TODO: use object_mask to get the instance
-        for i, img in enumerate(states):
-            cv2.imshow('view_{}'.format(str(i)), img)
-            cv2.waitKey(1)
+        # for i, img in enumerate(states):
+        #     cv2.imshow('view_{}'.format(str(i)), img)
+        #     cv2.waitKey(1)
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
