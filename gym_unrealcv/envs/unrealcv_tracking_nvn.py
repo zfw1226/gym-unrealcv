@@ -464,8 +464,8 @@ class UnrealCvTracking_nvn(gym.Env):
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
         self.pose = []
-        self.act_smooth = [np.array([0, 0.0]) for i in range(self.tracker_num)]
-        self.act_smooth += [np.array([random.randint(-100, 100), 0.0]) for i in range(self.controable_agent - self.tracker_num)]
+        self.act_smooth = [np.array([0, 0.0]) for i in range(self.controable_agent)]
+        # self.act_smooth += [np.array([random.randint(-100, 100), 0.0]) for i in range(self.controable_agent - self.tracker_num)]
 
         self.live_time = time.time()
         return states
