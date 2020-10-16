@@ -144,6 +144,14 @@ class UnrealCvTracking_nvn(gym.Env):
 
         self.player_num = self.max_player_num
         self.unrealcv.build_color_dic(self.player_list)
+        self.area = dict(
+            x_mid=(self.reset_area[0] + self.reset_area[1])/2,
+            x_range=self.reset_area[1] - self.reset_area[0],
+            y_mid=(self.reset_area[2]+self.reset_area[3])/2,
+            y_range=self.reset_area[3]-self.reset_area[2],
+            z_mid=(self.reset_area[4] + self.reset_area[5])/2,
+            z_range=self.reset_area[4]
+        )
 
     def step(self, actions):
         info = dict(
@@ -194,10 +202,7 @@ class UnrealCvTracking_nvn(gym.Env):
         self.unrealcv.set_move_batch(self.player_list, actions2player)
         self.count_steps += 1
 
-        # get relative distance
-        pose_obs = []
-        relative_pose = []
-
+        # get states
         cam_id_max = self.controable_agent + 1
         # if 'Adv' in self.target:
         #     cam_id_max = len(self.tracker_list) + 1
@@ -217,35 +222,13 @@ class UnrealCvTracking_nvn(gym.Env):
                 # cv2.waitKey(1)
 
         states = np.array(states)
-        for j in range(self.controable_agent):
-            vectors = []
-            for i in range(self.player_num):
-                obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
-                if j < self.tracker_num and i == j+self.tracker_num:
-                    relative_pose.append([distance, direction])
+        # get relative distance
+        relative_pose, abs_pos, self.pose_obs = self.get_pos(self.obj_pos)
 
-                yaw = self.obj_pos[j][4]/180*np.pi
-                abs_loc = [self.obj_pos[i][0]/self.exp_distance, self.obj_pos[i][1]/self.exp_distance,
-                           self.obj_pos[i][2]/self.exp_distance, np.cos(yaw), np.sin(yaw)]
-                obs = obs + abs_loc
-                vectors.append(obs)
-
-            if j < self.tracker_num:
-                b = vectors.pop(j + self.tracker_num)
-                a = vectors.pop(j)
-                vectors = [b] + [a] + vectors  # opponent, self, others
-            else:
-                a = vectors.pop(j)
-                b = vectors.pop(j-self.tracker_num)
-                vectors = [b] + [a] + vectors
-            pose_obs.append(vectors)
-
-        relative_pose = np.array(relative_pose)
         info['Pose'] = self.obj_pos[0]
         info['Direction'] = relative_pose[:, 1]
         info['Distance'] = relative_pose[:, 0]
         info['Relative_Pose'] = relative_pose
-        self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
         info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
         # cv2.imshow('tracker', states[0])
@@ -295,6 +278,8 @@ class UnrealCvTracking_nvn(gym.Env):
                 #     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
         # target_inarea = self.reward_function.target_inarea()
+        info['in_area'] = np.array([0])
+        info['perfect'] = 0
         # if rs_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
         #     info['in_area'] = np.array([1])
         # else:
@@ -472,18 +457,8 @@ class UnrealCvTracking_nvn(gym.Env):
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
-        pose_obs = []
-        for j in range(self.controable_agent):
-            vectors = []
-            for i in range(self.player_num):
-                obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
-                yaw = self.obj_pos[j][4]/180*np.pi
-                abs_loc = [self.obj_pos[i][0]/self.exp_distance, self.obj_pos[i][1]/self.exp_distance,
-                           self.obj_pos[i][2]/self.exp_distance, np.cos(yaw), np.sin(yaw)]
-                obs = obs + abs_loc
-                vectors.append(obs)
-            pose_obs.append(vectors)
-        self.pose_obs = np.array(pose_obs)
+        relative_pose, abs_pos, self.pose_obs = self.get_pos(self.obj_pos)
+
         self.count_freeze = [0 for i in range(self.player_num)]
         if 'Nav' in self.target or 'Ram' in self.target:
             for i in range(len(self.random_agents)):
@@ -539,3 +514,33 @@ class UnrealCvTracking_nvn(gym.Env):
             if delta_yaw > 180:
                 delta_yaw = 360 - delta_yaw
         return delta_yaw
+
+    def get_pos(self, obj_pos):
+        relative_pose = []
+        abs_pos = []
+        pose_obs = []
+        for i in range(self.player_num):
+            yaw = obj_pos[i][4] / 180 * np.pi
+            abs_loc = [(obj_pos[i][0] - self.area['x_mid']) / self.exp_distance,
+                       (obj_pos[i][1] - self.area['y_mid']) / self.exp_distance,
+                       (obj_pos[i][2] - self.area['z_mid']) / self.exp_distance,
+                       np.cos(yaw), np.sin(yaw)]
+            abs_pos.append(abs_loc)
+        for j in range(self.controable_agent):
+            vectors = []
+            for i in range(self.player_num):
+                obs, distance, direction = self.get_relative(obj_pos[j], obj_pos[i])
+                if j < self.tracker_num and i == j+self.tracker_num:
+                    relative_pose.append([distance, direction])
+                obs = obs + abs_pos[i]
+                vectors.append(obs)
+            if j < self.tracker_num:
+                b = vectors.pop(j + self.tracker_num)
+                a = vectors.pop(j)
+                vectors = [b] + [a] + vectors  # opponent, self, others
+            else:
+                a = vectors.pop(j)
+                b = vectors.pop(j-self.tracker_num)
+                vectors = [b] + [a] + vectors
+            pose_obs.append(vectors)
+        return np.array(relative_pose), np.array(abs_pos), np.array(pose_obs)
