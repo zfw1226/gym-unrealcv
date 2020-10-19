@@ -223,37 +223,66 @@ class UnrealCvTracking_nvn(gym.Env):
 
         states = np.array(states)
         # get relative distance
-        relative_pose, abs_pos, self.pose_obs = self.get_pos(self.obj_pos)
+        relative_track, abs_pos, self.pose_obs, relative_pose, reward_mat = self.get_pos(self.obj_pos)
 
         info['Pose'] = self.obj_pos[0]
-        info['Direction'] = relative_pose[:, 1]
-        info['Distance'] = relative_pose[:, 0]
-        info['Relative_Pose'] = relative_pose
-        info['Pose_Obs'] = self.pose_obs
+        info['Direction'] = relative_track[:, 1]
+        info['Distance'] = relative_track[:, 0]
+        info['Relative_Pose'] = relative_track
+        info['Pose_Obs'] = self.pose_obs[:self.controable_agent]
         info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
+
+        # metrics used for evaluation
+        relative_dis = relative_pose[:, :, 0]
+        relative_ori = relative_pose[:, :, 1]
+        close_mat = np.zeros_like(relative_dis)
+        close_mat[np.where(relative_dis < self.exp_distance)] = 1
+        close_num = np.sum(close_mat) - 2 * np.diagonal(close_mat, -self.tracker_num).sum() - self.player_num
+        info['density'] = close_num/(self.player_num*(self.player_num-2))
+        # target
+        close_mat_target = close_mat[self.tracker_num:]
+        info['density_target'] = (close_mat_target.sum() - close_mat_target.diagonal().sum() - self.target_num)/(self.target_num*(self.player_num-2))
+        # tracker
+        view_mat = np.zeros_like(relative_ori)
+        view_mat[np.where(np.fabs(relative_ori) < 45)] = 1
+        view_mat[np.where(relative_dis > self.max_distance)] = 0
+        view_mat_tracker = view_mat[:self.tracker_num]
+        info['density_tracker'] = (view_mat_tracker.sum() - view_mat_tracker.diagonal(self.tracker_num).sum() - self.tracker_num)/(self.tracker_num*(self.player_num-2))
+        info['target_viewed'] = view_mat_tracker.sum(0)[self.tracker_num:]
+        info['tracked'] = view_mat_tracker.diagonal(self.tracker_num).sum()/self.tracker_num
+        info['metrics'] = np.array([info['tracked'], info['density_tracker'], info['density_target'], info['density']])
         info['d_in'] = 0
         self.mis_lead = [0]
         reset_id = []
         if 'distance' in self.reward_type:
-            rs_tracker = []
-            rs_target = []
-            for i in range(len(self.player_list)):
-                if i < self.tracker_num:
-                    r_tracker = self.reward_function.reward_distance(info['Distance'][i], info['Direction'][i])
-                    # TODO: encourage target-target collaboration
-                    r_target = self.reward_function.reward_target(info['Distance'][i],
-                                                                  info['Direction'][i], None, self.w_p)
-                    rs_tracker.append(r_tracker)
-                    rs_target.append(r_target)
-                else:
-                    break
+            rs_tracker = reward_mat.diagonal(self.tracker_num)
+            rs_target = -rs_tracker
+            reward_mat[np.where(reward_mat < 0)] = 0
+            # print(np.sum(reward_mat, 0)[self.tracker_num:])
             if 'Share' in self.target:
-                ave_target = np.mean(rs_target)
-                rs_target = [0.5*r + 0.5*ave_target for r in rs_target]
-            rewards = rs_tracker + rs_target
+                rs_distractor = np.sum(reward_mat, 0)[self.tracker_num:] - reward_mat.diagonal(self.tracker_num)
+                rs_target += rs_distractor
+            rewards = np.concatenate((rs_tracker, rs_target), axis=None)
+            # print(rewards)
+            # rs_tracker = []
+            # rs_target = []
+            # for i in range(len(self.player_list)):
+            #     if i < self.tracker_num:
+            #         r_tracker = self.reward_function.reward_distance(info['Distance'][i], info['Direction'][i])
+            #         # TODO: encourage target-target collaboration
+            #         r_target = self.reward_function.reward_target(info['Distance'][i],
+            #                                                       info['Direction'][i], None, self.w_p)
+            #         rs_tracker.append(r_tracker)
+            #         rs_target.append(r_target)
+            #     else:
+            #         break
+            # if 'Share' in self.target:
+            #     ave_target = np.mean(rs_target)
+            #     rs_target = [0.5*r + 0.5*ave_target for r in rs_target]
+            # rewards = rs_tracker + rs_target
                 # else:
                 #     r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
                 #                                                           self.player_num - 2)
@@ -457,7 +486,7 @@ class UnrealCvTracking_nvn(gym.Env):
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
-        relative_pose, abs_pos, self.pose_obs = self.get_pos(self.obj_pos)
+        relative_track, abs_pos, self.pose_obs, relative_pose, reward_mat = self.get_pos(self.obj_pos)
 
         self.count_freeze = [0 for i in range(self.player_num)]
         if 'Nav' in self.target or 'Ram' in self.target:
@@ -516,9 +545,11 @@ class UnrealCvTracking_nvn(gym.Env):
         return delta_yaw
 
     def get_pos(self, obj_pos):
-        relative_pose = []
+        relative_track = []
         abs_pos = []
         pose_obs = []
+        relative_pose = np.zeros((self.player_num, self.player_num, 2))
+        reward_mat = np.zeros((self.tracker_num, self.player_num))
         for i in range(self.player_num):
             yaw = obj_pos[i][4] / 180 * np.pi
             abs_loc = [(obj_pos[i][0] - self.area['x_mid']) / self.exp_distance,
@@ -526,12 +557,15 @@ class UnrealCvTracking_nvn(gym.Env):
                        (obj_pos[i][2] - self.area['z_mid']) / self.exp_distance,
                        np.cos(yaw), np.sin(yaw)]
             abs_pos.append(abs_loc)
-        for j in range(self.controable_agent):
+        for j in range(self.player_num):
             vectors = []
             for i in range(self.player_num):
-                obs, distance, direction = self.get_relative(obj_pos[j], obj_pos[i])
+                obs, distance, ori = self.get_relative(obj_pos[j], obj_pos[i])
+                relative_pose[j, i] = np.array([distance, ori])
                 if j < self.tracker_num and i == j+self.tracker_num:
-                    relative_pose.append([distance, direction])
+                    relative_track.append([distance, ori])
+                if j < self.tracker_num:
+                    reward_mat[j, i] = self.reward_function.reward_distance(distance, ori)
                 obs = obs + abs_pos[i]
                 vectors.append(obs)
             if j < self.tracker_num:
@@ -543,4 +577,4 @@ class UnrealCvTracking_nvn(gym.Env):
                 b = vectors.pop(j-self.tracker_num)
                 vectors = [b] + [a] + vectors
             pose_obs.append(vectors)
-        return np.array(relative_pose), np.array(abs_pos), np.array(pose_obs)
+        return np.array(relative_track), np.array(abs_pos), np.array(pose_obs), relative_pose, reward_mat

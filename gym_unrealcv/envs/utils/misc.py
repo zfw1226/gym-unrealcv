@@ -24,6 +24,8 @@ def get_action_size(action):
 
 
 def get_direction(current_pose, target_pose):
+    if current_pose == target_pose:
+        return 0
     y_delt = target_pose[1] - current_pose[1]
     x_delt = target_pose[0] - current_pose[0]
     angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
