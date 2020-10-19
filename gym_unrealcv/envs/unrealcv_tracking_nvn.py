@@ -260,10 +260,11 @@ class UnrealCvTracking_nvn(gym.Env):
         if 'distance' in self.reward_type:
             rs_tracker = reward_mat.diagonal(self.tracker_num)
             rs_target = -rs_tracker
-            reward_mat[np.where(reward_mat < 0)] = 0
             # print(np.sum(reward_mat, 0)[self.tracker_num:])
             if 'Share' in self.target:
-                rs_distractor = np.sum(reward_mat, 0)[self.tracker_num:] - reward_mat.diagonal(self.tracker_num)
+                reward_mat_clone = reward_mat.copy()
+                reward_mat_clone[np.where(reward_mat < 0)] = 0
+                rs_distractor = np.sum(reward_mat_clone, 0)[self.tracker_num:] - reward_mat_clone.diagonal(self.tracker_num)
                 rs_target += rs_distractor
             rewards = np.concatenate((rs_tracker, rs_target), axis=None)
             # print(rewards)
