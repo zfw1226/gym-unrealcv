@@ -177,15 +177,18 @@ class UnrealCvTracking_nvn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    self.act_smooth[i] = self.act_smooth[i]*0.7 + act_now*0.3
+                    self.act_smooth[i] = self.act_smooth[i]*0.3 + act_now*0.7
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
             elif i < self.controable_agent: # controllable target
-                self.act_smooth[i] += self.discrete_actions_player[actions[i]]*self.action_factor
-                self.act_smooth[i][0] = np.clip(self.act_smooth[i][0], -200, 200)
-                self.act_smooth[i][1] = np.clip(self.act_smooth[i][1], -90,  90)
-                actions2player.append(self.act_smooth[i])
+                if self.action_type == 'Discrete':
+                    self.act_smooth[i] += self.discrete_actions_player[actions[i]]*self.action_factor
+                    self.act_smooth[i][0] = np.clip(self.act_smooth[i][0], -200, 200)
+                    self.act_smooth[i][1] = np.clip(self.act_smooth[i][1], -90,  90)
+                    actions2player.append(self.act_smooth[i])
+                else:
+                    actions2player.append(actions[i])
             else:
                 if 'Ram' in self.target:
                     if self.action_type == 'Discrete':
@@ -267,45 +270,6 @@ class UnrealCvTracking_nvn(gym.Env):
                 rs_distractor = np.sum(reward_mat_clone, 0)[self.tracker_num:] - reward_mat_clone.diagonal(self.tracker_num)
                 rs_target += rs_distractor
             rewards = np.concatenate((rs_tracker, rs_target), axis=None)
-            # print(rewards)
-            # rs_tracker = []
-            # rs_target = []
-            # for i in range(len(self.player_list)):
-            #     if i < self.tracker_num:
-            #         r_tracker = self.reward_function.reward_distance(info['Distance'][i], info['Direction'][i])
-            #         # TODO: encourage target-target collaboration
-            #         r_target = self.reward_function.reward_target(info['Distance'][i],
-            #                                                       info['Direction'][i], None, self.w_p)
-            #         rs_tracker.append(r_tracker)
-            #         rs_target.append(r_target)
-            #     else:
-            #         break
-            # if 'Share' in self.target:
-            #     ave_target = np.mean(rs_target)
-            #     rs_target = [0.5*r + 0.5*ave_target for r in rs_target]
-            # rewards = rs_tracker + rs_target
-                # else:
-                #     r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
-                #                                                           self.player_num - 2)
-                #     info['d_in'] += observed
-                #     if mislead > 0:
-                #         rewards[0] -= r_distract
-                #         rewards[1] += r_distract
-                #         rewards[0] = max(rewards[0], -1)
-                #         rewards[1] = min(rewards[1], 1)
-                #     rewards.append(r_d)
-                #     if 'Nav' in self.target:
-                #         continue
-                #     info['Collision'] = max(collision, info['Collision'])
-                #     if collision == 1:
-                #          rewards[0] = -1
-                #     if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
-                #         reset_id.append(self.player_list[i])
-                #         self.count_freeze[i] = 0
-                #     if mislead == 1 or collision == 1:
-                #         self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
-                #
-                #     self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
         # target_inarea = self.reward_function.target_inarea()
         info['in_area'] = np.array([0])
@@ -325,7 +289,8 @@ class UnrealCvTracking_nvn(gym.Env):
             cv2.imshow('bad', states[0])
         cv2.waitKey(1)
         '''
-        if min(rewards) < -0.99:
+        lost_num = len(np.where(rewards[:self.tracker_num] < -0.99)[0])
+        if lost_num > self.tracker_num/2:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -333,8 +298,8 @@ class UnrealCvTracking_nvn(gym.Env):
 
         lost_time = time.time() - self.live_time
         # TODO: use agent-wise done condition
-        # if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
-        if self.count_steps > self.max_steps:
+        if lost_time > 10 or self.count_steps > self.max_steps:
+        # if self.count_steps > self.max_steps:
             info['Done'] = True
         # if 'Res' in self.target:
         #     for obj in reset_id:
@@ -470,17 +435,24 @@ class UnrealCvTracking_nvn(gym.Env):
         states, self.obj_pos, cam_pose, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
                                                                     self.observation_type, 'bmp', True)
 
+        self.bbox_init = []
         if self.maskdepth:
             for i, state in enumerate(states):
                 if i < self.tracker_num:
-                    mask = self.unrealcv.get_mask(state, self.target_list[i])
+                    # mask = self.unrealcv.get_mask(state, self.target_list[i])
+                    mask, bbox = self.unrealcv.get_bbox(state, self.target_list[i], normalize=False)
+                    self.bbox_init.append(bbox)
                 else:
                     mask = self.unrealcv.get_mask(state, self.tracker_list[i-self.tracker_num])
                 mask = np.expand_dims(mask, -1)/255
                 dep = depth_list[i]
                 states[i] = np.concatenate([(1-mask)*dep, mask*dep, mask], -1)
+        else:
+            for i in range(len(self.tracker_list)):
+                mask = self.unrealcv.read_image(self.cam_id[1+i], 'object_mask', 'fast')
+                mask, bbox = self.unrealcv.get_bbox(mask, self.target_list[i], normalize=False)
+                self.bbox_init.append(bbox)
 
-        # TODO: use object_mask to get the instance
         # for i, img in enumerate(states):
         #     cv2.imshow('view_{}'.format(str(i)), img)
         #     cv2.waitKey(1)
