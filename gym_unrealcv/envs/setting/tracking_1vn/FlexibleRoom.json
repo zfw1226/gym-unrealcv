@@ -6,7 +6,7 @@
 	"cam_id": [0, 1, 2],
 	"height": 220,
 	"pitch": 0,
-	"max_steps": 1000,
+	"max_steps": 500,
 	"max_distance": 700,
 	"min_distance": 150,
 	"max_direction": 60,
