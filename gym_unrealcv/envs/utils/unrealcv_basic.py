@@ -252,7 +252,7 @@ class UnrealCv(object):
         mask = cv2.inRange(object_mask, lower_range, upper_range)
         return mask
 
-    def get_bbox(self, object_mask, obj):
+    def get_bbox(self, object_mask, obj, normalize=True):
         # get an object's bounding box
         width = object_mask.shape[1]
         height = object_mask.shape[0]
@@ -265,8 +265,11 @@ class UnrealCv(object):
             x_max = pixelpointsCV2[:, :, 0].max()
             y_min = pixelpointsCV2[:, :, 1].min()
             y_max = pixelpointsCV2[:, :, 1].max()
-            box = ((x_min/float(width), y_min/float(height)),  # left top
-                   (x_max/float(width), y_max/float(height)))  # right down
+            if normalize:
+                box = ((x_min/float(width), y_min/float(height)),  # left top
+                       (x_max/float(width), y_max/float(height)))  # right down
+            else:
+                box = [x_min, y_min, x_max-x_min, y_max-y_min]
         else:
             box = ((0, 0), (0, 0))
 

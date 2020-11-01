@@ -27,7 +27,7 @@ class UnrealCvTracking_1vn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 120),
+                 resolution=(320, 240),
                  target='Nav',  # Ram, Nav, Internal
                  ):
         self.docker = docker
@@ -136,7 +136,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         for player in self.player_list:
             self.unrealcv.set_interval(self.interval, player)
-
+        self.unrealcv.build_color_dic(self.player_list)
         self.player_num = self.max_player_num
 
     def step(self, actions):
@@ -163,7 +163,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    self.act_smooth[i] = self.act_smooth[i]*0.7 + act_now*0.3
+                    self.act_smooth[i] = self.act_smooth[i]*0.5 + act_now*0.5
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
@@ -193,7 +193,7 @@ class UnrealCvTracking_1vn(gym.Env):
         cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
             cam_id_max = 2
-        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
+        states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp')
         self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
         states = np.array(states)
@@ -394,7 +394,8 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # cam on top of tracker
 
-        self.set_topview(self.obj_pos[0], self.cam_id[0])
+        center_pos = [(self.reset_area[0]+self.reset_area[1])/2, (self.reset_area[2]+self.reset_area[3])/2, 2000]
+        self.set_topview(center_pos, self.cam_id[0])
         time.sleep(0.5)
 
         # set controllable agent number
@@ -410,7 +411,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.unrealcv.set_cam(self.player_list[0], [40, 0, height],
                               [np.random.randint(-3, 3), pitch, 0])
         # get state
-        states, self.obj_pos = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
+        states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
                                                                 self.observation_type, 'bmp')
         states = np.array(states)
         self.unrealcv.img_color = states[0][:, :, :3]
@@ -431,6 +432,12 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Nav' in self.target or 'Ram' in self.target:
             for i in range(len(self.random_agents)):
                 self.random_agents[i].reset()
+
+        self.bbox_init = []
+        mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
+        mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
+        self.bbox_init.append(bbox)
+
         self.pose = []
         self.act_smooth = [np.zeros(2) for i in range(self.controable_agent)]
         self.live_time = time.time()
@@ -456,8 +463,7 @@ class UnrealCvTracking_1vn(gym.Env):
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
         cam_loc[-1] = current_pose[-1]+800
-        cam_rot = current_pose[-3:]
-        cam_rot[-1] = -90
+        cam_rot = [0, 0, -90]
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
 
