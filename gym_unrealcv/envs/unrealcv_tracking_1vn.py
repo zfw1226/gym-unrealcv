@@ -142,6 +142,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.action_factor = np.array([1.0, 1.0])
         self.smooth_factor = 0.6
         self.random_height = False
+        self.early_stop = True
 
     def step(self, actions):
         info = dict(
@@ -288,7 +289,7 @@ class UnrealCvTracking_1vn(gym.Env):
             self.live_time = time.time()
 
         lost_time = time.time() - self.live_time
-        if (self.count_close > 20 and lost_time > 5) or self.count_steps > self.max_steps:
+        if (self.early_stop and (self.count_close > 20 and lost_time > 5)) or self.count_steps > self.max_steps:
             info['Done'] = True
         if 'Res' in self.target:
             for obj in reset_id:
@@ -469,13 +470,16 @@ class UnrealCvTracking_1vn(gym.Env):
         self.action_factor = action_factor
         self.smooth_factor = smooth_factor
 
-    def random_height(self, random=True):
+    def set_random_height(self, random=True):
         self.random_height = random
 
     def get_start_area(self, safe_start, safe_range):
         start_area = [safe_start[0]-safe_range, safe_start[0]+safe_range,
                      safe_start[1]-safe_range, safe_start[1]+safe_range]
         return start_area
+
+    def set_early_stop(self, do=True):
+        self.early_stop = do
 
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
