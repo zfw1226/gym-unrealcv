@@ -68,6 +68,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_close = 0
         self.direction = None
         self.freeze_list = []
+        self.resolution = resolution
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -138,6 +139,9 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_interval(self.interval, player)
         self.unrealcv.build_color_dic(self.player_list)
         self.player_num = self.max_player_num
+        self.action_factor = np.array([1.0, 1.0])
+        self.smooth_factor = 0.6
+        self.random_height = False
 
     def step(self, actions):
         info = dict(
@@ -163,7 +167,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    self.act_smooth[i] = self.act_smooth[i]*0.5 + act_now*0.5
+                    self.act_smooth[i] = self.act_smooth[i]*self.smooth_factor + act_now*(1-self.smooth_factor)
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
@@ -312,7 +316,9 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
         np.random.seed()
-        self.action_factor = np.array([np.random.uniform(0.8, 1.5), np.random.uniform(0.5, 1.2)])
+        self.set_action_factors()
+        # self.action_factor = np.array([np.random.uniform(0.8, 1.5), np.random.uniform(0.5, 1.2)])
+        # self.smooth_factor = 0.6
         # self.action_factor = np.array([1,1])
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
@@ -406,7 +412,10 @@ class UnrealCvTracking_1vn(gym.Env):
                 self.controable_agent = 2
 
         # randomize view point
-        height = np.random.randint(-40, 80)
+        if self.random_height:
+            height = np.random.randint(-40, 80)
+        else:
+            height = 0
         pitch = -0.1 * height + np.random.randint(-5, 5)
         self.unrealcv.set_cam(self.player_list[0], [40, 0, height],
                               [np.random.randint(-3, 3), pitch, 0])
@@ -454,6 +463,14 @@ class UnrealCvTracking_1vn(gym.Env):
     def seed(self, seed=None):
         if seed is not None:
             self.player_num = seed % (self.max_player_num-2) + 2
+
+    def set_action_factors(self, action_factor = np.array([np.random.uniform(0.8, 1.5), np.random.uniform(0.5, 1.2)]),
+                           smooth_factor = 0.6):
+        self.action_factor = action_factor
+        self.smooth_factor = smooth_factor
+
+    def random_height(self, random=True):
+        self.random_height = random
 
     def get_start_area(self, safe_start, safe_range):
         start_area = [safe_start[0]-safe_range, safe_start[0]+safe_range,
