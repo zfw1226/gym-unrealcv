@@ -47,7 +47,7 @@
 		"low":  [-200,   -30]
 	},
 	"continous_actions_player": {
-		"high": [200,     30],
+		"high": [120,     30],
 		"low":  [50,     -30]
 	},
 	"objects_list": [

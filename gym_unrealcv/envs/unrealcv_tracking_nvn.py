@@ -28,7 +28,7 @@ class UnrealCvTracking_nvn(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 120),
+                 resolution=(320, 240),
                  target='Nav',  # Ram, Nav, Internal
                  ):
         self.docker = docker
@@ -290,7 +290,7 @@ class UnrealCvTracking_nvn(gym.Env):
         cv2.waitKey(1)
         '''
         lost_num = len(np.where(rewards[:self.tracker_num] < -0.99)[0])
-        if lost_num > self.tracker_num/2:
+        if lost_num > self.tracker_num-1:
             self.count_close += 1
         else:
             self.count_close = 0
@@ -492,7 +492,7 @@ class UnrealCvTracking_nvn(gym.Env):
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
         cam_loc[-1] = current_pose[-1]+800
-        cam_rot = [-90, -90, -90]
+        cam_rot = [0, 0, -90]
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
 
@@ -550,4 +550,5 @@ class UnrealCvTracking_nvn(gym.Env):
                 b = vectors.pop(j-self.tracker_num)
                 vectors = [b] + [a] + vectors
             pose_obs.append(vectors)
+        # print(np.array(pose_obs)[:self.tracker_num, 0])
         return np.array(relative_track), np.array(abs_pos), np.array(pose_obs), relative_pose, reward_mat
