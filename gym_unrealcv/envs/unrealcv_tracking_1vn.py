@@ -168,6 +168,8 @@ class UnrealCvTracking_1vn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
+                    if i >= 1:
+                        act_now[0] = act_now[0]*0.8
                     self.act_smooth[i] = self.act_smooth[i]*self.smooth_factor + act_now*(1-self.smooth_factor)
                     actions2player.append(self.act_smooth[i])
                 else:
@@ -201,6 +203,15 @@ class UnrealCvTracking_1vn(gym.Env):
         states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp')
         self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
+
+        # for recording demo
+        # mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
+        # mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
+        # im_disp = states[0][:, :, :3].copy()
+        # cv2.rectangle(im_disp, (int(bbox[0]), int(bbox[1])), (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (0, 255, 0), 5)
+        # cv2.imshow('track_res', im_disp)
+        # cv2.waitKey(1)
+
         states = np.array(states)
         if cam_id_max < self.controable_agent + 1:
             states = np.repeat(states, self.controable_agent, axis=0)
@@ -257,7 +268,8 @@ class UnrealCvTracking_1vn(gym.Env):
                         continue
                     info['Collision'] = max(collision, info['Collision'])
                     if collision == 1:
-                         rewards[0] = -1
+                        rewards[i] = -1
+                        rewards[0] = -1
                     if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
                         reset_id.append(self.player_list[i])
                         self.count_freeze[i] = 0
