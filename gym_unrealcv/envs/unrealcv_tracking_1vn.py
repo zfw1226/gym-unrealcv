@@ -8,6 +8,7 @@ from gym_unrealcv.envs.utils import env_unreal, misc
 from gym_unrealcv.envs.tracking.interaction import Tracking
 import gym_unrealcv
 import cv2
+import random
 ''' 
 It is an env for active object tracking.
 
@@ -368,6 +369,8 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            20, self.reset_area, self.start_area)
 
+        target_pos = random.sample(self.safe_start, 1)[0]
+        self.unrealcv.set_obj_location(obj, target_pos)
         target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
         # init tracker
         res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
@@ -458,6 +461,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.bbox_init = []
         mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
         mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
+        # mask_percent = mask.sum()/(255 * self.resolution[0] * self.resolution[1])
         self.bbox_init.append(bbox)
 
         self.pose = []

@@ -271,7 +271,10 @@ class UnrealCv(object):
             else:
                 box = [x_min, y_min, x_max-x_min, y_max-y_min]
         else:
-            box = ((0, 0), (0, 0))
+            if normalize:
+                box = ((0, 0), (0, 0))
+            else:
+                box = [0, 0, 0, 0]
 
         return mask, box
 
