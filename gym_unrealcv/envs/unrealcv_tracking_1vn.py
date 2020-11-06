@@ -281,11 +281,12 @@ class UnrealCvTracking_1vn(gym.Env):
                     # self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
         # print(rewards)
-        # if r_tracker <= -0.99 or not target_inarea:  # lost/mislead
-        #     info['in_area'] = np.array([1])
-        # else:
-        #     info['in_area'] = np.array([0])
+        if r_tracker <= -0.99 or not metrics['target_viewed']:  # lost/mislead
+            info['in_area'] = np.array([1])
+        else:
+            info['in_area'] = np.array([0])
         info['metrics'] = metrics
+        info['d_in'] = metrics['d_in']
         # if info['d_in'] == 0 and max(self.mis_lead) == 0 and self.reward_function.target_incenter():  # for sequence segmentation, init candidate
         #     info['perfect'] = 1
         # else:
