@@ -194,9 +194,6 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_steps += 1
 
         # get relative distance
-        pose_obs = []
-        relative_pose = []
-
 
         cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
@@ -217,7 +214,9 @@ class UnrealCvTracking_1vn(gym.Env):
         if cam_id_max < self.controable_agent + 1:
             states = np.repeat(states, self.controable_agent, axis=0)
 
-        for j in range(self.controable_agent):
+        pose_obs = []
+        relative_pose = np.zeros((self.player_num, self.player_num, 2))
+        for j in range(self.player_num):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
@@ -226,12 +225,10 @@ class UnrealCvTracking_1vn(gym.Env):
                            self.obj_pos[i][2]/self.exp_distance, np.cos(yaw), np.sin(yaw)]
                 obs = obs + abs_loc
                 vectors.append(obs)
-                if j==0:
-                    relative_pose.append([distance, direction])
+                relative_pose[j, i] = np.array([distance, direction])
             pose_obs.append(vectors)
         info['Pose'] = self.obj_pos[0]
-        info['Direction'] = relative_pose[1][1]
-        info['Distance'] = relative_pose[1][0]
+        info['Distance'], info['Direction'] = relative_pose[0][1]
         info['Relative_Pose'] = relative_pose
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
@@ -243,83 +240,83 @@ class UnrealCvTracking_1vn(gym.Env):
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
-        info['d_in'] = 0
-        self.mis_lead = [0]
-        reset_id = []
+        # reset_id = []
+        metrics, score4tracker = self.relative_metrics(relative_pose)
+        self.mis_lead = metrics['mislead']
         if 'distance' in self.reward_type:
-            r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
+            # r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
+            r_tracker = score4tracker[1] - metrics['collision'][0][1:].max()  # not clip for navigation
             rewards = []
             for i in range(len(self.player_list)):
                 if i == 0:
                     rewards.append(r_tracker)
-                elif i == 1:
-                    r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
+                elif i == 1:  # target, try to run away
+                    # r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
+                    r_target = - r_tracker - metrics['collision'][0][i]
                     rewards.append(r_target)
-                else:
-                    r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[i][0], relative_pose[i][1],
-                                                                          self.player_num - 2)
-                    info['d_in'] += observed
-                    if mislead > 0:
-                        rewards[0] -= r_distract
-                        rewards[1] += r_distract
-                        rewards[0] = max(rewards[0], -1)
-                        rewards[1] = min(rewards[1], 1)
+                else: # distractors, try to mislead tracker, and improve the target's reward.
+                    r_d = (score4tracker[i] + r_target)/2 - metrics['collision'][0][i]
                     rewards.append(r_d)
-                    if 'Nav' in self.target:
-                        continue
-                    info['Collision'] = max(collision, info['Collision'])
-                    if collision == 1:
-                        rewards[i] = -1
-                        rewards[0] = -1
-                    if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
-                        reset_id.append(self.player_list[i])
-                        self.count_freeze[i] = 0
-                    if mislead == 1 or collision == 1:
-                        self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
 
-                    self.mis_lead.append(mislead)
+                    # r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[0, i],
+                    #                                                       self.player_num - 2)
+                    # if mislead > 0:
+                    #     rewards[0] -= r_distract
+                    #     rewards[1] += r_distract
+                    #     rewards[0] = max(rewards[0], -1)
+                    #     rewards[1] = min(rewards[1], 1)
+                    # rewards.append(r_d)
+                    # if 'Nav' in self.target:
+                    #     continue
+                    # info['Collision'] = max(collision, info['Collision'])
+                    # if collision == 1:
+                    #     rewards[i] = -1
+                    #     rewards[0] = -1
+
+                    # if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
+                    #     reset_id.append(self.player_list[i])
+                    #     self.count_freeze[i] = 0
+                    # if mislead == 1 or collision == 1:
+                    #     self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
+                    # self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
-        target_inarea = self.reward_function.target_inarea()
-        if r_tracker <= -0.99 or max(self.mis_lead) >= 2 or not target_inarea:  # lost/mislead
-            info['in_area'] = np.array([1])
-        else:
-            info['in_area'] = np.array([0])
-        if info['d_in'] == 0 and max(self.mis_lead) == 0 and self.reward_function.target_incenter():
-            info['perfect'] = 1
-        else:
-            info['perfect'] = 0
-        '''
-        if r_tracker > 0.5:
-            cv2.imshow('good', states[0])
-        if r_tracker < -0.5:
-            cv2.imshow('bad', states[0])
-        cv2.waitKey(1)
-        '''
-        if not target_inarea or max(self.mis_lead) >= 2:
+        # print(rewards)
+        # if r_tracker <= -0.99 or not target_inarea:  # lost/mislead
+        #     info['in_area'] = np.array([1])
+        # else:
+        #     info['in_area'] = np.array([0])
+        info['metrics'] = metrics
+        # if info['d_in'] == 0 and max(self.mis_lead) == 0 and self.reward_function.target_incenter():  # for sequence segmentation, init candidate
+        #     info['perfect'] = 1
+        # else:
+        #     info['perfect'] = 0
+
+        if not metrics['target_viewed']:
             self.count_close += 1
         else:
             self.count_close = 0
             self.live_time = time.time()
 
         lost_time = time.time() - self.live_time
-        if (self.early_stop and (self.count_close > 20 and lost_time > 5)) or self.count_steps > self.max_steps:
+        if (self.early_stop and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
-        if 'Res' in self.target:
-            for obj in reset_id:
-                min_dis = max(info['Distance'], self.exp_distance)*1.1
-                start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)
-                res = self.unrealcv.get_startpoint(self.obj_pos[1], start_distance, self.reset_area, self.height)
-                if len(res) == 2:
-                    cam_pos_exp, yaw_exp = res
-                    self.unrealcv.set_obj_location(obj, cam_pos_exp)
-                    self.rotate2exp(yaw_exp, obj, 10)
-                else:
-                    info['Done'] = True
+        # if 'Res' in self.target:
+        #     for obj in reset_id:
+        #         min_dis = max(info['Distance'], self.exp_distance)*1.1
+        #         start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)
+        #         res = self.unrealcv.get_startpoint(self.obj_pos[1], start_distance, self.reset_area, self.height)
+        #         if len(res) == 2:
+        #             cam_pos_exp, yaw_exp = res
+        #             self.unrealcv.set_obj_location(obj, cam_pos_exp)
+        #             self.rotate2exp(yaw_exp, obj, 10)
+        #         else:
+        #             info['Done'] = True
         return states, info['Reward'], info['Done'], info
 
     def reset(self, ):
         self.C_reward = 0
         self.count_close = 0
+        self.pose_obs_his = []
         if 'PZR' in self.target:
             self.w_p = 1
         else:
@@ -335,7 +332,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # self.smooth_factor = 0.6
         # self.action_factor = np.array([1,1])
         # reset target location
-        self.unrealcv.set_obj_location(self.player_list[1], self.safe_start[0])
+        self.unrealcv.set_obj_location(self.player_list[1], random.sample(self.safe_start, 1)[0])
         if self.reset_type >= 1:
             for obj in self.player_list[1:]:
                 if self.env_name == 'MPRoom':
@@ -369,8 +366,8 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            20, self.reset_area, self.start_area)
 
-        target_pos = random.sample(self.safe_start, 1)[0]
-        self.unrealcv.set_obj_location(obj, target_pos)
+        # target_pos = random.sample(self.safe_start, 1)[0]
+        # self.unrealcv.set_obj_location(obj, target_pos)
         target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
         # init tracker
         res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
@@ -442,7 +439,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.unrealcv.img_color = states[0][:, :, :3]
         # get pose state
         pose_obs = []
-        for j in range(self.controable_agent):
+        for j in range(self.player_num):
             vectors = []
             for i in range(self.player_num):
                 obs, distance, direction = self.get_relative(self.obj_pos[j], self.obj_pos[i])
@@ -524,3 +521,37 @@ class UnrealCvTracking_1vn(gym.Env):
             if delta_yaw > 180:
                 delta_yaw = 360 - delta_yaw
         return delta_yaw
+
+    def relative_metrics(self, relative_pose):
+        info = dict()
+        relative_dis = relative_pose[:, :, 0]
+        relative_ori = relative_pose[:, :, 1]
+        collision_mat = np.zeros_like(relative_dis)
+        collision_mat[np.where(relative_dis < 100)] = 1
+        collision_mat[np.where(np.fabs(relative_ori) > 45)] = 0  # collision should be at the front view
+        info['collision'] = collision_mat
+
+        info['dis_ave'] = relative_dis.mean() # average distance among players, regard as a kind of density metric
+        # target
+
+        # if in the tracker's view
+        view_mat = np.zeros_like(relative_ori)
+        view_mat[np.where(np.fabs(relative_ori) < 45)] = 1
+        view_mat[np.where(relative_dis > self.max_distance)] = 0
+        view_mat_tracker = view_mat[0]
+        # how many distractors are observed
+        info['d_in'] = view_mat_tracker[2:].sum()
+        info['target_viewed'] = view_mat_tracker[1] # target in the observable area
+
+        relative_oir_norm = np.fabs(relative_ori) / 45.0
+        relation_norm = np.fabs(relative_dis - self.exp_distance)/self.exp_distance + relative_oir_norm
+        reward_tracker = 1 - relation_norm[0]  # measuring the quality among tracker to others
+        info['tracked_id'] = np.argmax(reward_tracker)  # which one is tracked
+        info['perfect'] = info['target_viewed'] * (info['d_in'] == 0) * (reward_tracker[1] > 0.5)
+        info['mislead'] = 0
+        if info['tracked_id'] > 1 and reward_tracker[info['tracked_id']] > 0.5: # only when target is far away to the center and distracotr is close
+            advantage = reward_tracker[info['tracked_id']] - reward_tracker[1]
+            if advantage > 1:
+                info['mislead'] = info['tracked_id']
+
+        return info, reward_tracker
