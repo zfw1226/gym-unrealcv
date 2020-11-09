@@ -459,7 +459,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.bbox_init = []
         mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
         mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
-        # mask_percent = mask.sum()/(255 * self.resolution[0] * self.resolution[1])
+        self.mask_percent = mask.sum()/(255 * self.resolution[0] * self.resolution[1])
         self.bbox_init.append(bbox)
 
         self.pose = []
