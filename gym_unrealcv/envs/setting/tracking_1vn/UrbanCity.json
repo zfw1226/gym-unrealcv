@@ -10,27 +10,27 @@
 	"max_distance": 700,
 	"min_distance": 150,
 	"max_direction": 60,
-	"exp_distance": 350,
+	"exp_distance": 250,
 	"interval": 10,
 	"players": [
         "targetbp", "targetbp2"
 	],
 	"discrete_actions": [
-		[ 100,  0],
-		[-190,  0],
-		[  50, 15],
-		[  50,-15],
-		[  0,  30],
-		[  0, -30],
+		[ 200,  0],
+		[-200,  0],
+		[ 100, 20],
+		[ 100,-20],
+		[  0,  45],
+		[  0, -45],
 		[  0,   0]
 	],
   	"discrete_actions_player": [
-		[ 100,  0],
-		[-100,  0],
-		[  50, 15],
-		[  50,-15],
-		[  0,  30],
-		[  0, -30],
+		[ 200,  0],
+		[-200,  0],
+		[ 100, 20],
+		[ 100,-20],
+		[  0,  45],
+		[  0, -45],
 		[  0,   0]
 	],
 	"safe_start" :[
@@ -42,11 +42,11 @@
     ],
 	"reset_area" : [-1500, 1000, -1500, 1000, 135, 140],
 	"continous_actions": {
-		"high": [100,     30],
-		"low":  [-100,   -30]
+		"high": [200,     30],
+		"low":  [-200,   -30]
 	},
 	"continous_actions_player": {
-		"high": [100,     30],
+		"high": [200,     30],
 		"low":  [50,     -30]
 	},
 	"objects_list": [
