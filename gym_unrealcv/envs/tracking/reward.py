@@ -45,9 +45,10 @@ class Reward():
         self.r_target = reward
         return reward
 
-    def reward_distractor(self, dis2distractor, direction_error, num, dis_exp=None):
+    def reward_distractor(self, relative_pos, num, dis_exp=None):
         if dis_exp is None:
             dis_exp = self.dis_exp
+        dis2distractor, direction_error = relative_pos
         mislead = 0
         direction_error_abs = abs(direction_error)
         relative_dis = abs(dis2distractor - dis_exp)
