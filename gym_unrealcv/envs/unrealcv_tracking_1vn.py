@@ -144,6 +144,8 @@ class UnrealCvTracking_1vn(gym.Env):
         self.smooth_factor = 0.6
         self.random_height = False
         self.early_stop = True
+        self.get_bbox = False
+        self.bbox = []
 
     def step(self, actions):
         info = dict(
@@ -203,8 +205,10 @@ class UnrealCvTracking_1vn(gym.Env):
         self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
 
         # for recording demo
-        # mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
-        # mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
+        if self.get_bbox:
+            mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
+            mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
+            self.bbox = bbox
         # im_disp = states[0][:, :, :3].copy()
         # cv2.rectangle(im_disp, (int(bbox[0]), int(bbox[1])), (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (0, 255, 0), 5)
         # cv2.imshow('track_res', im_disp)
@@ -236,7 +240,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if self.top:
             self.set_topview(info['Pose'], self.cam_id[0])
 
-        info['Color'] = self.unrealcv.img_color = states[0][:, :, :3]
+        info['Color'] = self.img_color = states[0][:, :, :3]
         # cv2.imshow('tracker', states[0])
         # cv2.imshow('target', states[1])
         # cv2.waitKey(1)
@@ -367,11 +371,18 @@ class UnrealCvTracking_1vn(gym.Env):
             self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
                                            20, self.reset_area, self.start_area)
 
-        # target_pos = random.sample(self.safe_start, 1)[0]
-        # self.unrealcv.set_obj_location(obj, target_pos)
-        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
         # init tracker
-        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
+        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
+                                           self.height)
+        res = []
+        while len(res) == 0:
+            target_pos = random.sample(self.safe_start, 1)[0]
+            self.unrealcv.set_obj_location(obj, target_pos)
+            target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+            res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
+            print('reset')
+
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         time.sleep(0.5)
@@ -437,7 +448,7 @@ class UnrealCvTracking_1vn(gym.Env):
         states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
                                                                 self.observation_type, 'bmp')
         states = np.array(states)
-        self.unrealcv.img_color = states[0][:, :, :3]
+        self.img_color = states[0][:, :, :3]
         # get pose state
         pose_obs = []
         for j in range(self.player_num):
@@ -473,7 +484,7 @@ class UnrealCvTracking_1vn(gym.Env):
     def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
-        return self.unrealcv.img_color
+        return self.img_color
 
     def seed(self, seed=None):
         if seed is not None:
