@@ -53,10 +53,9 @@ class VideoTracking_base(gym.Env):
     def _step(self, action):
 
         state = cv2.imread(os.path.join(self.dataset_dir, self.img_list[self.img_id]))
-
+        # state = state[100:380, 120:520, :]
         height = state.shape[0]
         width = state.shape[1]
-
         cv_img = state.copy()
         font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -73,7 +72,9 @@ class VideoTracking_base(gym.Env):
         cv2.circle(cv_img, (action_x - 20 + int(width * 0.04), action_y - int(height * 0.05)), 8, color[5], -1)  # left
         cv2.circle(cv_img, (action_x + int(width * 0.04), action_y - int(height * 0.05)), 8, color[6], -1)  # stop
 
-        cv2.imwrite(os.path.join(self.folder, str(self.img_id)+'.png'), cv_img)
+        # cv2.imwrite(os.path.join(self.folder, str(self.img_id)+'.png'), cv_img)
+        cv2.imshow('show', cv_img)
+        cv2.waitKey(10)
         # cv2.circle(cv_img, (int(self.x_center[self.img_id] - w0), int(self.y_center[self.img_id])), int(self.size[self.img_id]/300), (0, 255, 0), -1)  # target
 
         self.truth.append([action, self.size[self.img_id], self.x_center[self.img_id], self.y_center[self.img_id]])
@@ -95,6 +96,7 @@ class VideoTracking_base(gym.Env):
                 legend.append(mlines.Line2D([], [], color=color_list[a], alpha=0.4, marker=mark_list[a], linestyle='None', markersize=6, label=label_list[a]))
 
             plt.legend(handles=legend)
+            plt.pause(0.001)
             plt.show()
         else:
             done = False
@@ -104,9 +106,9 @@ class VideoTracking_base(gym.Env):
         info['d_in'] = np.array([0])
         return state, reward, done, info
     def _reset(self):
-        self.img_id = 0
+        self.img_id = 14
         state = cv2.imread(os.path.join(self.dataset_dir,self.img_list[self.img_id]))
-
+        # state = state[100:380, 120:520, :]
         self.truth = []
         for i in range(len(self.discrete_actions)):
             self.truth.append([])
@@ -136,4 +138,7 @@ class VideoTracking_base(gym.Env):
         return os.path.join(gympath, 'envs/setting', filename)
 
     def _seed(self, seed=None):
+        pass
+
+    def _render(self, mode='human', close=False):
         pass
