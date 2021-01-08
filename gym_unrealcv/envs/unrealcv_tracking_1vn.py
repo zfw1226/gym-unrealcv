@@ -9,6 +9,7 @@ from gym_unrealcv.envs.tracking.interaction import Tracking
 import gym_unrealcv
 import cv2
 import random
+import sys
 ''' 
 It is an env for active object tracking.
 
@@ -78,7 +79,11 @@ class UnrealCvTracking_1vn(gym.Env):
                 self.textures_list[i] = os.path.join(texture_dir, self.textures_list[i])
 
         # start unreal env
-        self.unreal = env_unreal.RunUnreal(ENV_BIN=setting['env_bin'])
+        if 'linux' in sys.platform:
+            env_bin = setting['env_bin']
+        elif 'win' in sys.platform:
+            env_bin = setting['env_bin_win']
+        self.unreal = env_unreal.RunUnreal(ENV_BIN=env_bin)
         env_ip, env_port = self.unreal.start(docker, resolution)
 
         # connect UnrealCV

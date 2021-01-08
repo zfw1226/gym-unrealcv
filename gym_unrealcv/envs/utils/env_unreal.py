@@ -2,6 +2,7 @@ import getpass
 import os
 import time
 from multiprocessing import Process
+import sys
 
 # api for running unrealenv
 
@@ -12,14 +13,15 @@ class RunUnreal():
         self.env_bin = ENV_BIN
         self.env_map = ENV_MAP
         self.path2env = self.get_path2UnrealEnv()
-        self.path2binary = os.path.join(self.path2env, self.env_bin)
+        self.path2binary = os.path.abspath(os.path.join(self.path2env, self.env_bin))
+        self.path2unrealcv = os.path.join(os.path.split(self.path2binary)[0], 'unrealcv.ini')
         assert os.path.exists(self.path2binary), \
             'Please load env binary in UnrealEnv and Check the env_bin in setting file!'
 
     def start(self, docker, resolution=(160, 160)):
         # check binary exist
-        port = self.read_port(self.path2binary)
-        self.write_resolution(self.path2binary, resolution)
+        port = self.read_port()
+        self.write_resolution(resolution)
         self.use_docker = docker
         if self.use_docker:
             import gym_unrealcv.envs.utils.run_docker
@@ -33,6 +35,7 @@ class RunUnreal():
                 self.write_port(self.path2binary, port)
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
+            # self.env.daemon = True
             self.env.start()
             print ('Running docker-free env, pid:{}'.format(self.env.pid))
 
@@ -43,12 +46,15 @@ class RunUnreal():
     def get_path2UnrealEnv(self):
         import gym_unrealcv
         gympath = os.path.dirname(gym_unrealcv.__file__)
-        return os.path.join(gympath, 'envs/UnrealEnv')
+        return os.path.join(gympath, 'envs', 'UnrealEnv')
 
     def run_proc(self, path2env, map):
         # os.system('export Display=:0.0')
-        cmd = 'exec nohup {path2env} '
-        cmd_exe = cmd.format(path2env=path2env)
+        if 'linux' in sys.platform:
+            cmd = 'exec nohup {path2env} '  # linux
+        elif 'win' in sys.platform:
+            cmd = 'start /b  {path2env} '  # win
+        cmd_exe = cmd.format(path2env=os.path.abspath(path2env))
         if map is not None:
             cmd_exe += map
         print (cmd_exe)
@@ -66,44 +72,32 @@ class RunUnreal():
         username = getpass.getuser()
         os.system(cmd.format(USER=username, ENV_PATH=path))
 
-    def read_port(self, bin_path):
-        s = bin_path.split('/')
-        s[-1] = 'unrealcv.ini'
-        delimiter = '/'
-        ini_path = delimiter.join(s)
-        if os.path.exists(ini_path):
-            with open(ini_path, 'r') as f:
+    def read_port(self):
+        if os.path.exists(self.path2unrealcv):
+            with open(self.path2unrealcv, 'r') as f:
                 s=f.read()
                 ss = s.split()
             return int(ss[1][-4:])
         else:
             return 9000
 
-    def write_port(self, bin_path, port):
-        s = bin_path.split('/')
-        s[-1] = 'unrealcv.ini'
-        delimiter = '/'
-        ini_path = delimiter.join(s)
-        with open(ini_path, 'r') as f:
+    def write_port(self, port):
+        with open(self.path2unrealcv, 'r') as f:
             s=f.read()
             ss = s.split('\n')
-        with open(ini_path, 'w') as f:
+        with open(self.path2unrealcv, 'w') as f:
             print (ss[1])
             ss[1] = 'Port={port}'.format(port = port)
             d = '\n'
             s_new = d.join(ss)
             f.write(s_new)
 
-    def write_resolution(self, bin_path, resolution):
-        s = bin_path.split('/')
-        s[-1] = 'unrealcv.ini'
-        delimiter = '/'
-        ini_path = delimiter.join(s)
-        if os.path.exists(ini_path):
-            with open(ini_path, 'r') as f:
+    def write_resolution(self, resolution):
+        if os.path.exists(self.path2unrealcv):
+            with open(self.path2unrealcv, 'r') as f:
                 s = f.read()
                 ss = s.split('\n')
-            with open(ini_path, 'w') as f:
+            with open(self.path2unrealcv, 'w') as f:
                 ss[2] = 'Width={width}'.format(width=resolution[0])
                 ss[3] = 'Height={height}'.format(height=resolution[1])
                 d = '\n'
