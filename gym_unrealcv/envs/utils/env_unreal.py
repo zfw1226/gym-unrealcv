@@ -32,7 +32,7 @@ class RunUnreal():
             env_ip = '127.0.0.1'
             while not self.isPortFree(env_ip, port):
                 port += 1
-                self.write_port(self.path2binary, port)
+                self.write_port(port)
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
             # self.env.daemon = True
