@@ -378,16 +378,18 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # init tracker
         res = []
-        # target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
-        # res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
-        #                                    self.height)
+        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
+                                           self.height)
         while len(res) == 0:
             target_pos = random.sample(self.safe_start, 1)[0]
-            self.unrealcv.set_obj_location(obj, target_pos)
+            self.unrealcv.set_obj_location(self.player_list[1], target_pos)
+            time.sleep(0.5)
             target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
             res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
-            # print('reset at fix point')
+            print('reset at fix point')
 
+        # set tracker location
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         time.sleep(0.5)
@@ -404,7 +406,7 @@ class UnrealCvTracking_1vn(gym.Env):
             if name in self.freeze_list:
                 self.freeze_list.remove(name)
             else:
-                self.unrealcv.new_obj('target_C', name, self.safe_start[1])
+                self.unrealcv.new_obj('target_C', name, random.sample(self.safe_start, 1)[0])
             self.unrealcv.set_obj_color(name, np.random.randint(0, 255, 3))
             self.unrealcv.set_random(name, 0)
             self.player_list.append(name)
