@@ -146,7 +146,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.unrealcv.build_color_dic(self.player_list)
         self.player_num = self.max_player_num
         self.action_factor = np.array([1.0, 1.0])
-        self.smooth_factor = 0.6
+        self.smooth_factor = 0.7
         self.random_height = False
         self.early_stop = True
         self.get_bbox = False
@@ -176,8 +176,8 @@ class UnrealCvTracking_1vn(gym.Env):
                     # add noise on movement
                     # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    if i >= 1:
-                        act_now[0] = act_now[0]*0.8
+                    # if i >= 1:
+                    #     act_now[0] = act_now[0]*0.8
                     self.act_smooth[i] = self.act_smooth[i]*self.smooth_factor + act_now*(1-self.smooth_factor)
                     actions2player.append(self.act_smooth[i])
                 else:
@@ -377,16 +377,16 @@ class UnrealCvTracking_1vn(gym.Env):
                                            20, self.reset_area, self.start_area)
 
         # init tracker
-        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
-        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
-                                           self.height)
         res = []
+        # target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+        # res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
+        #                                    self.height)
         while len(res) == 0:
             target_pos = random.sample(self.safe_start, 1)[0]
             self.unrealcv.set_obj_location(obj, target_pos)
             target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
             res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
-            print('reset')
+            # print('reset at fix point')
 
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)

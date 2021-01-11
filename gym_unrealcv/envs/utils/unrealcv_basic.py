@@ -39,6 +39,7 @@ class UnrealCv(object):
         self.client.connect()
         self.check_connection()
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0], h=resolution[1]))
+        self.client.request('DisableAllScreenMessages')
         self.client.request('vrun sg.ShadowQuality 0')
         self.client.request('vrun sg.TextureQuality 0')
         self.client.request('vrun sg.EffectsQuality 0')
