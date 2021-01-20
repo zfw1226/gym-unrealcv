@@ -264,7 +264,10 @@ class UnrealCvTracking_1vn(gym.Env):
                     r_target = - r_tracker - metrics['collision'][0][i]
                     rewards.append(r_target)
                 else: # distractors, try to mislead tracker, and improve the target's reward.
-                    r_d = (score4tracker[i] + r_target)/2 - metrics['collision'][0][i]
+                    if 'Share' in self.target:
+                        r_d = r_target - metrics['collision'][0][i]
+                    else:
+                        r_d = score4tracker[i] + r_target - metrics['collision'][0][i]
                     rewards.append(r_d)
 
                     # r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[0, i],
