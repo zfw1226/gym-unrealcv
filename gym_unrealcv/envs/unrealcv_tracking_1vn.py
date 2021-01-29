@@ -204,7 +204,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
-            cam_id_max = 2
+            cam_id_max = 3
         states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp')
         self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
