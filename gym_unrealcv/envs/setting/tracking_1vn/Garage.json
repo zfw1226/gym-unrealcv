@@ -1,6 +1,6 @@
 {
 	"env_name": "ParkingLot_Multi",
-	"env_bin": "parking_new/garage/Binaries/Linux/garage",
+	"env_bin": "garage_sky/parkinglot/Binaries/Linux/parkinglot",
     "imgs_dir": "textures",
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],
@@ -34,13 +34,13 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -300,  2500,  110],
-		[   400,  2500,  110],
-		[ -1000,  2500,  110],
-		[  -300,  1800,  110],
-		[  -300,  3200,  110]
+		[  -350,  1200,  110],
+		[  -350,  2200,  110],
+		[  -350,  3200,  110],
+		[  400,   2200,  110],
+		[ -1000,  2200,  110]
     ],
-	"reset_area" : [-1000, 500, 500, 4500, 100, 110],
+	"reset_area" : [-1200, 600, 800, 4000, 100, 110],
 	"continous_actions": {
 		"high": [100,     30],
 		"low":  [-100,   -30]

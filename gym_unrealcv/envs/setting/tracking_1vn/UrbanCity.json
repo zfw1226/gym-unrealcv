@@ -1,6 +1,6 @@
 {
 	"env_name": "UrbanCity_Multi",
-	"env_bin": "urbancity_422/urbancity/Binaries/Linux/urbancity",
+	"env_bin": "urbancity_422_new/urbancity/Binaries/Linux/urbancity",
     "imgs_dir": "textures",
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],
@@ -34,16 +34,20 @@
 		[  0,   0]
 	],
 	"safe_start" :[
-		[  -250, -250,  100],
-		[   500, -250,  100],
+		[ -1000,-1000,  100],
 		[ -1000, -250,  100],
+		[ -1000,  500,  100],
+		[  -250,-1000,  100],
+		[  -250, -250,  100],
 		[  -250,  500,  100],
-		[  -250,-1000,  100]
+		[   500,-1000,  100],
+		[   500, -250,  100],
+		[   500,  500,  100]
     ],
 	"reset_area" : [-1500, 1000, -1500, 1000, 135, 140],
 	"continous_actions": {
-		"high": [200,     30],
-		"low":  [-200,   -30]
+		"high": [100,     30],
+		"low":  [-100,   -30]
 	},
 	"continous_actions_player": {
 		"high": [100,     30],

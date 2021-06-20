@@ -50,7 +50,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.max_direction = setting['max_direction']
         self.height = setting['height']
         self.pitch = setting['pitch']
-        self.objects_env = setting['objects_list']
+        self.objects_list = setting['objects_list']
         self.reset_area = setting['reset_area']
         self.background_list = setting['backgrounds']
         self.light_list = setting['lights']
@@ -112,21 +112,15 @@ class UnrealCvTracking_1vn(gym.Env):
         self.observation_space = [self.unrealcv.define_observation(self.cam_id[0], self.observation_type, 'fast')
                                   for i in range(self.max_player_num)]
         self.unrealcv.pitch = self.pitch
-        # define reward type
-        # distance, bbox, bbox_distance,
-        self.reward_type = reward_type
-        self.reward_function = reward.Reward(setting)
 
+        # define reward type: distance
+        self.reward_type = reward_type
         self.rendering = False
 
         if self.reset_type >= 4:
-            self.unrealcv.init_objects(self.objects_env)
+            self.unrealcv.init_objects(self.objects_list)
 
         self.count_close = 0
-
-        if self.reset_type == 5:
-            self.unrealcv.simulate_physics(self.objects_env)
-
         self.unrealcv.set_random(self.player_list[0], 0)
         self.unrealcv.set_random(self.player_list[1], 0)
 
@@ -134,11 +128,7 @@ class UnrealCvTracking_1vn(gym.Env):
         if 'Ram' in self.target:
             self.random_agents = [baseline.RandomAgent(player_action_space) for i in range(self.max_player_num)]
         elif 'Nav' in self.target:
-            if 'Goal' in self.target:
-                th = 0.5
-            else:
-                th = 0
-            self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target, th
+            self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target, 0
                                                         ) for i in range(self.max_player_num)]
 
         for player in self.player_list:
@@ -146,7 +136,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.unrealcv.build_color_dic(self.player_list)
         self.player_num = self.max_player_num
         self.action_factor = np.array([1.0, 1.0])
-        self.smooth_factor = 0.7
+        self.smooth_factor = 0.6
         self.random_height = False
         self.early_stop = True
         self.get_bbox = False
@@ -171,26 +161,17 @@ class UnrealCvTracking_1vn(gym.Env):
         for i in range(len(self.player_list)):
             if i < self.controable_agent:
                 if self.action_type == 'Discrete':
-                    # fix camera
-                    # actions[0] = 6
-                    # add noise on movement
-                    # actions2player.append(self.discrete_actions[actions[i]]*np.random.uniform(0.5, 1.5, 2))
                     act_now = self.discrete_actions[actions[i]]*self.action_factor
-                    # if i >= 1:
-                    #     act_now[0] = act_now[0]*0.8
                     self.act_smooth[i] = self.act_smooth[i]*self.smooth_factor + act_now*(1-self.smooth_factor)
                     actions2player.append(self.act_smooth[i])
                 else:
                     actions2player.append(actions[i])
-                if self.count_freeze[i] > 5 and 'Fix' in self.target:
-                    actions2player[i] = self.discrete_actions_player[-1]
             else:
                 if 'Ram' in self.target:
                     if self.action_type == 'Discrete':
                         actions2player.append(self.discrete_actions_player[self.random_agents[i].act(self.obj_pos[i])])
                     else:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i]))
-                        # self.discrete_actions[self.action_space[i].sample()]
                 if 'Nav' in self.target:
                     if i == 1:
                         actions2player.append(self.random_agents[i].act(self.obj_pos[i])*self.action_factor)
@@ -201,7 +182,6 @@ class UnrealCvTracking_1vn(gym.Env):
         self.count_steps += 1
 
         # get relative distance
-
         cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
             cam_id_max = 3
@@ -214,10 +194,10 @@ class UnrealCvTracking_1vn(gym.Env):
             mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
             mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
             self.bbox = bbox
-        # im_disp = states[0][:, :, :3].copy()
-        # cv2.rectangle(im_disp, (int(bbox[0]), int(bbox[1])), (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (0, 255, 0), 5)
-        # cv2.imshow('track_res', im_disp)
-        # cv2.waitKey(1)
+            # im_disp = states[0][:, :, :3].copy()
+            # cv2.rectangle(im_disp, (int(bbox[0]), int(bbox[1])), (int(bbox[2] + bbox[0]), int(bbox[3] + bbox[1])), (0, 255, 0), 5)
+            # cv2.imshow('track_res', im_disp)
+            # cv2.waitKey(1)
 
         states = np.array(states)
         if cam_id_max < self.controable_agent + 1:
@@ -225,6 +205,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
         pose_obs = []
         relative_pose = np.zeros((self.player_num, self.player_num, 2))
+        # cauclate relative poses
         for j in range(self.player_num):
             vectors = []
             for i in range(self.player_num):
@@ -241,68 +222,39 @@ class UnrealCvTracking_1vn(gym.Env):
         info['Relative_Pose'] = relative_pose
         self.pose_obs = np.array(pose_obs)
         info['Pose_Obs'] = self.pose_obs
+        
         # set top_down camera
         if self.top:
             self.set_topview(info['Pose'], self.cam_id[0])
 
         info['Color'] = self.img_color = states[0][:, :, :3]
-        # cv2.imshow('tracker', states[0])
-        # cv2.imshow('target', states[1])
-        # cv2.waitKey(1)
-        # reset_id = []
+
         metrics, score4tracker = self.relative_metrics(relative_pose)
         self.mis_lead = metrics['mislead']
         if 'distance' in self.reward_type:
-            # r_tracker = self.reward_function.reward_distance(info['Distance'], info['Direction'])
             r_tracker = score4tracker[1] - metrics['collision'][0][1:].max()  # not clip for navigation
             rewards = []
             for i in range(len(self.player_list)):
                 if i == 0:
                     rewards.append(r_tracker)
                 elif i == 1:  # target, try to run away
-                    # r_target = self.reward_function.reward_target(info['Distance'], info['Direction'], None, self.w_p)
                     r_target = - r_tracker - metrics['collision'][0][i]
                     rewards.append(r_target)
                 else: # distractors, try to mislead tracker, and improve the target's reward.
                     if 'Share' in self.target:
                         r_d = r_target - metrics['collision'][0][i]
                     else:
-                        r_d = score4tracker[i] + r_target - metrics['collision'][0][i]
+                        r_d = r_target + score4tracker[i]  - metrics['collision'][0][i]
                     rewards.append(r_d)
 
-                    # r_d, mislead, r_distract, observed, collision = self.reward_function.reward_distractor(relative_pose[0, i],
-                    #                                                       self.player_num - 2)
-                    # if mislead > 0:
-                    #     rewards[0] -= r_distract
-                    #     rewards[1] += r_distract
-                    #     rewards[0] = max(rewards[0], -1)
-                    #     rewards[1] = min(rewards[1], 1)
-                    # rewards.append(r_d)
-                    # if 'Nav' in self.target:
-                    #     continue
-                    # info['Collision'] = max(collision, info['Collision'])
-                    # if collision == 1:
-                    #     rewards[i] = -1
-                    #     rewards[0] = -1
-
-                    # if relative_pose[i][0] > max(info['Distance'], self.exp_distance)*2:
-                    #     reset_id.append(self.player_list[i])
-                    #     self.count_freeze[i] = 0
-                    # if mislead == 1 or collision == 1:
-                    #     self.count_freeze[i] = min(self.count_freeze[i] + 1, 10)
-                    # self.mis_lead.append(mislead)
             info['Reward'] = np.array(rewards)[:self.controable_agent]
-        # print(rewards)
+
         if r_tracker <= -0.99 or not metrics['target_viewed']:  # lost/mislead
             info['in_area'] = np.array([1])
         else:
             info['in_area'] = np.array([0])
         info['metrics'] = metrics
         info['d_in'] = metrics['d_in']
-        # if info['d_in'] == 0 and max(self.mis_lead) == 0 and self.reward_function.target_incenter():  # for sequence segmentation, init candidate
-        #     info['perfect'] = 1
-        # else:
-        #     info['perfect'] = 0
 
         if not metrics['target_viewed']:
             self.count_close += 1
@@ -313,17 +265,7 @@ class UnrealCvTracking_1vn(gym.Env):
         lost_time = time.time() - self.live_time
         if (self.early_stop and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
-        # if 'Res' in self.target:
-        #     for obj in reset_id:
-        #         min_dis = max(info['Distance'], self.exp_distance)*1.1
-        #         start_distance = np.random.randint(min(min_dis, self.max_direction*0.9), self.max_distance)
-        #         res = self.unrealcv.get_startpoint(self.obj_pos[1], start_distance, self.reset_area, self.height)
-        #         if len(res) == 2:
-        #             cam_pos_exp, yaw_exp = res
-        #             self.unrealcv.set_obj_location(obj, cam_pos_exp)
-        #             self.rotate2exp(yaw_exp, obj, 10)
-        #         else:
-        #             info['Done'] = True
+
         return states, info['Reward'], info['Done'], info
 
     def reset(self, ):
@@ -339,17 +281,12 @@ class UnrealCvTracking_1vn(gym.Env):
         for i, obj in enumerate(self.player_list):
             self.unrealcv.set_move(obj, 0, 0)
             self.unrealcv.set_speed(obj, 0)
-        np.random.seed()
-        self.set_action_factors()
-        # self.action_factor = np.array([np.random.uniform(0.8, 1.5), np.random.uniform(0.5, 1.2)])
-        # self.smooth_factor = 0.6
-        # self.action_factor = np.array([1,1])
+
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[1], random.sample(self.safe_start, 1)[0])
         if self.reset_type >= 1:
             for obj in self.player_list[1:]:
                 if self.env_name == 'MPRoom':
-                    #  map_id = [0, 2, 3, 7, 8, 9]
                     map_id = [2, 3, 6, 7, 9]
                     spline = False
                     app_id = np.random.choice(map_id)
@@ -358,7 +295,7 @@ class UnrealCvTracking_1vn(gym.Env):
                     spline = True
                     app_id = map_id[self.person_id % len(map_id)]
                     self.person_id += 1
-                    # map_id = [6, 7, 8, 9]
+
                 self.unrealcv.set_appearance(obj, app_id, spline)
 
         # target appearance
@@ -376,29 +313,34 @@ class UnrealCvTracking_1vn(gym.Env):
         # obstacle
         if self.reset_type >= 4:
             self.unrealcv.clean_obstacles()
-            self.unrealcv.random_obstacles(self.objects_env, self.textures_list,
+            self.unrealcv.random_obstacles(self.objects_list, self.textures_list,
                                            20, self.reset_area, self.start_area)
 
-        # init tracker
+        # init target location and get expected tracker location
         res = []
-        target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
-        res = self.unrealcv.get_startpoint(target_pos, self.exp_distance * np.random.uniform(0.8, 1.2), self.reset_area,
-                                           self.height)
+        # sample a target pose from reset area
+        if self.env_name == 'MPRoom':
+            target_loc, _ = self.unrealcv.get_startpoint(reset_area=self.reset_area, exp_height=self.height) 
+            self.unrealcv.set_obj_location(self.player_list[1], target_loc)
+            time.sleep(0.5)
+            target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
+            res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height)
+        
+        # reset at fix point
         while len(res) == 0:
             target_pos = random.sample(self.safe_start, 1)[0]
             self.unrealcv.set_obj_location(self.player_list[1], target_pos)
             time.sleep(0.5)
             target_pos = self.unrealcv.get_obj_pose(self.player_list[1])
-            res = self.unrealcv.get_startpoint(target_pos, self.exp_distance*np.random.uniform(0.8, 1.2), self.reset_area, self.height)
-            print('reset at fix point')
+            res = self.unrealcv.get_startpoint(target_pos, self.exp_distance, self.reset_area, self.height)
 
         # set tracker location
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
         time.sleep(0.5)
         self.rotate2exp(yaw_exp, self.player_list[0])
-        # tracker's pose
-        # tracker_pos = self.unrealcv.get_obj_pose(self.player_list[0])
+        
+        # get tracker's pose
         tracker_pos = self.unrealcv.get_pose(self.cam_id[1])
         self.obj_pos = [tracker_pos, target_pos]
 
@@ -423,18 +365,16 @@ class UnrealCvTracking_1vn(gym.Env):
 
         for i, obj in enumerate(self.player_list[2:]):
             # reset and get new pos
-            if 'Far' in self.target:
-                res = self.unrealcv.get_startpoint(target_pos, None, self.reset_area, self.height, None)
-            else:
-                res = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.max_distance, self.max_distance*2),
+            res = self.unrealcv.get_startpoint(target_pos, np.random.randint(self.exp_distance*1.5, self.max_distance*2),
                                                                      self.reset_area, self.height, None)
-            if len(res) == 2:
+            if len(res)==0:
+                res = self.unrealcv.get_startpoint(reset_area=self.reset_area, exp_height=self.height)
+            elif len(res) == 2:
                 cam_pos_exp, yaw_exp = res
                 self.unrealcv.set_obj_location(obj, cam_pos_exp)
                 self.rotate2exp(yaw_exp, obj, 10)
 
         # cam on top of tracker
-
         center_pos = [(self.reset_area[0]+self.reset_area[1])/2, (self.reset_area[2]+self.reset_area[3])/2, 2000]
         self.set_topview(center_pos, self.cam_id[0])
         time.sleep(0.5)
@@ -446,17 +386,17 @@ class UnrealCvTracking_1vn(gym.Env):
             if 'Nav' in self.target or 'Ram' in self.target:
                 self.controable_agent = 2
 
-        # randomize view point
-        if self.random_height:
-            height = np.random.randint(-40, 80)
-        else:
-            height = 0
-        pitch = -0.1 * height + np.random.randint(-5, 5)
-        self.unrealcv.set_cam(self.player_list[0], [40, 0, height],
-                              [np.random.randint(-3, 3), pitch, 0])
+        # set view point
+        height = 50
+        pitch = - 5
+        self.unrealcv.set_cam(self.player_list[0], [30, 0, height],
+                              [0, pitch, 0])
+
         # get state
-        states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
-                                                                self.observation_type, 'bmp')
+        for _ in range(2):
+            states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
+                                                                    self.observation_type, 'bmp')
+            time.sleep(0.5)
         states = np.array(states)
         self.img_color = states[0][:, :, :3]
         # get pose state
@@ -554,7 +494,6 @@ class UnrealCvTracking_1vn(gym.Env):
         info['collision'] = collision_mat
 
         info['dis_ave'] = relative_dis.mean() # average distance among players, regard as a kind of density metric
-        # target
 
         # if in the tracker's view
         view_mat = np.zeros_like(relative_ori)

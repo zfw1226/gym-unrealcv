@@ -128,7 +128,7 @@ class Tracking(Navigation):
                 cam_pos_exp[0] = x
                 cam_pos_exp[1] = y
                 return [cam_pos_exp, yaw]
-            return []
+        return []
 
     def reset_target(self, target):
         cmd = 'vbp {target} reset'
@@ -198,9 +198,7 @@ class Tracking(Navigation):
                     lit_direction[2] = lit_direction[2] * 60
                 else:
                     lit_direction *= 180
-                color = np.random.uniform(0.99, 1, 3)
-                color /= color.max()
-                self.set_light(lit, lit_direction, np.random.uniform(1, 6), color) # np.random.uniform(0.1, 1, 3)
+                self.set_light(lit, lit_direction, np.random.uniform(1, 5), np.random.uniform(0.3, 1, 3))
 
     def set_random(self, target, value=1):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)

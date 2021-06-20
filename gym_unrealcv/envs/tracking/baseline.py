@@ -75,7 +75,6 @@ class GoalNavAgent(object):
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
-            # self.velocity = 70
             self.step_counter = 0
 
         if np.random.random() < 0.05:
