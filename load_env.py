@@ -3,25 +3,25 @@ import argparse
 
 binary_list = dict(
     # for searching
-    RealisticRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RealisticRendering_RL_3.10.zip',
-    Arch1='https://www.cs.jhu.edu/~qiuwch/release/unrealcv/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
+    RealisticRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/RealisticRendering_RL_3.10.zip',
+    Arch1='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
     # env with spline target for tracking
-    SplineCharacterA='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip',
-    SplineCharacterF='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterF.zip',
+    SplineCharacterA='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SplineCharacterA.zip',  # env for end-to-end active object tracking (icml 2018, tpami)
+    SplineCharacterF='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SplineCharacterF.zip',  # env for end-to-end active object tracking (icml 2018, tpami)
     # training env for tracking
-    RandomRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/RandomRoom.zip',
-    DuelingRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip',
-    MCRoom='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/MCRoom.zip',
-    Textures='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Textures.zip',
+    RandomRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/RandomRoom.zip', # env for end-to-end active object tracking (icml 2018, tpami)
+    DuelingRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/DuelingRoom.zip', # env for ad-vat (iclr 2019)
+    MCRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/MCRoom.zip',  # env for pose-assisted multi-camera tracking (aaai 2020)
+    Textures='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Textures.zip', # textures for environment augmentation
     # realistic testing env for tracking
-    UrbanCity='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/UrbanCity_2P.zip',
-    SnowForest='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SnowForest_2P.zip',
-    Garage='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip',
+    UrbanCity='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/UrbanCity_2P.zip', # env for ad-vat (iclr 2019)
+    SnowForest='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SnowForest_2P.zip', # env for ad-vat (iclr 2019)
+    Garage='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Garage_2P.zip', # env for ad-vat (iclr 2019)
     # multi camera
-    UrbanTree='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/urban_cam.zip',
-    Garden='https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/neighborhood.zip',
+    UrbanTree='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/urban_cam.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
+    Garden='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/neighborhood.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
     # Arm env
-    Arm='https://cs.jhu.edu/~qiuwch/craves/sim/arm-0610.zip'
+    Arm='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/arm-0610.zip'
 )
 
 
