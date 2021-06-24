@@ -18,6 +18,8 @@ binary_list = dict(
     UrbanCity='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/UrbanCity_2P.zip', # env for ad-vat (iclr 2019)
     SnowForest='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SnowForest_2P.zip', # env for ad-vat (iclr 2019)
     Garage='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Garage_2P.zip', # env for ad-vat (iclr 2019)
+    UrbanCityMulti='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/UrbanCity_Multi.zip', # env for distraction robustness (icml 2021)
+    GarageMulti='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/ParkingLot_Multi.zip', # env for distraction robustness (icml 2021)
     # multi camera
     UrbanTree='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/urban_cam.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
     Garden='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/neighborhood.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
