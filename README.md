@@ -10,7 +10,7 @@ A number of environments have been released for robotic vision tasks, e.g. `Sear
 <table>
    <tr>
 <td><img src="./doc/figs/search/search2.gif" width="240" height="180"></td>
-<td><img src="./doc/figs/track/icml_test.gif" width="240" height="180"></td>
+<td><img src="./doc/figs/track/urbancity_14.gif" width="240" height="180"></td>
 <td><img src="./doc/figs/arm/reach-virtual.gif" width="240" height="180"></td>
    </tr>
 </table>

@@ -106,7 +106,7 @@ class DeepQ:
 
     def updateTargetNetwork(self):
         self.backupNetwork(self.model, self.targetModel)
-        print 'update target network'
+        print ('update target network')
 
     # predict Q values for all the actions
     def getQValues(self, state):

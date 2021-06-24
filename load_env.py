@@ -11,6 +11,7 @@ binary_list = dict(
     # training env for tracking
     RandomRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/RandomRoom.zip', # env for end-to-end active object tracking (icml 2018, tpami)
     DuelingRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/DuelingRoom.zip', # env for ad-vat (iclr 2019)
+    FlexibleRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/FlexibleRoom.zip', # env with distractors and obstacles (icml 2021)
     MCRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/MCRoom.zip',  # env for pose-assisted multi-camera tracking (aaai 2020)
     Textures='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Textures.zip', # textures for environment augmentation
     # realistic testing env for tracking
@@ -27,8 +28,8 @@ binary_list = dict(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
-    parser.add_argument("-e", "--env", nargs='?', default='RobotArm-Discrete-v0',
-                        help='Select the environment to run')
+    parser.add_argument("-e", "--env", nargs='?', default='RealisticRoom',
+                        help='Select the binary to download')
     args = parser.parse_args()
     cmd_load = 'wget '+binary_list[args.env]
     os.system(cmd_load)

@@ -1,10 +1,10 @@
-ENV_NAME = 'Search-RrDoorDiscrete-v0'
+ENV_NAME = 'UnrealSearch-RealisticRoomDoor-DiscreteColor-v0'
 
 CONTINUE = False #load a pre-trained model
 RESTART_EP = 6000 # the episode number of the pre-trained model
 
 TRAIN = True # train the network
-USE_TARGET_NETWORK = False # use the target network
+USE_TARGET_NETWORK = True # use the target network
 SHOW = False # show the current state, reward and action
 MAP = False # show the trajectory in 2d map
 
