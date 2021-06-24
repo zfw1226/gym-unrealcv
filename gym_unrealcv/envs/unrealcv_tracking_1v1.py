@@ -282,7 +282,7 @@ class UnrealCvTracking_1v1(gym.Env):
         else:
             state_1 = state_0.copy()
         self.states = np.array([state_0, state_1])
-
+        self.unrealcv.img_color = self.states[0][:, :, :3]
         # start target
         if 'Ram' in self.target or 'Nav' in self.target:
             self.random_agent.reset()

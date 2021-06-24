@@ -108,27 +108,27 @@ class Tracking(Navigation):
         else:
             return True
 
-    def get_startpoint(self, target_pos, distance, reset_area, exp_height=200, direction=None):
-        count = 0
-        while True:  # searching a safe point
+    def get_startpoint(self, target_pos=[], distance=None, reset_area=[], exp_height=200, direction=None):
+        for i in range(5):  # searching a safe point
             if direction == None:
                 direction = 2 * np.pi * np.random.sample(1)
             else:
                 direction = direction % (2 * np.pi)
-            dx = float(distance * np.cos(direction))
-            dy = float(distance * np.sin(direction))
-            x = dx + target_pos[0]
-            y = dy + target_pos[1]
+            if distance == None:
+                x = np.random.randint(reset_area[0], reset_area[1])
+                y = np.random.randint(reset_area[2], reset_area[3])
+            else:
+                dx = float(distance * np.cos(direction))
+                dy = float(distance * np.sin(direction))
+                x = dx + target_pos[0]
+                y = dy + target_pos[1]
             cam_pos_exp = [x, y, exp_height]
             yaw = float(direction / np.pi * 180 - 180)
             if reset_area[0] < x < reset_area[1] and reset_area[2] < y < reset_area[3]:
-                cam_pos_exp[0] = dx + target_pos[0]
-                cam_pos_exp[1] = dy + target_pos[1]
+                cam_pos_exp[0] = x
+                cam_pos_exp[1] = y
                 return [cam_pos_exp, yaw]
-            else:
-                count += 1
-                if count > 5:
-                    return False
+        return []
 
     def reset_target(self, target):
         cmd = 'vbp {target} reset'
@@ -152,6 +152,30 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
+    def set_move_batch(self, objs_list, action_list):
+        cmd = 'vbp {obj} set_move {angle} {velocity}'
+        cmd_list = []
+        for i in range(len(objs_list)):
+            cmd_list.append(cmd.format(obj=objs_list[i], angle=action_list[i][1], velocity=action_list[i][0]))
+        res = None
+        while res is None:
+            res = self.client.request(cmd_list)
+
+    def set_move_with_cam_batch(self, objs_list, action_list, cam_ids, cam_rots):
+        cmd_move = 'vbp {obj} set_move {angle} {velocity}'
+        cmd_rot_cam = 'vset /camera/{cam_id}/rotation {pitch} {yaw} {roll}'
+        cmd_list = []
+        for i in range(len(objs_list)):
+            cmd_list.append(cmd_move.format(obj=objs_list[i], angle=action_list[i][1], velocity=action_list[i][0]))
+        for i in range(len(cam_ids)):
+            rot = cam_rots[i]
+            cam_id = cam_ids[i]
+            self.client.request(cmd_rot_cam.format(cam_id=cam_id, roll=rot[0], yaw=rot[1], pitch=rot[2]))
+            self.cam[cam_id]['rotation'] = rot
+        res = None
+        while res is None:
+            res = self.client.request(cmd_list)
+
     def get_hit(self, target):
         cmd = 'vbp {target} get_hit'.format(target=target)
         res = None
@@ -165,7 +189,7 @@ class Tracking(Navigation):
     def random_lit(self, light_list):
         for lit in light_list:
             if 'sky' in lit:
-                self.set_skylight(lit, [1, 1, 1], np.random.uniform(0.5, 2))
+                self.set_skylight(lit, [1, 1, 1], np.random.uniform(1, 10))
             else:
                 lit_direction = np.random.uniform(-1, 1, 3)
                 if 'directional' in lit:
@@ -174,7 +198,7 @@ class Tracking(Navigation):
                     lit_direction[2] = lit_direction[2] * 60
                 else:
                     lit_direction *= 180
-                self.set_light(lit, lit_direction, np.random.uniform(1, 4), np.random.uniform(0.1, 1, 3))
+                self.set_light(lit, lit_direction, np.random.uniform(1, 5), np.random.uniform(0.3, 1, 3))
 
     def set_random(self, target, value=1):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
@@ -182,8 +206,11 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def set_interval(self, interval):
-        cmd = 'vbp set_interval {value}'.format(value=interval)
+    def set_interval(self, interval, target=None):
+        if target is None:
+            cmd = 'vbp set_interval {value}'.format(value=interval)
+        else:
+            cmd = 'vbp {target} set_interval {value}'.format(target=target, value=interval)
         res = None
         while res is None:
             res = self.client.request(cmd)
@@ -201,20 +228,17 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def random_obstacles(self, objects, img_dirs, num, area, start_area, obstacle_scales=None):
+    def random_obstacles(self, objects, img_dirs, num, area, start_area, texture=False):
         sample_index = np.random.choice(len(objects), num, replace=False)
-        for k, id in enumerate(sample_index):
+        for id in sample_index:
             obstacle = objects[id]
             self.obstacles.append(obstacle)
             # texture
-            img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
-            self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
+            if texture:
+                img_dir = img_dirs[np.random.randint(0, len(img_dirs))]
+                self.set_texture(obstacle, (1, 1, 1), np.random.uniform(0, 1, 3), img_dir, np.random.randint(1, 4))
             # scale
-            if obstacle_scales == None:
-                obs_scale = [0.3, 3]
-            else:
-                obs_scale = obstacle_scales[k]
-            self.set_obj_scale(obstacle, np.random.uniform(obs_scale[0], obs_scale[1], 3))
+            self.set_obj_scale(obstacle, np.random.uniform(0.3, 3, 3))
             # location
             obstacle_loc = [start_area[0], start_area[2], 0]
             while start_area[0] <= obstacle_loc[0] <= start_area[1] and start_area[2] <= obstacle_loc[1] <= start_area[3]:
@@ -222,29 +246,24 @@ class Tracking(Navigation):
                 obstacle_loc[1] = np.random.uniform(area[2]+100, area[3]-100)
                 obstacle_loc[2] = np.random.uniform(area[4], area[5])
             self.set_obj_location(obstacle, obstacle_loc)
-            time.sleep(0.03)
+            time.sleep(0.01)
 
     def clean_obstacles(self):
         for obj in self.obstacles:
             self.set_obj_location(obj, self.objects_dict[obj])
         self.obstacles = []
 
-    def new_obj(self, obj_type, loc, rot=[0, 0, 0]):
-        # return obj name
-        cmd = 'vbp spawn spawn {x} {y} {z} {roll} {pitch} {yaw} {obj_type}'.format(
-            obj_type=obj_type, x=loc[0], y=loc[1], z=loc[2], roll=rot[0], pitch=rot[1], yaw=rot[2])
+    def new_obj(self, obj_type, obj_name, loc, rot=[0, 0, 0]):
+        # spawn, set obj pose, enable physics
+        cmd = ['vset /objects/spawn {0} {1}'.format(obj_type, obj_name),
+               'vset /object/{0}/location {1} {2} {3}'.format(obj_name, loc[0], loc[1], loc[2]),
+               'vset /object/{0}/rotation {1} {2} {3}'.format(obj_name, rot[0], rot[1], rot[2]),
+               'vbp {0} set_phy 1'.format(obj_name)
+               ]
         res = None
         while res is None:
             res = self.client.request(cmd)
-        return res[12:-3]
-
-    def destroy_obj(self, obj):
-        # return obj name
-        cmd = 'vbp {obj} destroy'.format(obj=obj)
-        res = None
-        while res is None:
-            res = self.client.request(cmd)
-        return res[12:-3]
+        return obj_name
 
     def move_goal(self, obj, goal):
         cmd = 'vbp {obj} move_to_goal {x} {y}'.format(obj=obj, x=goal[0] , y=goal[1])
@@ -252,3 +271,92 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
+    def get_pose_img_batch(self, objs_list, cam_ids, obs_type='lit', mode='fast', cam_rot=False):
+        cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
+        cmd_depth = 'vget /camera/{cam_id}/depth npy'
+        cmd_loc = 'vget /object/{obj}/location'
+        cmd_rot = 'vget /object/{obj}/rotation'
+        cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
+        cmd_cam_loc = 'vget /camera/{cam_id}/location'
+        cmd_list = []
+        if obs_type == 'Color':
+            viewmode = 'lit'
+        elif 'Mask' in obs_type:
+            viewmode = 'object_mask'
+        if 'Depth' in obs_type:
+            use_depth = True
+        else:
+            use_depth = False
+
+        for i in range(len(objs_list)):
+            cmd_list.append(cmd_loc.format(obj=objs_list[i]))
+            cmd_list.append(cmd_rot.format(obj=objs_list[i]))
+        for cam_id in cam_ids:
+            cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
+            if use_depth:
+                cmd_list.append(cmd_depth.format(cam_id=cam_id))
+        if cam_rot:
+            for cam_id in cam_ids:
+                cmd_list.append(cmd_cam_loc.format(cam_id=cam_id))
+                cmd_list.append(cmd_cam_rot.format(cam_id=cam_id))
+        res_list = None
+        while res_list is None:
+            res_list = self.client.request(cmd_list)
+        pose_list = []
+        img_list = []
+        depth_list = []
+        for i in range(len(objs_list)):
+            loc = [float(j) for j in res_list[i*2].split()]
+            rot = [float(j) for j in res_list[i*2+1].split()]
+            pose = loc + rot
+            pose_list.append(pose)
+        start_point = len(objs_list)*2
+        for i in range(len(cam_ids)):
+            p = int(start_point+i*(1+use_depth))
+            image = self.decode_bmp(res_list[p])[:, :, :-1]
+            img_list.append(image)
+            if use_depth:
+                depth = np.fromstring(res_list[p+1], np.float32)
+                depth = depth[-self.resolution[1] * self.resolution[0]:]
+                depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+                depth = 200/depth
+                depth_list.append(depth)
+        start_point = int(len(objs_list)*2+len(cam_ids)*(1+use_depth))
+        if cam_rot:
+            cam_pose_list = []
+            for i in range(len(cam_ids)):
+                loc = [float(j) for j in res_list[start_point+i*2].split()]
+                rot = [float(j) for j in res_list[start_point+i*2+1].split()]
+                rot.reverse()
+                pose = loc + rot
+                cam_pose_list.append(pose)
+            return img_list, pose_list, cam_pose_list, depth_list
+        else:
+            return img_list, pose_list, depth_list
+    def get_depth_batch(self, cam_ids, inverse=True):
+        cmd_list = []
+        cmd_depth = 'vget /camera/{cam_id}/depth npy'
+        for cam_id in cam_ids:
+            cmd_list.append(cmd_depth.format(cam_id=cam_id))
+        res_list = None
+        while res_list is None:
+            res_list = self.client.request(cmd_list)
+        depth_list = []
+        for res in res_list:
+            depth = np.fromstring(res, np.float32)
+            depth = depth[-self.resolution[1] * self.resolution[0]:]
+            depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+            if inverse:
+                depth = 1/depth
+            depth_list.append(depth)
+        return depth_list
+
+    def set_cam(self, obj, loc=[0, 30, 70], rot=[0, 0, 0]):
+        # set the camera pose relative to a actor
+        x, y, z = loc
+        row, pitch, yaw = rot
+        cmd = 'vbp {0} set_cam {1} {2} {3} {4} {5} {6}'.format(obj, x, y, z, row, pitch, yaw)
+        res = None
+        while res is None:
+            res = self.client.request(cmd)
+        return res

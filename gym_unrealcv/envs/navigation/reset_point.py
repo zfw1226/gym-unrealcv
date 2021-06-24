@@ -14,11 +14,12 @@ class ResetPoint():
         self.collision_th = setting['collision_th']
         self.height = setting['height']
         self.pitch = setting['pitch']
-        if self.reset_type == 'testpoint':
-            for x,y in setting['test_xy']:
-                pose = [x,y,setting['height'],0]
-                self.new_waypoint(pose, 1000)
-        elif self.reset_type == 'waypoint':
+
+        self.testpoints = []
+        for x,y in setting['test_xy']:
+            pose = [x,y,setting['height'],0]
+            self.testpoints.append(self.new_waypoint(pose, 1000))
+        if self.reset_type == 'waypoint':
             self.new_waypoint(init_pose, 1000)
         elif self.reset_type == 'random':
             self.reset_area = setting['reset_area']
@@ -41,12 +42,9 @@ class ResetPoint():
         return [x,y,z, 0, yaw, self.pitch]
 
     def reset_testpoint(self):
-        x, y, z, yaw = self.waypoints[self.start_id]['pose']
-        yaw = self.yaw_id * 45
-        self.yaw_id += 1
-        if self.yaw_id >= 8:
-            self.start_id = (self.start_id + 1) % len(self.waypoints)
-            self.yaw_id = self.yaw_id % 8
+        point = random.choice(self.testpoints)
+        x, y, z, yaw = point['pose']
+        yaw = random.randint(-180, 180)
         return [x, y, z, 0, yaw, self.pitch]
 
     def reset_waypoint(self):
@@ -71,7 +69,6 @@ class ResetPoint():
         waypoint['selected'] = 0
         waypoint['dis2collision'] = dis2collision
         waypoint['steps2target'] = []
-        self.waypoints.append(waypoint)
         return waypoint
 
     def get_dis2collision(self, pose):

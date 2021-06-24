@@ -22,7 +22,8 @@ class UnrealCv(object):
         self.ip = ip
         print (self.ip)
         self.cam = dict()
-        for i in range(6):
+        self.color_dict = dict()
+        for i in range(20):
             self.cam[i] = dict(
                  location=[0, 0, 0],
                  rotation=[0, 0, 0],
@@ -38,6 +39,7 @@ class UnrealCv(object):
         self.client.connect()
         self.check_connection()
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0], h=resolution[1]))
+        self.client.request('DisableAllScreenMessages')
         self.client.request('vrun sg.ShadowQuality 0')
         self.client.request('vrun sg.TextureQuality 0')
         self.client.request('vrun sg.EffectsQuality 0')
@@ -95,16 +97,16 @@ class UnrealCv(object):
                 image = image_rgba[:, :, :-1]  # delete alpha channel
             return image
 
-    def read_depth(self, cam_id):
-
+    def read_depth(self, cam_id, inverse=True):
         cmd = 'vget /camera/{cam_id}/depth npy'
         res = self.client.request(cmd.format(cam_id=cam_id))
         depth = np.fromstring(res, np.float32)
         depth = depth[-self.resolution[1] * self.resolution[0]:]
-        depth = depth.reshape(self.resolution[1], self.resolution[0],1)
-        depth = depth/depth.max()
-        #cv2.imshow('depth',depth/depth.max())
-        #cv2.waitKey(10)
+        depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+        if inverse:
+            depth = 1/depth
+        # cv2.imshow('depth', depth/depth.max())
+        # cv2.waitKey(10)
         return depth
 
     def decode_png(self, res):
@@ -161,7 +163,7 @@ class UnrealCv(object):
         self.client.request(cmd.format(cam_id=cam_id, x=loc[0], y=loc[1], z=loc[2]))
         self.cam[cam_id]['location'] = loc
 
-    def get_location(self,cam_id, mode='hard'):
+    def get_location(self, cam_id, mode='hard'):
         if mode == 'soft':
             return self.cam[cam_id]['location']
         if mode == 'hard':
@@ -234,6 +236,7 @@ class UnrealCv(object):
     def set_obj_color(self, obj, color):
         cmd = 'vset /object/{obj}/color {r} {g} {b}'
         self.client.request(cmd.format(obj=obj, r=color[0], g=color[1], b=color[2]))
+        self.color_dict[obj] = color
 
     def set_obj_location(self, obj, loc):
         cmd = 'vset /object/{obj}/location {x} {y} {z}'
@@ -250,7 +253,7 @@ class UnrealCv(object):
         mask = cv2.inRange(object_mask, lower_range, upper_range)
         return mask
 
-    def get_bbox(self, object_mask, obj):
+    def get_bbox(self, object_mask, obj, normalize=True):
         # get an object's bounding box
         width = object_mask.shape[1]
         height = object_mask.shape[0]
@@ -263,10 +266,16 @@ class UnrealCv(object):
             x_max = pixelpointsCV2[:, :, 0].max()
             y_min = pixelpointsCV2[:, :, 1].min()
             y_max = pixelpointsCV2[:, :, 1].max()
-            box = ((x_min/float(width), y_min/float(height)),  # left top
-                   (x_max/float(width), y_max/float(height)))  # right down
+            if normalize:
+                box = ((x_min/float(width), y_min/float(height)),  # left top
+                       (x_max/float(width), y_max/float(height)))  # right down
+            else:
+                box = [x_min, y_min, x_max-x_min, y_max-y_min]
         else:
-            box = ((0, 0), (0, 0))
+            if normalize:
+                box = ((0, 0), (0, 0))
+            else:
+                box = [0, 0, 0, 0]
 
         return mask, box
 
@@ -289,6 +298,7 @@ class UnrealCv(object):
         for obj in objects:
             color = self.get_obj_color(obj)
             color_dict[obj] = color
+        self.color_dict = color_dict
         return color_dict
 
     def get_obj_location(self, obj):
@@ -334,3 +344,6 @@ class UnrealCv(object):
     def set_fov(self, fov, cam_id=0):
         cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
         self.client.request(cmd.format(cam_id=cam_id, FOV=fov))
+
+    def destroy_obj(self, obj):
+        self.client.request('vset /object/{obj}/destroy'.format(obj=obj))

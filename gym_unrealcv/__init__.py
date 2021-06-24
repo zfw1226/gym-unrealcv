@@ -136,3 +136,25 @@ for env in ['MCRoom', 'Garden', 'UrbanTree']:
                                 },
                         max_episode_steps=500
                     )
+
+
+for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type
+                for target in ['Ram', 'Nav', 'PZRNav', 'AdvNav', 'PZR', 'Adv', 'AdvShare']:
+                        name = 'UnrealTrackMulti-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                        setting_file = 'tracking_1vn/{env}.json'.format(env=env)
+                        register(
+                            id=name,
+                            entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
+                            kwargs={'setting_file': setting_file,
+                                    'reset_type': i,
+                                    'action_type': action,
+                                    'observation_type': obs,
+                                    'reward_type': 'distance',
+                                    'docker': use_docker,
+                                    'target': target
+                                    },
+                            max_episode_steps=500
+                            )

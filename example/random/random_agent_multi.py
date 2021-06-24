@@ -20,6 +20,7 @@ if __name__ == '__main__':
     parser.add_argument("-e", "--env_id", nargs='?', default='UnrealTrackingMPRoom-DiscreteColor-v2',
                         help='Select the environment to run')
     parser.add_argument("-r", '--render', dest='render', action='store_true', help='show env using cv2')
+    parser.add_argument("-s", '--seed', dest='seed', default=0, help='random seed')
     args = parser.parse_args()
     env = gym.make(args.env_id)
     agents_num = len(env.action_space)
@@ -31,7 +32,7 @@ if __name__ == '__main__':
 
     done = False
     Total_rewards = 0
-    env.seed(0)
+    env.seed(int(args.seed))
     for eps in range(1, episode_count):
         obs = env.reset()
         count_step = 0

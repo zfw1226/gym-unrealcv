@@ -1,6 +1,6 @@
 from gym_unrealcv.envs.utils import misc
 import numpy as np
-
+from random import choice
 
 class RandomAgent(object):
     """The world's simplest agent!"""
@@ -35,7 +35,7 @@ class RandomAgent(object):
 
 
 class GoalNavAgent(object):
-    def __init__(self, action_space, goal_area, nav):
+    def __init__(self, action_space, goal_area, nav, random_th=0):
         self.step_counter = 0
         self.keep_steps = 0
         self.velocity_high = action_space['high'][0]
@@ -43,6 +43,7 @@ class GoalNavAgent(object):
         self.angle_high = action_space['high'][1]
         self.angle_low = action_space['low'][1]
         self.goal_area = goal_area
+        self.random_th = random_th
         # self.goal = self.generate_goal(self.goal_area)
         if 'Base' in nav:
             self.discrete = True
@@ -59,7 +60,7 @@ class GoalNavAgent(object):
         else:
             self.fix = False
 
-    def act(self, pose):
+    def act(self, pose, ref_goal=None):
         self.step_counter += 1
         if self.pose_last == None or self.fix:
             self.pose_last = pose
@@ -68,13 +69,23 @@ class GoalNavAgent(object):
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose))
             self.pose_last = pose
         if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
-            self.goal = self.generate_goal(self.goal_area, self.fix)
+            if ref_goal is None or np.random.random() > self.random_th:
+                self.goal = self.generate_goal(self.goal_area, self.fix)
+            else:
+                self.goal = ref_goal
             if self.discrete or self.fix:
                 self.velocity = (self.velocity_high + self.velocity_low)/2
             else:
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
-            # self.velocity = 70
             self.step_counter = 0
+
+        if np.random.random() < 0.05:
+            self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
+        if np.random.random() < 0.01 and self.angle_noise_step == 0:  # noise angle
+            self.angle = choice([1, -1])*self.angle_high*(1 + 0.2*np.random.random())
+            self.angle_noise_step = np.random.randint(5, 20)
+        else:
+            self.angle_noise_step = 0
 
         delt_yaw = misc.get_direction(pose, self.goal)
         if self.discrete:
@@ -87,9 +98,13 @@ class GoalNavAgent(object):
             elif delt_yaw < -3:
                 self.angle = self.angle_low / 2
         else:
-            self.angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
+            if self.angle_noise_step > 0:
+                angle = self.angle
+                self.angle_noise_step -= 1
+            else:
+                angle = np.clip(delt_yaw, self.angle_low, self.angle_high)
             velocity = self.velocity * (1 + 0.2*np.random.random())
-        return (velocity, self.angle)
+        return (velocity, angle)
 
     def act2(self, pose):
         if self.pose_last == None or self.fix:
@@ -111,6 +126,7 @@ class GoalNavAgent(object):
     def reset(self):
         self.step_counter = 0
         self.keep_steps = 0
+        self.angle_noise_step = 0
         self.goal_id = 0
         self.goal = self.generate_goal(self.goal_area, self.fix)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
