@@ -48,14 +48,13 @@ If you use these robotic arm environments in your research work, we would be gra
 Goal: follow a target object by autonomously controlling the motion system of a tracker given visual observations.
 
 These active tracking environments are used in [Luo et al., 2018](https://arxiv.org/abs/1705.10561), 
-[Luo et al., 2019](https://arxiv.org/abs/1808.03405), 
-and [Zhong et al., 2019](https://openreview.net/pdf?id=HkgYmhR9KX).
+[Luo et al., 2019](https://arxiv.org/abs/1808.03405), [Zhong et al., 2019](https://openreview.net/pdf?id=HkgYmhR9KX), [Zhong et al., 2019](https://openreview.net/pdf?id=HkgYmhR9KX).
 
 ## Cities
-The `City1` and `City2` Environments are used in [(Luo et al., 2018](https://arxiv.org/abs/1705.10561).
+The `City1` and `City2` Environments are used in [Luo et al., 2018](https://arxiv.org/abs/1705.10561).
 The target will move along a pre-defined trajectory. 
 
-Binaries: [SplineCharacterA](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterA.zip), [SplineCharacterF](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SplineCharacterF.zip)
+Binaries: [SplineCharacterA](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SplineCharacterA.zip), [SplineCharacterF](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SplineCharacterF.zip)
 
 Naming rule: `UnrealTrack-{Scene}{Target}{PathID}-{ActionSpace}{ObsSpace}-{Versrion}`.
 
@@ -87,10 +86,10 @@ python load_env.py -e Textures
 In these environments, the target each player is allowed to controlled by external program.
 So you can design different rules to control the movement of target.
 
-Binaries: [DuelingRoom](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/DuelingRoom.zip),
-[UrbanCity](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/UrbanCity_2P.zip),
-[SnowForest](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/SnowForest_2P.zip),
-[Garage](https://www.cs.jhu.edu/~qiuwch/unrealcv/binaries/Garage_2P.zip)
+Binaries: [DuelingRoom](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/DuelingRoom.zip),
+[UrbanCity](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/UrbanCity_2P.zip),
+[SnowForest](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/SnowForest_2P.zip),
+[Garage](https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Garage_2P.zip)
 
 Naming rule: `UnrealTrack-{Scene}{Target}-{ActionSpace}{ObsSpace}-{Versrion}`.
 - `{Scene}`: DuelingRoom, UrbanCity, Garage, SnowForest
@@ -113,18 +112,50 @@ If you use these active tracking environments in your research work, we would be
   }
 
 @article{luo2019end,
-  title={End-to-end Active Object Tracking and Its Real-world Deployment via Reinforcement Learning},
+  title={End-to-end active object tracking and its real-world deployment via reinforcement learning},
   author={Luo, Wenhan and Sun, Peng and Zhong, Fangwei and Liu, Wei and Zhang, Tong and Wang, Yizhou},
   journal={IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume={42},
+  number={6},
+  pages={1317--1332},
   year={2019},
   publisher={IEEE}
 }
  
 @inproceedings{zhong2018advat,
-  title={{AD}-{VAT}: An Asymmetric Dueling mechanism for learning Visual Active Tracking},
-  author={Fangwei Zhong and Peng Sun and Wenhan Luo and Tingyun Yan and Yizhou Wang},
+  title={AD-VAT: An asymmetric dueling mechanism for learning visual active tracking},
+  author={Zhong, Fangwei and Sun, Peng and Luo, Wenhan and Yan, Tingyun and Wang, Yizhou},
   booktitle={International Conference on Learning Representations},
   year={2019},
   url={https://openreview.net/forum?id=HkgYmhR9KX},
   }
+
+  @article{zhong2021advat,
+  title={AD-VAT+: An Asymmetric Dueling Mechanism for Learning and Understanding Visual Active Tracking},
+  author={Zhong, Fangwei and Sun, Peng and Luo, Wenhan and Yan, Tingyun and Wang, Yizhou},
+  journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
+  year={2019},
+  volume={43},
+  number={5},
+  pages={1467-1482}
+  }
+
+@inproceedings{li2020pose,
+  title={Pose-assisted multi-camera collaboration for active object tracking},
+  author={Li, Jing and Xu, Jing and Zhong, Fangwei and Kong, Xiangyu and Qiao, Yu and Wang, Yizhou},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  year={2020},
+  volume={34},
+  number={01},
+  pages={759--766}
+}
+
+@InProceedings{zhong2021distraction,
+title = {Towards Distraction-Robust Active Visual Tracking},
+author = {Zhong, Fangwei and Sun, Peng and Luo, Wenhan and Yan, Tingyun and Wang, Yizhou}, 
+booktitle = {Proceedings of the 38th International Conference on Machine Learning}, 
+year = {2021},
+volume = {139},
+pages = {12782--12792}
+}
 ```
