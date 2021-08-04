@@ -1,0 +1,66 @@
+{
+	"env_name": "UrbanCity_Multi",
+	"env_bin": "UrbanCity_Multi/urbancity/Binaries/Linux/urbancity",
+    "imgs_dir": "textures",
+	"max_player_num": 8,
+	"cam_id": [0, 1, 2],
+	"height": 100,
+	"pitch": 0,
+	"max_steps": 1000,
+	"max_distance": 700,
+	"min_distance": 150,
+	"max_direction": 60,
+	"exp_distance": 250,
+	"interval": 10,
+	"players": [
+        "targetbp", "targetbp2"
+	],
+	"discrete_actions": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+  	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+	"safe_start" :[
+		[ -1000,-1000,  100],
+		[ -1000, -250,  100],
+		[ -1000,  500,  100],
+		[  -250,-1000,  100],
+		[  -250, -250,  100],
+		[  -250,  500,  100],
+		[   500,-1000,  100],
+		[   500, -250,  100],
+		[   500,  500,  100]
+    ],
+	"reset_area" : [-1500, 1000, -1500, 1000, 135, 140],
+	"continous_actions": {
+		"high": [100,     30],
+		"low":  [-100,   -30]
+	},
+	"continous_actions_player": {
+		"high": [100,     30],
+		"low":  [50,     -30]
+	},
+	"objects_list": [
+		"cube1", "cube2_7", "cube3", "cube4", "cube5"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ]
+
+}

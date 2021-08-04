@@ -1,0 +1,62 @@
+{
+	"env_name": "ParkingLot_Multi",
+	"env_bin": "ParkingLot_Multi/parkinglot/Binaries/Linux/parkinglot",
+    "imgs_dir": "textures",
+	"max_player_num": 8,
+	"cam_id": [0, 1, 2],
+	"height": 100,
+	"pitch": 0,
+	"max_steps": 1000,
+	"max_distance": 700,
+	"min_distance": 150,
+	"max_direction": 60,
+	"exp_distance": 250,
+	"interval": 10,
+	"players": [
+        "targetbp", "targetbp2"
+	],
+	"discrete_actions": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+  	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+	"safe_start" :[
+		[  -350,  1200,  110],
+		[  -350,  2200,  110],
+		[  -350,  3200,  110],
+		[  400,   2200,  110],
+		[ -1000,  2200,  110]
+    ],
+	"reset_area" : [-1200, 600, 800, 4000, 100, 110],
+	"continous_actions": {
+		"high": [100,     30],
+		"low":  [-100,   -30]
+	},
+	"continous_actions_player": {
+		"high": [100,     30],
+		"low":  [50,     -30]
+	},
+	"objects_list": [
+		"cube1", "cube2_7", "cube3", "cube4", "cube5"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ]
+
+}
