@@ -3,7 +3,7 @@
 	"env_bin": "Garden_2P/neighborhood/Binaries/Linux/neighborhood",
     "imgs_dir": "textures",
 	"max_player_num": 8,
-	"cam_id": [5, 6],
+	"cam_id": [4, 5],
 	"height": 100,
 	"pitch": 0,
 	"max_steps": 1000,
