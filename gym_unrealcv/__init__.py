@@ -138,7 +138,7 @@ for env in ['MCRoom', 'Garden', 'UrbanTree']:
                     )
 
 
-for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage']:
+for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage', 'Garden']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type
