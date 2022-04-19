@@ -5,6 +5,7 @@
 	"height": 40,
 	"max_steps": 1000,
 	"max_distance": 500,
+	"min_distance": 100,
 	"max_direction": 90,
 	"exp_distance": 200,
 	"targets": [
