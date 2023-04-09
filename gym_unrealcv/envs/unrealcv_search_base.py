@@ -4,7 +4,7 @@ import numpy as np
 from gym import spaces
 from gym_unrealcv.envs.navigation import reward, reset_point
 from gym_unrealcv.envs.navigation.visualization import show_info
-from gym_unrealcv.envs.utils import env_unreal
+from gym_unrealcv.envs.utils import env_unreal, misc
 from gym_unrealcv.envs.navigation.interaction import Navigation
 '''
 It is a general env for searching target object.
@@ -31,7 +31,7 @@ class UnrealCvSearch_base(gym.Env):
                  resolution=(160, 120)
                  ):
 
-        setting = self.load_env_setting(setting_file)
+        setting = misc.load_env_setting(setting_file)
         self.cam_id = setting['cam_id']
         self.target_list = setting['targets'][category]
         self.trigger_th = setting['trigger_th']
@@ -90,7 +90,7 @@ class UnrealCvSearch_base(gym.Env):
         # for reset point generation and selection
         self.reset_module = reset_point.ResetPoint(setting, reset_type, current_pose)
 
-    def _step(self, action ):
+    def step(self, action ):
         info = dict(
             Collision=False,
             Done=False,
@@ -140,7 +140,7 @@ class UnrealCvSearch_base(gym.Env):
             # get reward
             distance, self.target_id = self.select_target_by_distance(info['Pose'][:3], self.targets_pos)
             info['Target'] = self.targets_pos[self.target_id]
-            info['Direction'] = self.get_direction(info['Pose'], self.targets_pos[self.target_id])
+            info['Direction'] = misc.get_direction(info['Pose'], self.targets_pos[self.target_id])
 
             # calculate reward according to the distance to target object
             if 'distance' in self.reward_type:
@@ -168,8 +168,7 @@ class UnrealCvSearch_base(gym.Env):
 
         return state, info['Reward'], info['Done'], info
 
-    def _reset(self, ):
-
+    def reset(self, ):
         # double check the resetpoint, it is necessary for random reset type
         collision = True
         while collision:
@@ -188,18 +187,18 @@ class UnrealCvSearch_base(gym.Env):
             self.select_target_by_distance(current_pose, self.targets_pos)
         return state
 
-    def _seed(self, seed=None):
+    def seed(self, seed=None):
         return seed
 
-    def _render(self, mode='rgb_array', close=False):
-        if close==True:
+    def render(self, mode='rgb_array', close=False):
+        if close:
             self.unreal.close()
         return self.unrealcv.img_color
 
-    def _close(self):
+    def close(self):
         self.unreal.close()
 
-    def _get_action_size(self):
+    def get_action_size(self):
         return len(self.action)
 
     def select_target_by_distance(self, current_pos, targets_pos):
@@ -212,28 +211,4 @@ class UnrealCvSearch_base(gym.Env):
                 target_id = key
                 distance_min = distance
         return distance_min, target_id
-
-    def get_direction(self, current_pose, target_pose):
-        y_delt = target_pose[1] - current_pose[1]
-        x_delt = target_pose[0] - current_pose[0]
-        angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
-        if angle_now > 180:
-            angle_now -= 360
-        if angle_now < -180:
-            angle_now += 360
-        return angle_now
-
-    def load_env_setting(self, filename):
-        import gym_unrealcv
-        gympath = os.path.dirname(gym_unrealcv.__file__)
-        gympath = os.path.join(gympath, 'envs/setting', filename)
-        f = open(gympath)
-        filetype = os.path.splitext(filename)[1]
-        if filetype == '.json':
-            import json
-            setting = json.load(f)
-        else:
-            print ('unknown type')
-
-        return setting
 
