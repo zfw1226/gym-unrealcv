@@ -188,7 +188,6 @@ class UnrealCvTracking_1vn(gym.Env):
         states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
                                                                     self.observation_type, 'bmp')
         self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
-
         # for recording demo
         if self.get_bbox:
             mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
@@ -277,6 +276,7 @@ class UnrealCvTracking_1vn(gym.Env):
         else:
             self.w_p = 0
         self.count_steps = 0
+        np.random.seed()
         # stop move
         for i, obj in enumerate(self.player_list):
             self.unrealcv.set_move(obj, 0, 0)
@@ -314,8 +314,8 @@ class UnrealCvTracking_1vn(gym.Env):
         if self.reset_type >= 4:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_list, self.textures_list,
-                                           15, self.reset_area, self.start_area)
-
+                                           15, self.reset_area, self.start_area, True)
+            
         # init target location and get expected tracker location
         res = []
         # sample a target pose from reset area
@@ -387,7 +387,7 @@ class UnrealCvTracking_1vn(gym.Env):
                 self.controable_agent = 2
 
         # set view point
-        height = 50
+        height = 60
         pitch = - 5
         self.unrealcv.set_cam(self.player_list[0], [30, 0, height],
                               [0, pitch, 0])
