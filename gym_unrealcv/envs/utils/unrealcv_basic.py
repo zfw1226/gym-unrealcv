@@ -21,7 +21,7 @@ class UnrealCv(object):
         # build a client to connect to the env
         self.client = unrealcv.Client((ip, port))
         self.client.connect()
-        if 'linux' in sys.platform: # new socket for linux
+        if 'linux' in sys.platform and unrealcv.__version__ >= '1.0.0': # new socket for linux
             unix_socket_path = os.path.join('/tmp/unrealcv_{port}.socket'.format(port=port)) # clean the old socket
             os.remove(unix_socket_path) if os.path.exists(unix_socket_path) else None
             self.client.disconnect() # disconnect the client for creating a new socket in linux
@@ -148,7 +148,8 @@ class UnrealCv(object):
 
     def set_pose(self, cam_id, pose):  # set camera pose, pose = [x, y, z, roll, yaw, pitch]
         cmd = 'vset /camera/{cam_id}/pose {x} {y} {z} {pitch} {yaw} {roll}'
-        self.client.request(cmd.format(cam_id=cam_id, x=pose[0], y=pose[1], z=pose[2], roll=pose[3], yaw=pose[4], pitch=pose[5]))
+        self.client.request(cmd.format(cam_id=cam_id, x=pose[0], y=pose[1], z=pose[2],
+                                       roll=pose[3], yaw=pose[4], pitch=pose[5]), -1)
         self.cam[cam_id]['location'] = pose[:3]
         self.cam[cam_id]['rotation'] = pose[-3:]
 
@@ -169,7 +170,7 @@ class UnrealCv(object):
 
     def set_location(self, cam_id, loc):  # set camera location, loc=[x,y,z]
         cmd = 'vset /camera/{cam_id}/location {x} {y} {z}'
-        self.client.request(cmd.format(cam_id=cam_id, x=loc[0], y=loc[1], z=loc[2]))
+        self.client.request(cmd.format(cam_id=cam_id, x=loc[0], y=loc[1], z=loc[2]), -1)
         self.cam[cam_id]['location'] = loc
 
     def get_location(self, cam_id, mode='hard'):
@@ -187,7 +188,7 @@ class UnrealCv(object):
 
     def set_rotation(self, cam_id, rot):  # set camera rotation, rot = [roll, yaw, pitch]
         cmd = 'vset /camera/{cam_id}/rotation {pitch} {yaw} {roll}'
-        self.client.request(cmd.format(cam_id=cam_id, roll=rot[0], yaw=rot[1], pitch=rot[2]))
+        self.client.request(cmd.format(cam_id=cam_id, roll=rot[0], yaw=rot[1], pitch=rot[2]), -1)
         self.cam[cam_id]['rotation'] = rot
 
     def get_rotation(self, cam_id, mode='hard'):
@@ -241,7 +242,7 @@ class UnrealCv(object):
 
     def keyboard(self, key, duration=0.01):  # Up Down Left Right
         cmd = 'vset /action/keyboard {key} {duration}'
-        return self.client.request(cmd.format(key=key, duration=duration))
+        return self.client.request(cmd.format(key=key, duration=duration), -1)
 
     def get_obj_color(self, obj): # get object color in object mask, color = [r,g,b]
         object_rgba = self.client.request('vget /object/{obj}/color'.format(obj=obj))
@@ -251,16 +252,16 @@ class UnrealCv(object):
 
     def set_obj_color(self, obj, color): # set object color in object mask, color = [r,g,b]
         cmd = 'vset /object/{obj}/color {r} {g} {b}'
-        self.client.request(cmd.format(obj=obj, r=color[0], g=color[1], b=color[2]))
+        self.client.request(cmd.format(obj=obj, r=color[0], g=color[1], b=color[2]), -1)
         self.color_dict[obj] = color
 
     def set_obj_location(self, obj, loc): # set object location, loc=[x,y,z]
         cmd = 'vset /object/{obj}/location {x} {y} {z}'
-        self.client.request(cmd.format(obj=obj, x=loc[0], y=loc[1], z=loc[2]))
+        self.client.request(cmd.format(obj=obj, x=loc[0], y=loc[1], z=loc[2]), -1)
 
     def set_obj_rotation(self, obj, rot): # set object rotation, rot = [roll, yaw, pitch]
         cmd = 'vset /object/{obj}/rotation {pitch} {yaw} {roll}'
-        self.client.request(cmd.format(obj=obj, roll=rot[0], yaw=rot[1], pitch=rot[2]))
+        self.client.request(cmd.format(obj=obj, roll=rot[0], yaw=rot[1], pitch=rot[2]), -1)
 
     def get_mask(self, object_mask, obj): # get an object's mask
         [r, g, b] = self.color_dict[obj]
@@ -344,10 +345,10 @@ class UnrealCv(object):
         return pose_dic
 
     def hide_obj(self, obj): # hide an object, make it invisible, but still there in physics engine
-        self.client.request('vset /object/{obj}/hide'.format(obj=obj))
+        self.client.request('vset /object/{obj}/hide'.format(obj=obj), -1)
 
     def show_obj(self, obj): # show an object, make it visible
-        self.client.request('vset /object/{obj}/show'.format(obj=obj))
+        self.client.request('vset /object/{obj}/show'.format(obj=obj), -1)
 
     def hide_objects(self, objects):
         for obj in objects:
@@ -359,7 +360,7 @@ class UnrealCv(object):
 
     def set_fov(self, fov, cam_id=0): # set camera field of view
         cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
-        self.client.request(cmd.format(cam_id=cam_id, FOV=fov))
+        self.client.request(cmd.format(cam_id=cam_id, FOV=fov), -1)
 
     def destroy_obj(self, obj): # destroy an object, remove it from the scene
-        self.client.request('vset /object/{obj}/destroy'.format(obj=obj))
+        self.client.request('vset /object/{obj}/destroy'.format(obj=obj), -1)
