@@ -12,7 +12,7 @@ A number of environments have been released for robotic vision tasks, including 
     <td>
       <figure>
         <img src="./doc/figs/track/urbancity.gif" width="240" height="180">
-        <figcaption>Tracking in Urban City with distractors</figcaption>
+        <figcaption>Tracking in UrbanCity with distractors</figcaption>
       </figure>
     </td>
     <td>
@@ -24,7 +24,7 @@ A number of environments have been released for robotic vision tasks, including 
     <td>
       <figure>
         <img src="./doc/figs/track/snow.gif" width="240" height="180">
-        <figcaption>Tracking in Snow Forest</figcaption>
+        <figcaption>Tracking in SnowForest</figcaption>
       </figure>
     </td>
   </tr>
@@ -38,7 +38,7 @@ A number of environments have been released for robotic vision tasks, including 
     <td>
       <figure>
         <img src="./doc/figs/search/search2.gif" width="240" height="180">
-        <figcaption>Search in RealisticRoom</figcaption>
+        <figcaption>Searching in RealisticRoom</figcaption>
       </figure>
     </td>
     <td>
