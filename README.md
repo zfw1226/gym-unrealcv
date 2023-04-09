@@ -12,19 +12,19 @@ A number of environments have been released for robotic vision tasks, including 
     <td>
       <figure>
         <img src="./doc/figs/track/urbancity.gif" width="240" height="180">
-        <figcaption>Urban City</figcaption>
+        <figcaption>Tracking in Urban City with distractors</figcaption>
       </figure>
     </td>
     <td>
       <figure>
         <img src="./doc/figs/track/garden.gif" width="240" height="180">
-        <figcaption>Garden</figcaption>
+        <figcaption>Tracking in Garden</figcaption>
       </figure>
     </td>
     <td>
       <figure>
         <img src="./doc/figs/track/snow.gif" width="240" height="180">
-        <figcaption>Snow Forest</figcaption>
+        <figcaption>Tracking in Snow Forest</figcaption>
       </figure>
     </td>
   </tr>
@@ -32,19 +32,19 @@ A number of environments have been released for robotic vision tasks, including 
     <td>
       <figure>
         <img src="./doc/figs/track/garage.gif" width="240" height="180">
-        <figcaption>Garage</figcaption>
+        <figcaption>Tracking in Garage with distractors</figcaption>
       </figure>
     </td>
     <td>
       <figure>
         <img src="./doc/figs/search/search2.gif" width="240" height="180">
-        <figcaption>Search</figcaption>
+        <figcaption>Search in RealisticRoom</figcaption>
       </figure>
     </td>
     <td>
       <figure>
         <img src="./doc/figs/arm/reach-virtual.gif" width="240" height="180">
-        <figcaption>Robot Arm</figcaption>
+        <figcaption>Robot Arm Control</figcaption>
       </figure>
     </td>
   </tr>
