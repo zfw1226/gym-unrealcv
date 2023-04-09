@@ -7,7 +7,7 @@ import os
 import re
 from io import BytesIO
 import PIL.Image
-
+import sys
 
 class UnrealCv(object):
     def __init__(self, port, ip, env, cam_id, resolution):
@@ -16,11 +16,21 @@ class UnrealCv(object):
             self.docker = False
         else:
             self.docker = True
-        self.client = unrealcv.Client((ip, port))
-
         self.envdir = env
         self.ip = ip
-        print (self.ip)
+        # build a client to connect to the env
+        self.client = unrealcv.Client((ip, port))
+        self.client.connect()
+        if 'linux' in sys.platform: # new socket for linux
+            unix_socket_path = os.path.join('/tmp/unrealcv_{port}.socket'.format(port=port)) # clean the old socket
+            os.remove(unix_socket_path) if os.path.exists(unix_socket_path) else None
+            self.client.disconnect() # disconnect the client for creating a new socket in linux
+            time.sleep(2)
+            if unix_socket_path is not None and os.path.exists(unix_socket_path):
+                self.client = unrealcv.Client(unix_socket_path, 'unix')
+            else:
+                self.client = unrealcv.Client((ip, port)) # reconnect to the tcp socket
+            self.client.connect()
         self.cam = dict()
         self.color_dict = dict()
         for i in range(20):
@@ -36,7 +46,6 @@ class UnrealCv(object):
         self.img_depth = None
 
     def init_unrealcv(self, cam_id, resolution=(320, 240)):
-        self.client.connect()
         self.check_connection()
         self.client.request('vrun setres {w}x{h}w'.format(w=resolution[0], h=resolution[1]))
         self.client.request('DisableAllScreenMessages')
@@ -56,6 +65,7 @@ class UnrealCv(object):
     def check_connection(self):
         while self.client.isconnected() is False:
             print ('UnrealCV server is not running. Please try again')
+            time.sleep(1)
             self.client.connect()
 
     def show_img(self, img, title="raw_img"):
