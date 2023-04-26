@@ -107,7 +107,11 @@ class RunUnreal():
         import socket
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            sock.bind((ip, port))
+            if 'linux' in sys.platform:
+                sock.bind((ip, port))
+            elif 'win' in sys.platform:
+                sock.bind((ip, port))
+                sock.connect((ip,port))
         except Exception as e:
             sock.close()
             print(e) # print error message
