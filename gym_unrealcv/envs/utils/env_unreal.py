@@ -34,6 +34,7 @@ class RunUnreal():
                 self.write_port(port)
             #self.modify_permission(self.path2env)
             self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
+            # self.env = Process(target=self.read_port())
             self.env.start()
             print('Running docker-free env, pid:{}'.format(self.env.pid))
 
