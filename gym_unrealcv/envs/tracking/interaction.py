@@ -346,3 +346,6 @@ class Tracking(Navigation):
         cmd = 'vbp {0} set_cam {1} {2} {3} {4} {5} {6}'.format(obj, x, y, z, row, pitch, yaw)
         res = self.client.request(cmd, -1)
         return res
+
+    def adjust_fov(self, cam_id, delta_fov):  # increase/decrease fov
+        return self.set_fov(cam_id, self.cam[cam_id]['fov']+delta_fov)
