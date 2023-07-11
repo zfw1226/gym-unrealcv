@@ -209,14 +209,11 @@ class UnrealCvMultiCam(gym.Env):
             object_masks.append(object_mask)
             self.unrealcv.set_rotation(cam, cam_rot)
 
-        imgs = np.hstack([mask for mask in object_masks])
-        cv2.imshow('object_mask', imgs)
-        cv2.waitKey(1)
-        print(self.unrealcv.cam)
+        # imgs = np.hstack([mask for mask in object_masks])
+        # cv2.imshow('object_mask', imgs)
+        # cv2.waitKey(1)
         self.states = states
         self.count_steps += 1
-
-        obj_masks = []
 
         rewards = []
         gt_locations = []
@@ -259,7 +256,7 @@ class UnrealCvMultiCam(gym.Env):
             reward = sparse_reward
             rewards.append(reward)
         info['gt_locations'] = gt_locations
-        info['gate rewards'] = self.gate_rewards
+        info['gate rewards'] = self.gate_ids
         info['camera poses'] = self.current_cam_pos
 
         if self.count_steps > self.max_steps:
