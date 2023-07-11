@@ -153,7 +153,7 @@ class UnrealCv(object):
         self.cam[cam_id]['location'] = pose[:3]
         self.cam[cam_id]['rotation'] = pose[-3:]
 
-    def get_pose(self, cam_id, mode='hard'):  #get camera pose, pose = [x, y, z, roll, yaw, pitch]
+    def get_pose(self, cam_id, mode='hard'):  # get camera pose, pose = [x, y, z, roll, yaw, pitch]
         if mode == 'soft':
             pose = self.cam[cam_id]['location']
             pose.extend(self.cam[cam_id]['rotation'])
@@ -167,6 +167,18 @@ class UnrealCv(object):
             self.cam[cam_id]['location'] = pose[:3]
             self.cam[cam_id]['rotation'] = pose[-3:]
             return pose
+
+    def set_fov(self, cam_id, fov):  # set camera field of view (fov)
+        cmd = 'vset /camera/{cam_id}/fov {fov}'
+        self.client.request(cmd.format(cam_id=cam_id, fov=fov))
+        self.cam[cam_id]['fov'] = fov
+        return fov
+
+    def get_fov(self, cam_id):  # set camera field of view (fov)
+        cmd = 'vget /camera/{cam_id}/fov'
+        fov = self.client.request(cmd.format(cam_id=cam_id))
+        self.cam[cam_id]['fov'] = float(fov)
+        return fov
 
     def set_location(self, cam_id, loc):  # set camera location, loc=[x,y,z]
         cmd = 'vset /camera/{cam_id}/location {x} {y} {z}'
@@ -358,9 +370,9 @@ class UnrealCv(object):
         for obj in objects:
             self.show_obj(obj)
 
-    def set_fov(self, fov, cam_id=0): # set camera field of view
-        cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
-        self.client.request(cmd.format(cam_id=cam_id, FOV=fov), -1)
+    # def set_fov(self, fov, cam_id=0): # set camera field of view
+    #     cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
+    #     self.client.request(cmd.format(cam_id=cam_id, FOV=fov), -1)
 
     def destroy_obj(self, obj): # destroy an object, remove it from the scene
         self.client.request('vset /object/{obj}/destroy'.format(obj=obj), -1)

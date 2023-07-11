@@ -137,6 +137,27 @@ for env in ['MCRoom', 'Garden', 'UrbanTree']:
                         max_episode_steps=500
                     )
 
+for env in ['FlexibleRoom', 'Garden', 'UrbanTree']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray']:  # observation type
+                for nav in ['Random', 'Goal', 'Internal', 'None',
+                            'RandomInterval', 'GoalInterval', 'InternalInterval']:
+                    name = 'UnrealMC{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
+                    setting_file = 'tracking_mcmt/{env}.json'.format(env=env)
+                    register(
+                        id=name,
+                        entry_point='gym_unrealcv.envs:UnrealCvMultiCam',
+                        kwargs={'setting_file': setting_file,
+                                'reset_type': i,
+                                'action_type': action,
+                                'observation_type': obs,
+                                'reward_type': 'distance',
+                                'docker': use_docker,
+                                'nav': nav
+                                },
+                        max_episode_steps=500
+                    )
 
 for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage', 'Garden']:
     for i in range(7):  # reset type
