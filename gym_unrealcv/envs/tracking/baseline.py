@@ -19,13 +19,14 @@ class RandomAgent(object):
             self.pose_last = pose
         if self.step_counter > self.keep_steps or d_moved < 3:
             self.action = self.action_space.sample()
-            if self.action == 1 or self.action == 6 or self.action == 0:
-                self.action = 0
-                self.keep_steps = np.random.randint(10, 20)
-            elif self.action == 2 or self.action == 3:
-                self.keep_steps = np.random.randint(1, 20)
-            else:
-                self.keep_steps = np.random.randint(1, 10)
+            self.keep_steps = np.random.randint(1, 20)
+            # if self.action == 1 or self.action == 6 or self.action == 0:
+            #     self.action = 0
+            #     self.keep_steps = np.random.randint(10, 20)
+            # elif self.action == 2 or self.action == 3:
+            #     self.keep_steps = np.random.randint(1, 20)
+            # else:
+            #     self.keep_steps = np.random.randint(1, 10)
         return self.action
 
     def reset(self):
@@ -87,7 +88,7 @@ class GoalNavAgent(object):
         else:
             self.angle_noise_step = 0
 
-        delt_yaw = misc.get_direction(pose, self.goal)
+        delt_yaw = misc.get_direction(pose, self.goal) # get the angle between current pose and goal in x-y plane
         if self.discrete:
             if abs(delt_yaw) > self.angle_high:
                 velocity = 0
