@@ -100,11 +100,12 @@ class UnrealCvMultiCam(gym.Env):
         assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
         if self.action_type == 'Discrete':
             self.action_space = [spaces.Discrete(len(self.discrete_actions)) for i in range(self.num_cam)]
-            player_action_space = [spaces.Discrete(len(self.discrete_actions_player)) for i in range(1)]
+            player_action_space = spaces.Discrete(len(self.discrete_actions_player))
         elif self.action_type == 'Continuous':
             self.action_space = [spaces.Box(low=np.array(self.continous_actions['low']),
                                             high=np.array(self.continous_actions['high'])) for i in range(self.num_cam)]
-            player_action_space = spaces.Discrete(len(self.continous_actions_player))
+            player_action_space = spaces.Box(low=np.array(self.continous_actions_player['low']),
+                                             high=np.array(self.continous_actions_player['high']))
 
         self.count_steps = 0
 
@@ -131,8 +132,19 @@ class UnrealCvMultiCam(gym.Env):
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
         # self.unrealcv.set_obj_location("TargetBP", [-3000, -3000, 220])  # remove the additional target
+        # if 'Ramdom' in self.nav:
+        #     self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
+        # elif 'Goal' in self.nav:
+        #     if not self.test:
+        #         self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, 'Mid', 0
+        #                                                 ) for i in range(self.num_target)]
+        #     else:
+        #         self.random_agents = [GoalNavAgentTest(self.continous_actions_player, goal_list=self.goal_list)
+        #                               for i in range(self.num_target)]
+
+
         if 'Random' in self.nav:
-            self.random_agents = [RandomAgent(self.continous_actions_player) for i in range(self.num_target)]
+            self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
         if 'Goal' in self.nav:
             if not self.test:
                 self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, 'Mid') for i in range(self.num_target)]
@@ -171,9 +183,9 @@ class UnrealCvMultiCam(gym.Env):
         for i in range(len(self.target_list)):
             if 'Random' in self.nav:
                 if self.action_type == 'Discrete':
-                    actions2target.append(self.random_agents[i].act())
+                    actions2target.append(self.discrete_actions_player[self.random_agents[i].act(self.target_pos[i])])
                 else:
-                    actions2target.append(self.random_agents[i].act())
+                    actions2target.append(self.random_agents[i].act(self.target_pos[i]))
             if 'Goal' in self.nav:
                     actions2target.append(self.random_agents[i].act(self.target_pos[i]))
         for i, target in enumerate(self.target_list):
@@ -282,6 +294,7 @@ class UnrealCvMultiCam(gym.Env):
 
         for i, target in enumerate(self.target_list):
             self.target_pos[i] = self.unrealcv.get_obj_pose(target)
+            print(self.target_pos)
 
         return self.states, info['Reward'], info['Done'], info
 
