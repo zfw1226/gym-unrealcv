@@ -23,17 +23,18 @@ def get_action_size(action):
     return len(action)
 
 
-def get_direction(current_pose, target_pose):
-    if current_pose == target_pose:
-        return 0
+def get_direction(current_pose, target_pose):  # get relative angle between current pose and target pose in x-y plane
     y_delt = target_pose[1] - current_pose[1]
     x_delt = target_pose[0] - current_pose[0]
-    angle_now = np.arctan2(y_delt, x_delt)/np.pi*180-current_pose[4]
-    if angle_now > 180:
-        angle_now -= 360
-    if angle_now < -180:
-        angle_now += 360
-    return angle_now
+    if x_delt == 0 and y_delt == 0:  # if the same position
+        return 0
+    angle_abs = np.arctan2(y_delt, x_delt)/np.pi*180
+    angle_relative = angle_abs - current_pose[4]
+    if angle_relative > 180:
+        angle_relative -= 360
+    if angle_relative < -180:
+        angle_relative += 360
+    return angle_relative
 
 
 def get_textures(texture_dir, docker):
