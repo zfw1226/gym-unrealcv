@@ -35,16 +35,15 @@ class RunUnreal():
                 port += 1
                 self.write_port(port)
             #self.modify_permission(self.path2env)
-            cmd_exe = os.path.abspath(self.path2binary)
+            cmd_exe = [os.path.abspath(self.path2binary)]
             if self.env_map is not None:
-                cmd_exe += map
+                cmd_exe.append(self.env_map)
 
-            self.env = subprocess.Popen([cmd_exe], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+            self.env = subprocess.Popen(cmd_exe, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                         stderr=subprocess.DEVNULL, start_new_session=True)
-
-            signal.signal(signal.SIGTERM, self.signal_handler)
-            signal.signal(signal.SIGINT, self.signal_handler)
-
+            atexit.register(self.close)
+            # signal.signal(signal.SIGTERM, self.signal_handler)
+            # signal.signal(signal.SIGINT, self.signal_handler)
             print('Running docker-free env, pid:{}'.format(self.env.pid))
 
         print('Please wait for a while to launch env......')
@@ -75,7 +74,7 @@ class RunUnreal():
             self.env.terminate()
             self.env.wait()
 
-    def signal_handler(self):
+    def signal_handler(self, signum, frame):
         self.close()
     def modify_permission(self, path):
         cmd = 'sudo chown {USER} {ENV_PATH} -R'
