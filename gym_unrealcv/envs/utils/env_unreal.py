@@ -1,9 +1,11 @@
 import getpass
 import os
 import time
-from multiprocessing import Process
+# from multiprocessing import Process
 import sys
-
+import subprocess
+import atexit
+import signal
 # api for launching UE4 binary
 
 
@@ -33,9 +35,16 @@ class RunUnreal():
                 port += 1
                 self.write_port(port)
             #self.modify_permission(self.path2env)
-            self.env = Process(target=self.run_proc, args=(self.path2binary, self.env_map))
-            # self.env = Process(target=self.read_port())
-            self.env.start()
+            cmd_exe = os.path.abspath(self.path2binary)
+            if self.env_map is not None:
+                cmd_exe += map
+
+            self.env = subprocess.Popen([cmd_exe], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.DEVNULL, start_new_session=True)
+
+            signal.signal(signal.SIGTERM, self.signal_handler)
+            signal.signal(signal.SIGINT, self.signal_handler)
+
             print('Running docker-free env, pid:{}'.format(self.env.pid))
 
         print('Please wait for a while to launch env......')
@@ -63,9 +72,11 @@ class RunUnreal():
         if self.use_docker:
             self.docker.close()
         else:
-            import signal
-            os.kill(self.env.pid+1, signal.SIGTERM)
+            self.env.terminate()
+            self.env.wait()
 
+    def signal_handler(self):
+        self.close()
     def modify_permission(self, path):
         cmd = 'sudo chown {USER} {ENV_PATH} -R'
         username = getpass.getuser()
@@ -111,7 +122,7 @@ class RunUnreal():
                 sock.bind((ip, port))
             elif 'win' in sys.platform:
                 sock.bind((ip, port))
-                sock.connect((ip,port))
+                sock.connect((ip, port))
         except Exception as e:
             sock.close()
             print(e) # print error message
