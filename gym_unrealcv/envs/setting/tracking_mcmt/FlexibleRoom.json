@@ -1,6 +1,6 @@
 {
 	"env_name": "MCRoom",
-	"env_bin": "FlexibleRoom427_Linux_711/FlexibleRoom/Binaries/Linux/FlexibleRoom",
+	"env_bin": "FlexibleRoom_Linux_713/FlexibleRoom/Binaries/Linux/FlexibleRoom",
 	"env_map": "track_nv1",
     "imgs_dir": "textures",
 	"target_num": 10,

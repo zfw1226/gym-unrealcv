@@ -294,6 +294,7 @@ class UnrealCvTracking_1v1(gym.Env):
         return self.states
 
     def close(self):
+        self.unrealcv.client.disconnect()
         self.unreal.close()
 
     def render(self, mode='rgb_array', close=False):

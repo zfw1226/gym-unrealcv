@@ -196,6 +196,7 @@ class UnrealCvSearch_base(gym.Env):
         return self.unrealcv.img_color
 
     def close(self):
+        self.unrealcv.client.disconnect()
         self.unreal.close()
 
     def get_action_size(self):

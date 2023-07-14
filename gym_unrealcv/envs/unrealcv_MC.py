@@ -294,7 +294,6 @@ class UnrealCvMultiCam(gym.Env):
 
         for i, target in enumerate(self.target_list):
             self.target_pos[i] = self.unrealcv.get_obj_pose(target)
-            print(self.target_pos)
 
         return self.states, info['Reward'], info['Done'], info
 
@@ -413,6 +412,7 @@ class UnrealCvMultiCam(gym.Env):
         return np.array(self.states)
 
     def close(self):
+        self.unrealcv.client.disconnect()
         self.unreal.close()
 
     def render(self, mode='rgb_array', close=False):

@@ -497,6 +497,7 @@ class UnrealCvMC(gym.Env):
         return np.array(self.states)
 
     def close(self):
+        self.unrealcv.client.disconnect()
         self.unreal.close()
 
     def render(self, mode='rgb_array', close=False):
