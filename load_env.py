@@ -1,7 +1,11 @@
 import os
 import argparse
+import wget
+import zipfile
+import sys
+import shutil
 
-binary_list = dict(
+binary_linux = dict(
     # for searching
     RealisticRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/RealisticRendering_RL_3.10.zip',
     Arch1='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/ArchinteriorsVol2Scene1-Linux-0.3.10.zip',
@@ -24,18 +28,34 @@ binary_list = dict(
     UrbanTree='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/urban_cam.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
     Garden='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/neighborhood.zip', # env for pose-assisted multi-camera tracking (aaai 2020)
     # Arm env
-    Arm='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/arm-0610.zip'
+    Arm='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/arm-0610.zip',
+    test='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/testfolder.zip'  # this is an empty file used for testing the script
 )
 
+binary_win = dict(
+    FlexibleRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/FlexibleRoom_Win_v0.zip',
+    test='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/testfolder.zip'
+)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=None)
     parser.add_argument("-e", "--env", nargs='?', default='RealisticRoom',
                         help='Select the binary to download')
+    if 'win' in sys.platform:
+        binary_all = binary_win
+    elif 'linux' in sys.platform:
+        binary_all = binary_linux
     args = parser.parse_args()
-    cmd_load = 'wget '+binary_list[args.env]
-    os.system(cmd_load)
-    name_zip = binary_list[args.env].split('/')[-1]
-    cmd_unzip = 'unzip -n {zipfile} -d {dir}'.format(zipfile=name_zip, dir='gym_unrealcv/envs/UnrealEnv')
-    os.system(cmd_unzip)
-    os.system('rm ' + name_zip)
+
+    if args.env in binary_all:
+        filename = wget.download(binary_list[args.env])  # download the binary
+        with zipfile.ZipFile(filename, "r") as z:
+            z.extractall()  # extract the zip file
+        folder = filename[:-4]
+        target = 'gym_unrealcv/envs/UnrealEnv'
+        shutil.move(folder, target)
+        os.remove(filename)
+    else:
+        print(f"{args.env} is not available to your platform")
+        exit()
+
