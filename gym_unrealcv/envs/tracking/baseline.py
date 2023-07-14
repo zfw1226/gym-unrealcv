@@ -185,7 +185,7 @@ class GoalNavAgentTest(object):
                 self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
             self.step_counter = 0
 
-        delt_yaw = self.get_direction(pose, self.goal)
+        delt_yaw = misc.get_direction(pose, self.goal)
         if self.discrete:
             if abs(delt_yaw) > self.angle_high:
                 velocity = 0
@@ -220,13 +220,3 @@ class GoalNavAgentTest(object):
         error = np.array(now[:2]) - np.array(goal[:2])
         distance = np.linalg.norm(error)
         return distance < 50
-
-    def get_direction(self, current_pose, target_pose):
-        y_delt = target_pose[1] - current_pose[1]
-        x_delt = target_pose[0] - current_pose[0]
-        angle_now = np.arctan2(y_delt, x_delt) / np.pi * 180 - current_pose[4]
-        if angle_now > 180:
-            angle_now -= 360
-        if angle_now < -180:
-            angle_now += 360
-        return angle_now
