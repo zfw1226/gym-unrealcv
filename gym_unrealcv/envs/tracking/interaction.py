@@ -339,6 +339,21 @@ class Tracking(Navigation):
             depth_list.append(depth)
         return depth_list
 
+    def get_img_batch(self, cam_ids, obs_type='lit', mode='fast'):
+        # get image from multiple cameras
+        cmd_list = []
+        cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
+        for cam_id in cam_ids:
+            cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=obs_type, mode=mode))
+        res_list = None
+        while res_list is None:
+            res_list = self.client.request(cmd_list)
+        img_list = []
+        for res in res_list:
+            img = self.decode_bmp(res)[:, :, :-1]
+            img_list.append(img)
+        return img_list
+
     def set_cam(self, obj, loc=[0, 30, 70], rot=[0, 0, 0]):
         # set the camera pose relative to a actor
         x, y, z = loc

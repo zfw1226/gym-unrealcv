@@ -120,6 +120,10 @@ class UnrealCvMultiCam(gym.Env):
         self.cam_height = [setting['height'] for i in range(self.num_cam)]
         print(self.cam_id, self.target_list)
         self.unrealcv.color_dict = self.unrealcv.build_color_dic(self.target_list)
+        for obj in self.unrealcv.get_objects():
+            if obj not in self.target_list:
+                self.unrealcv.set_obj_color(obj, [0, 0, 0])
+
         # define action
         self.action_type = action_type
         assert self.action_type == 'Discrete' or self.action_type == 'Continuous'
@@ -205,8 +209,6 @@ class UnrealCvMultiCam(gym.Env):
         for i, target in enumerate(self.target_list):
             self.unrealcv.set_move(target, actions2target[i][1], actions2target[i][0])
 
-        states = []
-        object_masks = []
         self.gate_ids = np.zeros(len(self.cam_id), int)
         self.gt_actions = []
 
@@ -214,31 +216,28 @@ class UnrealCvMultiCam(gym.Env):
 
         for i, cam in enumerate(self.cam_id):
             cam_rot = self.unrealcv.get_rotation(cam, 'hard')
-
+            # take actions on cameras
             cam_rot[1] += actions2cam[i][0] * self.zoom_scales[i]
             cam_rot[2] += actions2cam[i][1] * self.zoom_scales[i]
-
-            cam_rot[2] = cam_rot[2] if cam_rot[2] < 80.0 else 80.0
-            cam_rot[2] = cam_rot[2] if cam_rot[2] > - 80.0 else -80.0
-
+            cam_rot[2] = np.clip(cam_rot[2], -85, 85)
             self.unrealcv.set_rotation(cam, cam_rot)
             self.cam_pose[i][-3:] = cam_rot
-            # self.unrealcv.adjust_fov(cam, actions2cam[i][-1])
-            state = self.unrealcv.get_observation(cam, self.observation_type, 'fast')
+            self.unrealcv.adjust_fov(cam, actions2cam[i][-1])
 
-            # get visibility gt for training gate
-            object_mask = self.unrealcv.read_image(self.cam_id[i], 'object_mask', 'fast')
-            for bbox in self.unrealcv.get_bboxes(object_mask, self.target_list):
+        # use batch command to get data from unrealcv
+        self.states = self.unrealcv.get_img_batch(self.cam_id, 'lit', 'fast')
+
+        # get object_masks will cost a lot of time in large scene
+        # TODO use distance-based reward instead
+        object_masks = self.unrealcv.get_img_batch(self.cam_id, 'object_mask', 'fast')
+        for i, obj_mask in enumerate(object_masks):
+            for bbox in self.unrealcv.get_bboxes(obj_mask, self.target_list):
                 self.gate_ids[i] += self.check_visibility(bbox, self.min_mask_area)
-
-            states.append(state)
-            object_masks.append(object_mask)
-            self.unrealcv.set_rotation(cam, cam_rot)
-
+        #
         # imgs = np.hstack([mask for mask in object_masks])
         # cv2.imshow('object_mask', imgs)
         # cv2.waitKey(1)
-        self.states = states
+
         self.count_steps += 1
 
         rewards = []
