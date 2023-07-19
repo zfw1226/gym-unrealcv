@@ -1,17 +1,22 @@
 {
-	"env_name": "MCRoom",
-	"env_bin": "FlexibleRoom_Linux_713/FlexibleRoom/Binaries/Linux/FlexibleRoom",
+	"env_name": "Urban",
+	"env_bin": "urbancity_linux_v1/urbancity/Binaries/Linux/urbancity",
+	"env_bin_win": "urbancity_win_v1\\urbancity\\Binaries\\Win64\\urbancity.exe",
 	"env_map": "",
     "imgs_dir": "textures",
 	"target_num": 1,
-	"max_cam_num": 4,
 	"cam_id": [],
-	"height": 350,
+	"max_cam_num": 4,
+	"height": 220,
 	"pitch": 0,
 	"max_steps": 500,
-	"max_obstacles": 3,
+  	"max_distance": 600,
+	"min_distance": 100,
+	"max_direction": 90,
+	"exp_distance": 250,
+	"max_obstacles": 0,
 	"targets": [
-        "targetbp", "targetbp2"
+        "targetBP", "targetBP2"
 	],
 	"discrete_actions": [
 		[ 0,  0, 0],
@@ -26,6 +31,7 @@
 		[0, 0, 5],
 		[0, 0,-5]
 	],
+
 	"discrete_actions_player": [
 		[ 100,  0],
 		[-100,  0],
@@ -35,19 +41,38 @@
 		[  0, -30],
 		[  0,   0]
 	],
+
 	"safe_start" :[
-		[  0,    0,  220],
-		[-10000, 10000, 10000]
+		[ 1946, -3934, 180],
+		[-6000, 0, 220]
     ],
-	"reset_area" : [-1850, 940, -1450, 1450, 135, 140],
-	"cam_area" : [[-1300,-700,  -800, -200, 250, 600],
-	[-1300,-700,  200,  800, 250, 600],
-	[ -200, 400,   200,  800, 250, 600],
-	[ -200, 400,  -800, -200, 250, 600],
-	[-1300,-700,  -800, -200, 250, 600],
-	[-1300,-700,  200,  800, 250, 600],
-	[ -200, 400,   200,  800, 250, 600],
-	[ -200, 400,  -800, -200, 250, 600]],
+
+	"camera_loc" : [
+		[1108, -3771, 300],
+		[1866, -2830, 300],
+		[2786, -3761, 300],
+		[2178,-4565,300],
+		[2278,-4765,300],
+		[2000,-3065,300]
+	],
+
+	"camera_rot": [
+		[0,67, -10],
+		[0, 17, -10],
+		[0, -91, -10],
+		[0, -165, -10],
+		[0, -91, -10],
+		[0, -165, -10]
+	],
+
+	"goal_list" : [
+		[1501, -3602],
+		[1783, -2818],
+		[2974, -3978],
+		[2514, -4576],
+		[2974, -3978],
+		[2514, -4576]
+	],
 	"continous_actions": {
 		"high": [ 5,   5, 5],
 		"low":  [-5,  -5, -5]
@@ -67,8 +92,9 @@
     "lights": [
       "light1", "light2", "light3", "light4"
     ],
-	"target_move": [200, 200],
-    "camera_move": [200, 200],
-	"scale_rate": 0 ,
-	"pose_rate": 0.5
+	"target_move": [0, 1000],
+    "camera_move": [0, 0],
+	"scale_rate": 0.8,
+	"pose_rate": 2
+
 }

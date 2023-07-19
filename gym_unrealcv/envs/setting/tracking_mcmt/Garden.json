@@ -1,0 +1,95 @@
+{
+	"env_name": "Garden",
+	"env_bin": "neighborhood_linux_v1/neighborhood/Binaries/Linux/neighborhood",
+	"env_bin_win": "neighborhood_win_v1\\neighborhood\\Binaries\\Win64\\neighborhood.exe",
+	"env_map": "",
+    "imgs_dir": "textures",
+	"target_num": 1,
+	"max_cam_num": 6,
+	"cam_id": [],
+	"height": 220,
+	"pitch": 0,
+	"max_steps": 500,
+	"max_distance": 600,
+	"min_distance": 100,
+	"max_direction": 90,
+	"exp_distance": 250,
+	"max_obstacles": 0,
+	"targets": [
+        "targetBP", "targetBP2"
+	],
+	"discrete_actions": [
+		[ 0,  0],
+		[ 0,  10],
+		[ 0, -10],
+		[ 15,  0],
+		[ 15,  10],
+		[ 15, -10],
+		[-15,  0],
+		[-15,  10],
+		[-15, -10],
+		[1],
+		[-1]
+	],
+	"discrete_actions_player": [
+		[ 100,  0],
+		[-100,  0],
+		[  50, 15],
+		[  50,-15],
+		[  0,  30],
+		[  0, -30],
+		[  0,   0]
+	],
+	"safe_start" :[
+		[  -7631, -8941, 220],
+		[-6000, 0, 220]
+    ],
+	"camera_loc" : [
+		[-7800, -9067, 345],
+		[-8258, -8629, 403],
+		[-8127, -8343, 335],
+		[-7324, -8664, 300],
+		[-8027, -8043, 335],
+		[-7024, -9064, 300]
+	],
+	"camera_rot": [
+		[0,-45, 0],
+		[0, 45, 0],
+		[0, 135, 0],
+		[0,-135, 0],
+		[0, 135, 0],
+		[0,-135, 0]
+	],
+
+	"goal_list" : [
+	[-8200, -8250],
+	[-7400, -8250],
+	[-7500, -8900],
+	[-8200, -8900],
+	[-8200, -8900],
+	[-8200, -8900]
+	],
+	"continous_actions": {
+		"high": [ 5,   5, 5],
+		"low":  [-5,  -5, -5]
+	},
+	"continous_actions_player": {
+		"high": [100,     30],
+		"low":  [50,     -30]
+	},
+	"objects_list": [
+		"cube1", "cube2_7", "cube3", "cube4", "cube5",
+		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
+		"cone1", "cone2", "cone3", "cone4", "cone5"
+	],
+    "backgrounds": [
+      "FLOOR","wall1","wall2","wall3","wall4"
+    ],
+    "lights": [
+      "light1", "light2", "light3", "light4"
+    ],
+	"target_move": [0, 300],
+    "camera_move": [0, 0],
+	"scale_rate": 1,
+	"pose_rate": 2
+}

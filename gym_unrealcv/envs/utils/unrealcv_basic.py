@@ -169,6 +169,8 @@ class UnrealCv(object):
             return pose
 
     def set_fov(self, cam_id, fov):  # set camera field of view (fov)
+        if fov == self.cam[cam_id]['fov']:
+            return fov
         cmd = 'vset /camera/{cam_id}/fov {fov}'
         self.client.request(cmd.format(cam_id=cam_id, fov=fov))
         self.cam[cam_id]['fov'] = fov
@@ -376,3 +378,11 @@ class UnrealCv(object):
 
     def destroy_obj(self, obj): # destroy an object, remove it from the scene
         self.client.request('vset /object/{obj}/destroy'.format(obj=obj), -1)
+
+    def get_camera_num(self):
+        res = self.client.request('vget /cameras')
+        return len(res.split())
+
+    def new_camera(self):
+        res = self.client.request('vset /cameras/spawn')
+        return res  #  return the object name of the new camera

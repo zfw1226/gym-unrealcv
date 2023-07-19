@@ -347,5 +347,5 @@ class Tracking(Navigation):
         res = self.client.request(cmd, -1)
         return res
 
-    def adjust_fov(self, cam_id, delta_fov):  # increase/decrease fov
-        return self.set_fov(cam_id, self.cam[cam_id]['fov']+delta_fov)
+    def adjust_fov(self, cam_id, delta_fov, min_max=[45, 135]):  # increase/decrease fov
+        return self.set_fov(cam_id, np.clip(self.cam[cam_id]['fov']+delta_fov, min_max[0], min_max[1]))

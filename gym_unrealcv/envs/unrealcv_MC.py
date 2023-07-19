@@ -9,7 +9,7 @@ import gym_unrealcv
 import cv2
 from gym_unrealcv.envs.utils.misc import *
 from gym_unrealcv.envs.utils.visualization import *
-
+import random
 ''' 
 It is an env for multi-camera active object tracking.
 State : raw color image
@@ -75,11 +75,8 @@ class UnrealCvMultiCam(gym.Env):
         self.safe_start = setting['safe_start']
         self.start_area = self.get_start_area(self.safe_start[0], 100)
 
-        self.num_target = len(self.target_list)
+        self.num_target = setting['target_num']
         self.resolution = resolution
-        self.num_cam = len(self.cam_id)
-
-        self.cam_height = [setting['height'] for i in range(self.num_cam)]
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -92,8 +89,36 @@ class UnrealCvMultiCam(gym.Env):
         env_ip, env_port = self.unreal.start(docker, resolution)
 
         # connect UnrealCV
-        self.unrealcv = Tracking(cam_id=self.cam_id[0], port=env_port, ip=env_ip,
+        self.unrealcv = Tracking(cam_id=0, port=env_port, ip=env_ip,
                                  env=self.unreal.path2env, resolution=resolution)
+
+
+        # remove or add the target
+        while len(self.target_list) > self.target_num:
+            self.unrealcv.destroy_obj(self.target_list.pop())
+            # self.cam_id.pop()
+        while len(self.target_list) < self.target_num:
+            name = 'target_C_{0}'.format(len(self.player_list)+1)
+            if name in self.freeze_list:
+                self.freeze_list.remove(name)
+            else:
+                self.unrealcv.new_obj('target_C', name, random.sample(self.safe_start, 1)[0])
+            self.unrealcv.set_obj_color(name, np.random.randint(0, 255, 3))
+            self.unrealcv.set_random(name, 0)
+            self.target_list.append(name)
+            # self.unrealcv.set_interval(self.interval, name)
+
+        # remove or add the camera
+        while len(self.cam_id) < setting['max_cam_num']:
+            self.unrealcv.new_camera()
+            self.cam_id.append(self.unrealcv.get_camera_num()-1)
+
+        while len(self.cam_id) > setting['max_cam_num']:
+            self.unrealcv.destroy_obj(self.cam_id.pop())
+
+        self.num_cam = len(self.cam_id)
+        self.cam_height = [setting['height'] for i in range(self.num_cam)]
+        print(self.cam_id, self.target_list)
         self.unrealcv.color_dict = self.unrealcv.build_color_dic(self.target_list)
         # define action
         self.action_type = action_type
@@ -131,17 +156,6 @@ class UnrealCvMultiCam(gym.Env):
         self.person_id = 0
         self.unrealcv.set_location(0, [self.safe_start[0][0], self.safe_start[0][1], self.safe_start[0][2]+600])
         self.unrealcv.set_rotation(0, [0, -180, -90])
-        # self.unrealcv.set_obj_location("TargetBP", [-3000, -3000, 220])  # remove the additional target
-        # if 'Ramdom' in self.nav:
-        #     self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
-        # elif 'Goal' in self.nav:
-        #     if not self.test:
-        #         self.random_agents = [GoalNavAgent(self.continous_actions_player, self.reset_area, 'Mid', 0
-        #                                                 ) for i in range(self.num_target)]
-        #     else:
-        #         self.random_agents = [GoalNavAgentTest(self.continous_actions_player, goal_list=self.goal_list)
-        #                               for i in range(self.num_target)]
-
 
         if 'Random' in self.nav:
             self.random_agents = [RandomAgent(player_action_space) for i in range(self.num_target)]
@@ -209,7 +223,7 @@ class UnrealCvMultiCam(gym.Env):
 
             self.unrealcv.set_rotation(cam, cam_rot)
             self.cam_pose[i][-3:] = cam_rot
-            self.unrealcv.adjust_fov(cam, actions2cam[i][-1])
+            # self.unrealcv.adjust_fov(cam, actions2cam[i][-1])
             state = self.unrealcv.get_observation(cam, self.observation_type, 'fast')
 
             # get visibility gt for training gate
