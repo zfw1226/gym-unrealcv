@@ -1,7 +1,7 @@
 {
 	"env_name": "MPRoom",
 	"env_bin": "FlexibleRoom/trackingroom2/Binaries/Linux/trackingroom2",
-	"env_bin_win": "FlexibleRoom/trackingroom2/Binaries/Win64/trackingroom2.exe",
+	"env_bin_win": "FlexibleRoom_Win_v0\\FlexibleRoom\\Binaries\\Win64\\FlexibleRoom.exe",
     "imgs_dir": "textures",
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],

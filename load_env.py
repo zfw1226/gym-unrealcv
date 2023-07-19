@@ -34,6 +34,9 @@ binary_linux = dict(
 
 binary_win = dict(
     FlexibleRoom='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/FlexibleRoom_Win_v0.zip',
+    UrbanCity='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/urbancity_win_v1.zip',
+    Garage='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/parkinglot_win_v1.zip',
+    Garden='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/neighborhood_win_v1.zip',
     test='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/testfolder.zip'
 )
 
