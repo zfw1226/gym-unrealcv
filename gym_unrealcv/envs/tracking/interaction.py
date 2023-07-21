@@ -274,11 +274,13 @@ class Tracking(Navigation):
         cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
         cmd_cam_loc = 'vget /camera/{cam_id}/location'
         cmd_list = []
-        if obs_type == 'Color':
+        if obs_type == 'Color' or obs_type == 'Rgbd':
             viewmode = 'lit'
         elif 'Mask' in obs_type:
             viewmode = 'object_mask'
-        if 'Depth' in obs_type:
+        else:
+            viewmode = None
+        if 'Depth' in obs_type or obs_type == 'Rgbd':
             use_depth = True
         else:
             use_depth = False
@@ -286,7 +288,8 @@ class Tracking(Navigation):
         for obj in objs_list:
             cmd_list.extend([cmd_loc.format(obj=obj), cmd_rot.format(obj=obj)])
         for cam_id in cam_ids:
-            cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
+            if viewmode is not None:
+                cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
             if use_depth:
                 cmd_list.append(cmd_depth.format(cam_id=cam_id))
             if cam_rot:
@@ -300,15 +303,17 @@ class Tracking(Navigation):
             rot = [float(j) for j in res_list[i*2+1].split()]
             pose = loc + rot
             pose_list.append(pose)
-        start_point = len(objs_list)*2
+        p = start_point = len(objs_list)*2
         for i, cam_id in enumerate(cam_ids):
-            p = int(start_point+i*(1+use_depth))
-            image = self.decode_bmp(res_list[p])[:, :, :-1]
-            img_list.append(image)
+            if viewmode is not None:
+                image = self.decode_bmp(res_list[p])[:, :, :-1]
+                img_list.append(image)
+                p+= 1
             if use_depth:
-                depth = np.fromstring(res_list[p+1], np.float32)
+                depth = np.fromstring(res_list[p], np.float32)
                 depth = depth[-self.resolution[1] * self.resolution[0]:].reshape(self.resolution[1], self.resolution[0], 1)
-                depth_list.append(200/depth)
+                depth_list.append(500/depth) # 500 is the default max depth of most depth cameras
+                p+= 1
         if cam_rot:
             cam_pose_list = []
             for i, cam_id in enumerate(cam_ids):
