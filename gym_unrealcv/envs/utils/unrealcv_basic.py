@@ -479,10 +479,6 @@ class UnrealCv(object):
         for obj in objects:
             self.show_obj(obj)
 
-    # def set_fov(self, fov, cam_id=0): # set camera field of view
-    #     cmd = 'vset /camera/{cam_id}/horizontal_fieldofview {FOV}'
-    #     self.client.request(cmd.format(cam_id=cam_id, FOV=fov), -1)
-
     def destroy_obj(self, obj): # destroy an object, remove it from the scene
         self.client.request(f'vset /object/{obj}/destroy', -1)
 
@@ -493,3 +489,6 @@ class UnrealCv(object):
     def new_camera(self):
         res = self.client.request('vset /cameras/spawn')
         return res  #  return the object name of the new camera
+
+    def set_map(self, map_name):  # change to a new level map
+        self.client.request(f'vset /action/game/level {map_name}', -1)
