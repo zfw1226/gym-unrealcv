@@ -6,6 +6,7 @@
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],
 	"height": 100,
+	"height_top_view": 1500,
 	"pitch": 0,
 	"max_steps": 1000,
 	"max_distance": 600,

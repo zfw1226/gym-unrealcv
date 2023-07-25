@@ -6,6 +6,7 @@
 	"max_player_num": 8,
 	"cam_id": [0, 1, 2],
 	"height": 230,
+	"height_top_view": 2000,
 	"pitch": 0,
 	"max_steps": 500,
 	"max_distance": 700,
@@ -42,7 +43,7 @@
 		[  -600,  300,  230],
 		[     0,    0,  230]
     ],
-	"reset_area" : [-1800, 900, -1400, 1200, 230, 235],
+	"reset_area" : [-1800, 900, -1400, 1200, 130, 135],
 	"continous_actions": {
 		"high": [200,     30],
 		"low":  [-200,   -30]
@@ -60,7 +61,7 @@
       "FLOOR","wall1","wall2","wall3","wall4"
     ],
     "lights": [
-		"light", "light1", "light2", "light3", "light4", "light5", "light6"
+		"light1", "light2", "light3", "light4", "light5", "light6"
     ]
 
 }
