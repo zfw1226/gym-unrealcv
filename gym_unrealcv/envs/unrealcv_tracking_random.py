@@ -137,7 +137,7 @@ class UnrealCvTracking_random(gym.Env):
         info['Trajectory'] = self.trajectory
 
         self.C_reward += info['Reward']
-        return state, np.float(info['Reward']), info['Done'], info
+        return state, info['Reward'], info['Done'], info
 
     def reset(self, ):
         self.C_reward = 0
