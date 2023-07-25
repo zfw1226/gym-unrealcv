@@ -1,6 +1,6 @@
 {
 	"env_name": "RobotArm-OWI",
-	"env_bin": "unrealcv_binary/LinuxNoEditor/ArmUE4/Binaries/Linux/ArmUE4",
+	"env_bin": "arm-0610/ArmUE4/Binaries/Linux/ArmUE4",
 	"env_map": "OWI_RL",
 	"cam_view_id": 0,
 	"maxsteps": 100,
