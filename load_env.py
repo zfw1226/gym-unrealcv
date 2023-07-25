@@ -51,7 +51,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.env in binary_all:
-        filename = wget.download(binary_list[args.env])  # download the binary
+        filename = wget.download(binary_all[args.env])  # download the binary
         with zipfile.ZipFile(filename, "r") as z:
             z.extractall()  # extract the zip file
         folder = filename[:-4]
