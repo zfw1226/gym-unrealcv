@@ -249,14 +249,16 @@ class Tracking(Navigation):
             self.set_obj_location(obj, self.objects_dict[obj])
         self.obstacles = []
 
-    def new_obj(self, obj_type, obj_name, loc, rot=[0, 0, 0]):
+    def new_obj(self, obj_class_name, obj_name, loc, rot=[0, 0, 0]):
         # spawn, set obj pose, enable physics
-        cmd = ['vset /objects/spawn {0} {1}'.format(obj_type, obj_name),
-               'vset /object/{0}/location {1} {2} {3}'.format(obj_name, loc[0], loc[1], loc[2]),
-               'vset /object/{0}/rotation {1} {2} {3}'.format(obj_name, rot[0], rot[1], rot[2]),
-               'vbp {0} set_phy 1'.format(obj_name)
+        [x, y, z] = loc
+        [pitch, yaw, roll] = rot
+        cmd = [f'vset /objects/spawn {obj_class_name} {obj_name}',
+               f'vset /object/{obj_name}/location {x} {y} {z}',
+               f'vset /object/{obj_name}/rotation {pitch} {yaw} {roll}',
+               f'vbp {obj_name} set_phy 1'
                ]
-        res = self.client.request(cmd, -1)
+        self.client.request(cmd, -1)
         return obj_name
 
     def move_goal(self, obj, goal):
@@ -265,105 +267,21 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd)
 
-    def get_pose_img_batch(self, objs_list, cam_ids, obs_type='lit', mode='fast', cam_rot=False):
-        # get pose and image of objects in objs_list from cameras in cam_ids
-        cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
-        cmd_depth = 'vget /camera/{cam_id}/depth npy'
-        cmd_loc = 'vget /object/{obj}/location'
-        cmd_rot = 'vget /object/{obj}/rotation'
-        cmd_cam_rot = 'vget /camera/{cam_id}/rotation'
-        cmd_cam_loc = 'vget /camera/{cam_id}/location'
-        cmd_list = []
-        if obs_type == 'Color' or obs_type == 'Rgbd':
-            viewmode = 'lit'
-        elif 'Mask' in obs_type:
-            viewmode = 'object_mask'
-        else:
-            viewmode = None
-        if 'Depth' in obs_type or obs_type == 'Rgbd':
-            use_depth = True
-        else:
-            use_depth = False
-
-        for obj in objs_list:
-            cmd_list.extend([cmd_loc.format(obj=obj), cmd_rot.format(obj=obj)])
-        for cam_id in cam_ids:
-            if viewmode is not None:
-                cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=viewmode, mode=mode))
-            if use_depth:
-                cmd_list.append(cmd_depth.format(cam_id=cam_id))
-            if cam_rot:
-                cmd_list.extend([cmd_cam_loc.format(cam_id=cam_id), cmd_cam_rot.format(cam_id=cam_id)])
-        res_list = self.client.request(cmd_list)
-        pose_list = []
-        img_list = []
-        depth_list = []
-        for i, obj in enumerate(objs_list):
-            loc = [float(j) for j in res_list[i*2].split()]
-            rot = [float(j) for j in res_list[i*2+1].split()]
-            pose = loc + rot
-            pose_list.append(pose)
-        p = start_point = len(objs_list)*2
-        for i, cam_id in enumerate(cam_ids):
-            if viewmode is not None:
-                image = self.decode_bmp(res_list[p])[:, :, :-1]
-                img_list.append(image)
-                p+= 1
-            if use_depth:
-                depth = np.fromstring(res_list[p], np.float32)
-                depth = depth[-self.resolution[1] * self.resolution[0]:].reshape(self.resolution[1], self.resolution[0], 1)
-                depth_list.append(500/depth) # 500 is the default max depth of most depth cameras
-                p+= 1
-        if cam_rot:
-            cam_pose_list = []
-            for i, cam_id in enumerate(cam_ids):
-                loc = [float(j) for j in res_list[start_point+i*2].split()]
-                rot = [float(j) for j in res_list[start_point+i*2+1].split()][::-1]
-                pose = loc + rot
-                cam_pose_list.append(pose)
-            return img_list, pose_list, cam_pose_list, depth_list
-        else:
-            return img_list, pose_list, depth_list
-
-    def get_depth_batch(self, cam_ids, inverse=True):
-        # get depth image from multiple cameras
-        cmd_list = []
-        cmd_depth = 'vget /camera/{cam_id}/depth npy'
-        for cam_id in cam_ids:
-            cmd_list.append(cmd_depth.format(cam_id=cam_id))
-        res_list = None
-        while res_list is None:
-            res_list = self.client.request(cmd_list)
-        depth_list = []
-        for res in res_list:
-            depth = np.fromstring(res, np.float32)
-            depth = depth[-self.resolution[1] * self.resolution[0]:]
-            depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
-            if inverse:
-                depth = 1/depth
-            depth_list.append(depth)
-        return depth_list
-
-    def get_img_batch(self, cam_ids, obs_type='lit', mode='fast'):
-        # get image from multiple cameras
-        cmd_list = []
-        cmd_img = 'vget /camera/{cam_id}/{viewmode} bmp'
-        for cam_id in cam_ids:
-            cmd_list.append(cmd_img.format(cam_id=cam_id, viewmode=obs_type, mode=mode))
-        res_list = None
-        while res_list is None:
-            res_list = self.client.request(cmd_list)
-        img_list = []
-        for res in res_list:
-            img = self.decode_bmp(res)[:, :, :-1]
-            img_list.append(img)
-        return img_list
+    def get_cam_flag(self, observation_type, use_color=False, use_mask=False, use_depth=False, use_cam_pose=False):
+        # get flag for camera
+        # observation_type: 'color', 'depth', 'mask', 'cam_pose'
+        flag = [False, False, False, False]
+        flag[0] = use_cam_pose
+        flag[1] = observation_type == 'Color' or observation_type == 'Rgbd' or use_color
+        flag[2] = observation_type == 'Mask' or use_mask
+        flag[3] = observation_type == 'Depth' or observation_type == 'Rgbd' or use_depth
+        return flag
 
     def set_cam(self, obj, loc=[0, 30, 70], rot=[0, 0, 0]):
         # set the camera pose relative to a actor
         x, y, z = loc
-        row, pitch, yaw = rot
-        cmd = 'vbp {0} set_cam {1} {2} {3} {4} {5} {6}'.format(obj, x, y, z, row, pitch, yaw)
+        roll, pitch, yaw = rot
+        cmd = f'vbp {obj} set_cam {x} {y} {z} {roll} {pitch} {yaw}'
         res = self.client.request(cmd, -1)
         return res
 

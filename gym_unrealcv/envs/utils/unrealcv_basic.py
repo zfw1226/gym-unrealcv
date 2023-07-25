@@ -84,11 +84,7 @@ class UnrealCv(object):
             res = None
             if mode == 'direct': # get image from unrealcv in png format
                 cmd = f'vget /camera/{cam_id}/{viewmode} png'
-                while res is None:
-                    res = self.client.request(cmd)
-                image_rgb = self.decode_png(res)
-                image_rgb = image_rgb[:, :, :-1]  # delete alpha channel
-                image = image_rgb[:, :, ::-1]  # transpose channel order
+                image = self.decode_png(self.client.request(cmd))
 
             elif mode == 'file': # save image to file and read it
                 cmd = f'vget /camera/{cam_id}/{viewmode} {viewmode}{self.ip}.png'
@@ -100,34 +96,58 @@ class UnrealCv(object):
                 image = cv2.imread(img_dirs)
             elif mode == 'fast': # get image from unrealcv in bmp format
                 cmd = f'vget /camera/{cam_id}/{viewmode} bmp'
-                while res is None:
-                    res = self.client.request(cmd)
-                image_rgba = self.decode_bmp(res)
-                image = image_rgba[:, :, :-1]  # delete alpha channel
+                image = self.decode_bmp(self.client.request(cmd))
             return image
 
     def read_depth(self, cam_id, inverse=True): # get depth from unrealcv in npy format
         cmd = f'vget /camera/{cam_id}/depth npy'
         res = self.client.request(cmd)
-        depth = np.fromstring(res, np.float32)
-        depth = depth[-self.resolution[1] * self.resolution[0]:]
-        depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+        depth = self.decode_depth(res)
         if inverse:
             depth = 1/depth
         # cv2.imshow('depth', depth/depth.max())
         # cv2.waitKey(10)
         return depth
 
+    def get_img_batch(self, cam_ids, viewmode='lit', mode='bmp', inverse=True):
+        # get image from multiple cameras
+        # viewmode : {'lit', 'depth', 'normal', 'object_mask'}
+        # mode : {'bmp', 'npy', 'png'}
+        # inverse : whether to inverse the depth
+        cmd_list = []
+        for cam_id in cam_ids:
+            cmd_list.append(f'vget /camera/{cam_id}/{viewmode} {mode}')
+        res_list = self.client.request(cmd_list)
+        img_list = []
+        for res in res_list:
+            if mode == 'npy':
+                img = self.decode_depth(res)
+                if inverse:
+                    img = 1/img
+            elif mode == 'bmp':
+                img = self.decode_bmp(res)
+            elif mode == 'png':
+                img = self.decode_png(res)
+            img_list.append(img)
+        return img_list
+
     def decode_png(self, res): # decode png image
-        img = PIL.Image.open(BytesIO(res))
-        return np.asarray(img)
+        img = np.asarray(PIL.Image.open(BytesIO(res)))
+        img = img[:, :, :-1]  # delete alpha channel
+        img = img[:, :, ::-1]  # transpose channel order
+        return img
 
     def decode_bmp(self, res, channel=4): # decode bmp image
         img = np.fromstring(res, dtype=np.uint8)
         img=img[-self.resolution[1]*self.resolution[0]*channel:]
         img=img.reshape(self.resolution[1], self.resolution[0], channel)
+        return img[:, :, :-1] # delete alpha channel
 
-        return img
+    def decode_depth(self, res):  # decode depth image
+        depth = np.fromstring(res, np.float32)
+        depth = depth[-self.resolution[1] * self.resolution[0]:]
+        depth = depth.reshape(self.resolution[1], self.resolution[0], 1)
+        return depth
 
     def convert2planedepth(self, PointDepth, f=320): # convert point depth to plane depth
         H = PointDepth.shape[0]
@@ -144,6 +164,60 @@ class UnrealCv(object):
         d = self.read_depth(cam_id)
         rgbd = np.append(rgb, d, axis=2)
         return rgbd
+
+    def get_pose_img_batch(self, objs_list, cam_ids, img_flag=[False, True, False, False]):
+        # get pose and image of objects in objs_list from cameras in cam_ids
+        cmd_list = []
+        [use_cam_pose, use_color, use_mask, use_depth] = img_flag
+        for obj in objs_list:
+            cmd_list.extend([f'vget /object/{obj}/location', f'vget /object/{obj}/rotation'])
+
+        for cam_id in cam_ids:
+            if use_cam_pose:
+                cmd_list.extend([f'vget /camera/{cam_id}/location', f'vget /camera/{cam_id}/rotation'])
+            if use_color:
+                cmd_list.append(f'vget /camera/{cam_id}/lit bmp')
+            if use_mask:
+                cmd_list.append(f'vget /camera/{cam_id}/object_mask bmp')
+            if use_depth:
+                cmd_list.append(f'vget /camera/{cam_id}/depth npy')
+
+        res_list = self.client.request(cmd_list)
+        obj_pose_list = []
+        cam_pose_list = []
+        img_list = []
+        mask_list = []
+        depth_list = []
+        # start to read results
+        start_point = 0
+        for i, obj in enumerate(objs_list):
+            loc = [float(j) for j in res_list[start_point].split()]
+            start_point += 1
+            rot = [float(j) for j in res_list[start_point].split()]
+            start_point += 1
+            obj_pose_list.append(loc + rot)
+        for i, cam_id in enumerate(cam_ids):
+            if use_cam_pose:
+                loc = [float(j) for j in res_list[start_point].split()]
+                start_point += 1
+                rot = [float(j) for j in res_list[start_point].split()][::-1]
+                start_point += 1
+                cam_pose_list.append(loc + rot)
+            if use_color:
+                image = self.decode_bmp(res_list[start_point])
+                img_list.append(image)
+                start_point += 1
+            if use_mask:
+                image = self.decode_bmp(res_list[start_point])
+                mask_list.append(image)
+                start_point += 1
+            if use_depth:
+                image = 1 / self.decode_depth(res_list[start_point])
+                depth_list.append(image)  # 500 is the default max depth of most depth cameras
+                start_point += 1
+
+        return obj_pose_list, cam_pose_list, img_list, mask_list, depth_list
+
 
     def set_pose(self, cam_id, pose):  # set camera pose, pose = [x, y, z, roll, yaw, pitch]
         [x, y, z, roll, yaw, pitch] = pose

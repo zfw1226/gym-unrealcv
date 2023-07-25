@@ -26,6 +26,8 @@ class Navigation(UnrealCv):
     def get_observation(self, cam_id, observation_type, mode='direct'):
         if observation_type == 'Color':
             self.img_color = state = self.read_image(cam_id, 'lit', mode)
+        elif observation_type == 'Mask':
+            self.img_color = state = self.read_image(cam_id, 'object_mask', mode)
         elif observation_type == 'Depth':
             self.img_depth = state = self.read_depth(cam_id)
         elif observation_type == 'Rgbd': 
@@ -41,7 +43,7 @@ class Navigation(UnrealCv):
 
     def define_observation(self, cam_id, observation_type, mode='direct'):
         state = self.get_observation(cam_id, observation_type, mode)
-        if observation_type == 'Color' or observation_type == 'CG':
+        if observation_type == 'Color' or observation_type == 'CG' or observation_type == 'Mask':
             if self.use_gym_10_api:
                 observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
             else:

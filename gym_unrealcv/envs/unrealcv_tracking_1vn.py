@@ -49,6 +49,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.min_distance = setting['min_distance']
         self.max_direction = setting['max_direction']
         self.height = setting['height']
+        self.height_top_view = setting['height_top_view']
         self.pitch = setting['pitch']
         self.objects_list = setting['objects_list']
         self.reset_area = setting['reset_area']
@@ -141,6 +142,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.early_stop = True
         self.get_bbox = False
         self.bbox = []
+        self.cam_flag = self.unrealcv.get_cam_flag(self.observation_type)
 
     def step(self, actions):
         info = dict(
@@ -185,9 +187,10 @@ class UnrealCvTracking_1vn(gym.Env):
         cam_id_max = self.controable_agent+1
         if 'Adv' in self.target:
             cam_id_max = 3
-        states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
-                                                                    self.observation_type, 'bmp')
-        self.obj_pos[0] = self.unrealcv.get_pose(self.cam_id[1])
+        self.obj_pos, _, img_list, mask_list, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:cam_id_max],
+                                                                    self.cam_flag)
+        states = self.get_states(self.observation_type, img_list, mask_list, depth_list)
+
         # for recording demo
         if self.get_bbox:
             mask = self.unrealcv.read_image(self.cam_id[1], 'object_mask', 'fast')
@@ -198,7 +201,12 @@ class UnrealCvTracking_1vn(gym.Env):
             # cv2.imshow('track_res', im_disp)
             # cv2.waitKey(1)
 
-        states = np.array(states)
+        if self.observation_type == 'Rgbd':
+            self.img_show = states[0][:, :, :3]
+        else:
+             self.img_show = states[0]
+        info['Color'] = self.img_show
+
         if cam_id_max < self.controable_agent + 1:
             states = np.repeat(states, self.controable_agent, axis=0)
 
@@ -225,8 +233,6 @@ class UnrealCvTracking_1vn(gym.Env):
         # set top_down camera
         if self.top:
             self.set_topview(info['Pose'], self.cam_id[0])
-
-        info['Color'] = self.img_color = states[0][:, :, :3]
 
         metrics, score4tracker = self.relative_metrics(relative_pose)
         self.mis_lead = metrics['mislead']
@@ -394,11 +400,16 @@ class UnrealCvTracking_1vn(gym.Env):
 
         # get state
         for _ in range(2):
-            states, self.obj_pos, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
-                                                                    self.observation_type, 'bmp')
+            self.obj_pos, _, img_list, mask_list, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_id[1:self.controable_agent+1],
+                                                                    self.cam_flag)
             time.sleep(0.5)
-        states = np.array(states)
-        self.img_color = states[0][:, :, :3]
+        states = self.get_states(self.observation_type, img_list, mask_list, depth_list)
+
+        if self.observation_type == 'Rgbd':
+            self.img_show = states[0][:, :, :3]
+        else:
+            self.img_show = states[0]
+
         # get pose state
         pose_obs = []
         for j in range(self.player_num):
@@ -435,7 +446,7 @@ class UnrealCvTracking_1vn(gym.Env):
     def render(self, mode='rgb_array', close=False):
         if close==True:
             self.unreal.close()
-        return self.img_color
+        return self.img_show
 
     def seed(self, seed=None):
         if seed is not None:
@@ -459,7 +470,7 @@ class UnrealCvTracking_1vn(gym.Env):
 
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
-        cam_loc[-1] = current_pose[-1]+800
+        cam_loc[-1] = self.height_top_view
         cam_rot = [0, 0, -90]
         self.unrealcv.set_location(cam_id, cam_loc)
         self.unrealcv.set_rotation(cam_id, cam_rot)
@@ -473,6 +484,16 @@ class UnrealCvTracking_1vn(gym.Env):
                       np.sin(angle/180*np.pi), np.cos(angle/180*np.pi),
                       distance_norm]
         return obs_vector, distance, angle
+
+    def get_states(self, observation_type, img_list, mask_list, depth_list):
+        if observation_type == 'Depth':
+            return np.array(depth_list)
+        elif observation_type == 'Mask':
+            return np.array(mask_list)
+        elif observation_type == 'Color':
+            return np.array(img_list)
+        elif observation_type == 'Rgbd':
+            return np.append(np.array(img_list), np.array(depth_list), axis=-1)
 
     def rotate2exp(self, yaw_exp, obj, th=1):
         yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
