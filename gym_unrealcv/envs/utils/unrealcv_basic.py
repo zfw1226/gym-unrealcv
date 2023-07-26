@@ -48,14 +48,13 @@ class UnrealCv(object):
     def init_unrealcv(self, cam_id, resolution=(320, 240)):
         self.check_connection()
         [w, h] = resolution
-        self.client.request(f'vrun setres {w}x{h}w')
-        self.client.request('DisableAllScreenMessages')
-        self.client.request('vrun sg.ShadowQuality 0')
-        self.client.request('vrun sg.TextureQuality 0')
-        self.client.request('vrun sg.EffectsQuality 0')
+        self.client.request(f'vrun setres {w}x{h}w', -1)  # set resolution of the display window
+        self.client.request('DisableAllScreenMessages', -1)  # disable all screen messages
+        self.client.request('vrun sg.ShadowQuality 0', -1)  # set shadow quality to low
+        self.client.request('vrun sg.TextureQuality 0', -1)  # set texture quality to low
+        self.client.request('vrun sg.EffectsQuality 0', -1)  # set effects quality to low
         # self.client.request('vrun r.ScreenPercentage 10')
-        # self.client.request('vrun t.maxFPS 100')
-        time.sleep(1)
+        time.sleep(0.1)
         self.get_rotation(cam_id, 'hard')
         self.get_location(cam_id, 'hard')
         self.client.message_handler = self.message_handler
@@ -492,3 +491,9 @@ class UnrealCv(object):
 
     def set_map(self, map_name):  # change to a new level map
         self.client.request(f'vset /action/game/level {map_name}', -1)
+
+    def set_global_time_dilation(self, time_dilation):
+        self.client.request(f'vrun slomo {time_dilation}', -1)
+
+    def set_max_FPS(self, max_fps):
+        self.client.request(f'vrun t.maxFPS {max_fps}', -1)

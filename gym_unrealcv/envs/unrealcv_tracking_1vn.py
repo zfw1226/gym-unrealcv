@@ -271,6 +271,11 @@ class UnrealCvTracking_1vn(gym.Env):
         if (self.early_stop and lost_time > 5) or self.count_steps > self.max_steps:
             info['Done'] = True
 
+        # adaptive time dilation
+        fps = self.count_steps / (time.time() - self.start_time)
+        time_dilation = fps / 10
+        self.unrealcv.set_global_time_dilation(time_dilation)
+
         return states, info['Reward'], info['Done'], info
 
     def reset(self, ):
@@ -343,8 +348,8 @@ class UnrealCvTracking_1vn(gym.Env):
         # set tracker location
         cam_pos_exp, yaw_exp = res
         self.unrealcv.set_obj_location(self.player_list[0], cam_pos_exp)
-        time.sleep(0.5)
-        self.rotate2exp(yaw_exp, self.player_list[0])
+        # self.unrealcv.set_obj_rotation(self.player_list[0], [0, yaw_exp, 0])
+        self.rotate2exp(yaw_exp, self.player_list[0], 3)
         
         # get tracker's pose
         tracker_pos = self.unrealcv.get_pose(self.cam_id[1])
@@ -383,7 +388,7 @@ class UnrealCvTracking_1vn(gym.Env):
         # cam on top of tracker
         center_pos = [(self.reset_area[0]+self.reset_area[1])/2, (self.reset_area[2]+self.reset_area[3])/2, 2000]
         self.set_topview(center_pos, self.cam_id[0])
-        time.sleep(0.5)
+        # time.sleep(0.5)
 
         # set controllable agent number
         self.controable_agent = 1
@@ -437,6 +442,7 @@ class UnrealCvTracking_1vn(gym.Env):
         self.pose = []
         self.act_smooth = [np.zeros(2) for i in range(self.controable_agent)]
         self.live_time = time.time()
+        self.start_time = time.time()
         return states
 
     def close(self):
@@ -499,7 +505,7 @@ class UnrealCvTracking_1vn(gym.Env):
         yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
         delta_yaw = yaw_exp - yaw_pre
         while abs(delta_yaw) > th:
-            self.unrealcv.set_move(obj, delta_yaw, 0)
+            self.unrealcv.set_move(obj, np.clip(delta_yaw, -60, 60), 0)
             yaw_pre = self.unrealcv.get_obj_rotation(obj)[1]
             delta_yaw = (yaw_exp - yaw_pre) % 360
             if delta_yaw > 180:
