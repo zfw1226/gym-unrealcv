@@ -53,7 +53,6 @@ class Navigation(UnrealCv):
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
             else:
                 observation_space = spaces.Box(low=0, high=100, shape=state.shape)
-
         elif observation_type == 'Rgbd':
             s_high = state
             s_high[:, :, -1] = 100.0  # max_depth
@@ -75,23 +74,23 @@ class Navigation(UnrealCv):
         param = param / param.max()
         # color = color / color.max()
         cmd = 'vbp {target} set_mat {e_num} {r} {g} {b} {meta} {spec} {rough} {tiling} {picpath}'
-        res = self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
-                               meta=param[0], spec=param[1], rough=param[2], tiling=tiling,
-                               picpath=picpath))
+        self.client.request(cmd.format(target=target, e_num=e_num, r=color[0], g=color[1], b=color[2],
+                                       meta=param[0], spec=param[1], rough=param[2], tiling=tiling,
+                                       picpath=picpath), -1)
 
     def set_light(self, target, direction, intensity, color): # param num out of range
-        cmd = 'vbp {target} set_light {row} {yaw} {pitch} {intensity} {r} {g} {b}'
-        color = color/color.max()
-        res = self.client.request(cmd.format(target=target, row=direction[0], yaw=direction[1],
-                                             pitch=direction[2], intensity=intensity,
-                                             r=color[0], g=color[1], b=color[2]))
+        [roll, yaw, pitch] = direction
+        color = color / color.max()
+        [r, g, b] = color
+        cmd = f'vbp {target} set_light {roll} {yaw} {pitch} {intensity} {r} {g} {b}'
+        self.client.request(cmd, -1)
 
-    def set_skylight(self, target, color, intensity ): # param num out of range
-        cmd = 'vbp {target} set_light {r} {g} {b} {intensity} '
-        res = self.client.request(cmd.format(target=target, intensity=intensity,
-                                             r=color[0], g=color[1], b=color[2]))
+    def set_skylight(self, obj, color, intensity ): # param num out of range
+        [r, g, b] = color
+        cmd = f'vbp {obj} set_light {r} {g} {b} {intensity} '
+        self.client.request(cmd, -1)
 
-    def get_pose(self,cam_id, type='hard'):  # pose = [x, y, z, roll, yaw, pitch]
+    def get_pose(self, cam_id, type='hard'):  # pose = [x, y, z, roll, yaw, pitch]
         if type == 'soft':
             pose = self.cam[cam_id]['location']
             pose.extend(self.cam[cam_id]['rotation'])

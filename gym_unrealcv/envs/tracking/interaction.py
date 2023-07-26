@@ -63,7 +63,7 @@ class Tracking(Navigation):
             cmd = 'vbp {target} set_mixamoapp {id}'
         res = None
         while res is None:
-            res = self.client.request(cmd.format(target=target, id=id))
+            res = self.client.request(cmd.format(target=target, id=id), -1)
         return id
 
     def start_walking(self, target):
@@ -137,10 +137,10 @@ class Tracking(Navigation):
             res = self.client.request(cmd.format(target=target))
 
     def set_phy(self, obj, state):
-        cmd = 'vbp {target} set_phy {state}'
+        cmd = f'vbp {obj} set_phy {state}'
         res=None
         while res is None:
-            res = self.client.request(cmd.format(target=obj, state =state))
+            res = self.client.request(cmd, -1)
 
     def simulate_physics(self, objects):
         for obj in objects:
@@ -150,14 +150,14 @@ class Tracking(Navigation):
         cmd = 'vbp {target} set_move {angle} {velocity}'.format(target=target, angle=angle, velocity=velocity)
         res = None
         while res is None:
-            res = self.client.request(cmd)
+            res = self.client.request(cmd, -1)
 
     def set_move_batch(self, objs_list, action_list):
         cmd = 'vbp {obj} set_move {angle} {velocity}'
         cmd_list = []
         for i in range(len(objs_list)):
             cmd_list.append(cmd.format(obj=objs_list[i], angle=action_list[i][1], velocity=action_list[i][0]))
-        res = self.client.request(cmd_list, -1) # -1 means async request
+        self.client.request(cmd_list, -1) # -1 means async request
 
     def set_move_with_cam_batch(self, objs_list, action_list, cam_ids, cam_rots):
         cmd_move = 'vbp {obj} set_move {angle} {velocity}'
@@ -173,7 +173,7 @@ class Tracking(Navigation):
         res = self.client.request(cmd_list, -1) # -1 means async request
 
     def get_hit(self, target):
-        cmd = 'vbp {target} get_hit'.format(target=target)
+        cmd = f'vbp {target} get_hit'
         res = None
         while res is None:
             res = self.client.request(cmd)
@@ -200,7 +200,7 @@ class Tracking(Navigation):
         cmd = 'vbp {target} set_random {value}'.format(target=target, value=value)
         res=None
         while res is None:
-            res = self.client.request(cmd)
+            res = self.client.request(cmd, -1)
 
     def set_interval(self, interval, target=None):
         if target is None:
@@ -209,7 +209,7 @@ class Tracking(Navigation):
             cmd = 'vbp {target} set_interval {value}'.format(target=target, value=interval)
         res = None
         while res is None:
-            res = self.client.request(cmd)
+            res = self.client.request(cmd, -1)
 
     def init_objects(self, objects):
         self.objects_dict = dict()
@@ -222,7 +222,7 @@ class Tracking(Navigation):
         cmd = 'vbp {obj} set_scale {x} {y} {z}'.format(obj=obj, x=scale[0], y=scale[1], z=scale[2])
         res = None
         while res is None:
-            res = self.client.request(cmd)
+            res = self.client.request(cmd, -1)
 
     def random_obstacles(self, objects, img_dirs, num, area, start_area, texture=False):
         sample_index = np.random.choice(len(objects), num, replace=False)
