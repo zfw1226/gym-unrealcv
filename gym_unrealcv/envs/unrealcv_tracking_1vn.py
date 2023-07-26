@@ -267,14 +267,14 @@ class UnrealCvTracking_1vn(gym.Env):
             self.count_close = 0
             self.live_time = time.time()
 
-        lost_time = time.time() - self.live_time
-        if (self.early_stop and lost_time > 5) or self.count_steps > self.max_steps:
-            info['Done'] = True
-
         # adaptive time dilation
         fps = self.count_steps / (time.time() - self.start_time)
-        time_dilation = fps / 10
+        time_dilation = fps / 10  # reference fps: 10
         self.unrealcv.set_global_time_dilation(time_dilation)
+
+        lost_time = time.time() - self.live_time
+        if (self.early_stop and lost_time > 5/time_dilation) or self.count_steps > self.max_steps:
+            info['Done'] = True
 
         return states, info['Reward'], info['Done'], info
 
