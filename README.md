@@ -50,11 +50,11 @@ A number of environments have been released for robotic vision tasks, including 
   </tr>
 </table>
 
-The framework of this project is shown as below:
+The framework of this project is shown below:
 ![framework](doc/figs/framework.JPG)
 
 - ```UnrealCV``` is the basic bridge between ```Unreal Engine``` and ```OpenAI Gym```.
-- ```OpenAI Gym``` is a toolkit for developing RL algorithm, compatible with most of numerical computation library, such as TensorFlow or PyTorch. 
+- ```OpenAI Gym``` is a toolkit for developing an RL algorithm, compatible with most numerical computation libraries, such as TensorFlow or PyTorch. 
 
 
 
@@ -68,8 +68,8 @@ The framework of this project is shown as below:
 - Docker(Optional)
 - Nvidia-Docker(Optional)
  
-We recommend you to use [anaconda](https://www.continuum.io/downloads) to install and manage your python environment.
-```CV2``` is used for images processing, like extracting object mask and bounding box. ```Matplotlib``` is used for visualization.
+We recommend you use [anaconda](https://www.continuum.io/downloads) to install and manage your Python environment.
+```CV2``` is used for image processing, like extracting object masks and bounding boxes. ```Matplotlib``` is used for visualization.
 ## Install Gym-UnrealCV
 
 It is easy to install gym-unrealcv, just run
@@ -79,7 +79,7 @@ cd gym-unrealcv
 pip install -e . 
 ```
 While installing gym-unrealcv, dependencies including [OpenAI Gym](https://github.com/openai/gym), unrealcv, numpy and matplotlib are installed.
-`Opencv` is should be installed additionally. 
+`Opencv` should be installed additionally. 
 If you use ```anaconda```, you can run
 ```
 conda update conda
@@ -110,15 +110,15 @@ Once ```gym-unrealcv``` is installed successfully, you will see that your agent 
 cd example/random
 python random_agent.py -e UnrealSearch-RealisticRoomDoor-DiscreteColor-v0
 ```
-After that, if all goes well，a pre-defined gym environment ```UnrealSearch-RealisticRoomDoor-DiscreteColor-v0``` will be launched.
+After that, if all goes well， a pre-defined gym environment ```UnrealSearch-RealisticRoomDoor-DiscreteColor-v0``` will be launched.
 And then you will see that your agent is moving around the room randomly.
 
 We list the pre-defined environments in this [page](doc/EnvLists.md), for object searching and active object tracking. 
 
 ## 2. Learning RL Agents
-To demonstrate how to train agent in gym-unrealcv, we provide [DQN](doc/dqn.md) (Keras) and [DDPG](doc/ddpg.md) (Keras) codes  in [.example](.example).
+To demonstrate how to train an agent in gym-unrealcv, we provide [DQN](doc/dqn.md) (Keras) and [DDPG](doc/ddpg.md) (Keras) codes  in [.example](.example).
 
-Moreover, you can also refer to some recent projects for more advanced usages, as following:
+Moreover, you can also refer to some recent projects for more advanced usages, as follows:
 - [craves_control](https://github.com/zfw1226/craves_control) provides an example for learning to ``control a robot arm`` via **DDPG** (PyTorch).
 - [active_tracking_rl](https://github.com/zfw1226/active_tracking_rl) provides examples for learning active visual tracking via **A3C** (Pytorch). The training framework can be used for ``single-agent RL``, ``adversarial RL``, and ``multi-agent games``.
 - [pose-assisted-collaboration](https://github.com/LilJing/pose-assisted-collaboration) provides an example for learning multi-agent collaboration via **A3C** (Pytorch) in ``multiple PTZ cameras single target environments``.
@@ -129,11 +129,11 @@ We provide a set of tutorials to help you get started with Gym-UnrealCV.
 You can follow the [modify_env_tutorial](doc/config_env.md) to modify the configuration of the pre-defined environment.
 
 ## 2. Add a new unreal environment
-You can follow the [add_new_env_tutorial](doc/addEnv.md) to add new unreal environment for your RL task.
+You can follow the [add_new_env_tutorial](doc/addEnv.md) to add a new unreal environment for your RL task.
 
 # Papers Using Gym-UnrealCV
 **🎉 Please feel free to pull requests or open an issue to add papers.**
-- [Towards Active Vision for Action Localization With Reactive Control and Predictive Learning](https://arxiv.org/pdf/2202.10881.pdf), WACV 2022.
+- [Towards Active Vision for Action Localization With Reactive Control and Predictive Learning](https://arxiv.org/pdf/2111.05448.pdf), WACV 2022.
 - [Coordinate-aligned multi-camera collaboration for active multi-object tracking](https://arxiv.org/pdf/2202.10881.pdf), Arxiv 2022.
 - [Towards distraction-robust active visual tracking](http://proceedings.mlr.press/v139/zhong21b/zhong21b.pdf), ICML 2021.
 - [AD-VAT+: An Asymmetric Dueling Mechanism for Learning and Understanding Visual Active Tracking](https://ieeexplore.ieee.org/abstract/document/8896000), TPAMI 2021.
@@ -157,4 +157,4 @@ If you use Gym-UnrealCV in your academic research, we would be grateful if you c
 }
 ```
 ## Contact
-If you have any suggestion or interested in using Gym-UnrealCV, get in touch at [zfw1226 [at] gmail [dot] com](zfw1226@gmail.com).
+If you have any suggestions or are interested in using Gym-UnrealCV, get in touch at [zfw1226 [at] gmail [dot] com](zfw1226@gmail.com).
