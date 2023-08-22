@@ -59,7 +59,7 @@ for env in ['City1', 'City2']:
                                '{action}{obs}-v{reset}'.format(env=env, target=target, path=path,
                                                                action=action, obs=obs, reset=i),
                             entry_point='gym_unrealcv.envs:UnrealCvTracking_spline',
-                            kwargs={'setting_file': 'tracking_v0/{env}{target}{path}.json'.format(
+                            kwargs={'setting_file': 'tracking/v0/{env}{target}{path}.json'.format(
                                 env=env, target=target, path=path),
                                     'reset_type': reset,
                                     'action_type': action,
@@ -78,7 +78,7 @@ for env in ['RandomRoom']:
                 register(
                     id='UnrealTrack-{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, reset=i),
                     entry_point='gym_unrealcv.envs:UnrealCvTracking_random',
-                    kwargs={'setting_file': 'tracking_v0/{env}.json'.format(env=env),
+                    kwargs={'setting_file': 'tracking/v0/{env}.json'.format(env=env),
                             'reset_type': i,
                             'action_type': action,
                             'observation_type': obs,
@@ -98,7 +98,7 @@ for env in ['DuelingRoom', 'UrbanCity', 'UrbanRoad', 'Garage', 'SnowForest', 'Fo
                 for target in ['Ram', 'Nav', 'NavBase', 'NavShort', 'NavFix', 'Internal', 'PZR', 'Adv']:
                     name = 'UnrealTrack-{env}{target}-{action}{obs}-v{reset}'.format(
                         env=env, action=action, obs=obs, target=target, reset=i)
-                    setting_file = 'tracking_1v1/{env}.json'.format(env=env)
+                    setting_file = 'tracking/1v1/{env}.json'.format(env=env)
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvTracking_1v1',
@@ -122,7 +122,7 @@ for env in ['MCRoom', 'Garden', 'UrbanTree']:
                 for nav in ['Random', 'Goal', 'Internal', 'None',
                             'RandomInterval', 'GoalInterval', 'InternalInterval', 'NoneInterval']:
                     name = 'Unreal{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-                    setting_file = 'tracking_multicam/{env}.json'.format(env=env)
+                    setting_file = 'tracking/multicam/{env}.json'.format(env=env)
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvMC',
@@ -144,7 +144,7 @@ for env in ['FlexibleRoom', 'Garden', 'UrbanTree']:
                 for nav in ['Random', 'Goal', 'Internal', 'None',
                             'RandomInterval', 'GoalInterval', 'InternalInterval']:
                     name = 'UnrealMC{env}-{action}{obs}{nav}-v{reset}'.format(env=env, action=action, obs=obs, nav=nav, reset=i)
-                    setting_file = 'tracking_mcmt/{env}.json'.format(env=env)
+                    setting_file = 'tracking/mcmt/{env}.json'.format(env=env)
                     register(
                         id=name,
                         entry_point='gym_unrealcv.envs:UnrealCvMultiCam',
@@ -165,7 +165,7 @@ for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage', 'Garden']:
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask']:  # observation type
                 for target in ['Ram', 'Nav', 'PZRNav', 'AdvNav', 'PZR', 'Adv', 'AdvShare']:
                         name = 'UnrealTrackMulti-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
-                        setting_file = 'tracking_1vn/{env}.json'.format(env=env)
+                        setting_file = 'tracking/1vn/{env}.json'.format(env=env)
                         register(
                             id=name,
                             entry_point='gym_unrealcv.envs:UnrealCvTracking_1vn',
