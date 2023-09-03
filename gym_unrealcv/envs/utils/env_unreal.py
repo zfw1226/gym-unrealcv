@@ -36,11 +36,16 @@ class RunUnreal():
                 self.write_port(port)
             #self.modify_permission(self.path2env)
             cmd_exe = [os.path.abspath(self.path2binary)]
+            "some options for running UE env"
+            # cmd_exe.append('-opengl')
+            # cmd_exe.append('-RenderOffScreen')
+            # cmd_exe.append('-nullrhi') # the rendering process is not launched, so we can not get the image
+            # cmd_exe.append('-windowed')
             if self.env_map is not None:
                 cmd_exe.append(self.env_map)
 
             self.env = subprocess.Popen(cmd_exe, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
-                                        stderr=subprocess.DEVNULL, start_new_session=True)
+                                        stderr=subprocess.DEVNULL, start_new_session=True, env={"DISPLAY": ":0"})
             atexit.register(self.close)
             # signal.signal(signal.SIGTERM, self.signal_handler)
             # signal.signal(signal.SIGINT, self.signal_handler)
