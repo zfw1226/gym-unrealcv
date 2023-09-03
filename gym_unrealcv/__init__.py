@@ -179,3 +179,25 @@ for env in ['FlexibleRoom', 'SnowForest', 'UrbanCity', 'Garage', 'Garden']:
                                     },
                             max_episode_steps=500
                             )
+
+# Env for general purpose active object tracking
+for env in ['City', 'FlexibleRoom', 'FlexibleRoom2']:
+    for i in range(7):  # reset type
+        for action in ['Discrete', 'Continuous']:  # action type
+            for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask', 'Pose']:  # observation type
+                for target in ['Ram', 'Nav', 'Adv']:
+                        name = 'UnrealTrackGeneral-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                        setting_file = 'tracking/general/{env}.json'.format(env=env)
+                        register(
+                            id=name,
+                            entry_point='gym_unrealcv.envs:UnrealCvTracking_general',
+                            kwargs={'setting_file': setting_file,
+                                    'reset_type': i,
+                                    'action_type': action,
+                                    'observation_type': obs,
+                                    'reward_type': 'distance',
+                                    'docker': use_docker,
+                                    'target': target
+                                    },
+                            max_episode_steps=500
+                            )
