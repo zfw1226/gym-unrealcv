@@ -42,26 +42,30 @@ class Navigation(UnrealCv):
         return state
 
     def define_observation(self, cam_id, observation_type, mode='direct'):
-        state = self.get_observation(cam_id, observation_type, mode)
-        if observation_type == 'Color' or observation_type == 'CG' or observation_type == 'Mask':
-            if self.use_gym_10_api:
-                observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
-            else:
-                observation_space = spaces.Box(low=0, high=255, shape=state.shape)
-        elif observation_type == 'Depth':
-            if self.use_gym_10_api:
-                observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
-            else:
-                observation_space = spaces.Box(low=0, high=100, shape=state.shape)
-        elif observation_type == 'Rgbd':
-            s_high = state
-            s_high[:, :, -1] = 100.0  # max_depth
-            s_high[:, :, :-1] = 255  # max_rgb
-            s_low = np.zeros(state.shape)
-            if self.use_gym_10_api:
-                observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)  # for gym>=0.10
-            else:
-                observation_space = spaces.Box(low=s_low, high=s_high)
+
+        if observation_type == 'Pose' or cam_id < 0:
+            observation_space = spaces.Box(low=-100, high=100, shape=(6,), dtype=np.float16) # TODO check the range and shape
+        else:
+            state = self.get_observation(cam_id, observation_type, mode)
+            if observation_type == 'Color' or observation_type == 'CG' or observation_type == 'Mask':
+                if self.use_gym_10_api:
+                    observation_space = spaces.Box(low=0, high=255, shape=state.shape, dtype=np.uint8)  # for gym>=0.10
+                else:
+                    observation_space = spaces.Box(low=0, high=255, shape=state.shape)
+            elif observation_type == 'Depth':
+                if self.use_gym_10_api:
+                    observation_space = spaces.Box(low=0, high=100, shape=state.shape, dtype=np.float16)  # for gym>=0.10
+                else:
+                    observation_space = spaces.Box(low=0, high=100, shape=state.shape)
+            elif observation_type == 'Rgbd':
+                s_high = state
+                s_high[:, :, -1] = 100.0  # max_depth
+                s_high[:, :, :-1] = 255  # max_rgb
+                s_low = np.zeros(state.shape)
+                if self.use_gym_10_api:
+                    observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)  # for gym>=0.10
+                else:
+                    observation_space = spaces.Box(low=s_low, high=s_high)
 
         return observation_space
 
