@@ -12,6 +12,7 @@ class RandomAgent(object):
         self.action_space = action_space
 
     def act(self, observation):
+        # return 2
         return self.action_space.sample()
 
 
@@ -23,8 +24,6 @@ if __name__ == '__main__':
     parser.add_argument("-s", '--seed', dest='seed', default=0, help='random seed')
     args = parser.parse_args()
     env = gym.make(args.env_id)
-    agents_num = len(env.action_space)
-    agents = [RandomAgent(env.action_space[i]) for i in range(agents_num)]
 
     episode_count = 100
     rewards = 0
@@ -36,6 +35,8 @@ if __name__ == '__main__':
     try:
         for eps in range(1, episode_count):
             obs = env.reset()
+            agents_num = len(env.action_space)
+            agents = [RandomAgent(env.action_space[i]) for i in range(len(env.action_space))] # reset agents
             count_step = 0
             t0 = time.time()
             agents_num = len(obs)
@@ -57,6 +58,7 @@ if __name__ == '__main__':
                     break
 
         # Close the env and write monitor result info to disk
+        print('Finished')
         env.close()
     except KeyboardInterrupt:
         print('exiting')
