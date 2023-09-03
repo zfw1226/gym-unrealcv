@@ -49,3 +49,19 @@ def get_textures(texture_dir, docker):
         else:
             textures_list[i] = os.path.join(texture_dir, textures_list[i])
     return textures_list
+
+def convert_dict(old_dict):
+    new_dict = {}
+    for agent, info in old_dict.items():
+        names = info["name"]
+        for i, name in enumerate(names):
+            new_dict[name] = {
+                "cam_id": info["cam_id"][i],
+                "agent_type": agent,
+                "discrete_action": info["discrete_action"],
+                "continuous_action": info["continuous_action"],
+                "class_name": info["class_name"][i],
+                "relative_location": info["relative_location"],
+                "relative_rotation": info["relative_rotation"]
+            }
+    return new_dict
