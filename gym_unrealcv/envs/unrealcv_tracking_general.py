@@ -132,25 +132,13 @@ class UnrealCvTracking_general(gym.Env):
             self.unrealcv.set_random(p, 0)
             self.unrealcv.set_random(p, 0)
 
-        # self.person_id = 0
-        # if 'Ram' in self.target:
-        #     self.random_agents = [baseline.RandomAgent(player_action_space) for i in range(self.max_player_num)]
-        # elif 'Nav' in self.target:
-        #     self.random_agents = [baseline.GoalNavAgent(self.continous_actions_player, self.reset_area, self.target, 0
-        #                                                 ) for i in range(self.max_player_num)]
-
         for player in self.player_list:
             self.unrealcv.set_interval(self.interval, player)
         self.unrealcv.build_color_dic(self.player_list)
         self.player_num = len(self.player_list)
         self.controable_agent = len(self.player_list)
         self.random_height = False
-        self.early_stop = True
-        self.get_bbox = False
-        self.bbox = []
         self.cam_flag = self.unrealcv.get_cam_flag(self.observation_type)
-        self.set_topview([0, 0, 900], self.cam_id[0])
-        self.time_dilation = 1.0
 
     def step(self, actions):
         info = dict(
@@ -198,7 +186,7 @@ class UnrealCvTracking_general(gym.Env):
 
         # prepare the info
         info['Pose'] = self.obj_pos[self.tracker_id]
-        info['Distance'], info['Direction'] = relative_pose[self.tracker_id][1]
+        info['Distance'], info['Direction'] = relative_pose[self.tracker_id][self.target_id]
         info['Relative_Pose'] = relative_pose
         info['Pose_Obs'] = self.pose_obs
         info['Reward'] = self.get_rewards(score4tracker, metrics, self.tracker_id, self.target_id)
@@ -213,8 +201,6 @@ class UnrealCvTracking_general(gym.Env):
 
         if self.count_steps > self.max_steps:
             info['Done'] = True
-
-
 
         return states, info['Reward'], info['Done'], info
 
@@ -237,8 +223,9 @@ class UnrealCvTracking_general(gym.Env):
         while len(self.player_list) > num_agents:
             self.remove_agent(self.player_list[-1])
 
-        self.target_list = self.player_list.copy().pop(self.tracker_id)
-        self.target_id = 1
+        self.target_list = self.player_list.copy()
+        self.target_list.pop(self.tracker_id)
+        self.target_id = self.player_list.index(random.choice(self.target_list))
 
         # stop move and disable physics
         for i, obj in enumerate(self.player_list):
@@ -297,17 +284,9 @@ class UnrealCvTracking_general(gym.Env):
         else:
             self.img_show = states[self.tracker_id]
 
-        # cv2.imshow('init', self.img_show)
-        # cv2.waitKey(1)
-
         # get pose state
         self.pose_obs, relative_pose = self.get_pose_states(self.obj_pos)
 
-        self.bbox_init = []
-        # mask = self.unrealcv.read_image(self.cam_list[self.tracker_id], 'object_mask', 'fast')
-        # mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[1], normalize=False)
-        # self.mask_percent = mask.sum()/(255 * self.resolution[0] * self.resolution[1])
-        # self.bbox_init.append(bbox)
         return states
 
     def close(self):
@@ -331,9 +310,6 @@ class UnrealCvTracking_general(gym.Env):
         start_area = [safe_start[0]-safe_range, safe_start[0]+safe_range,
                      safe_start[1]-safe_range, safe_start[1]+safe_range]
         return start_area
-
-    def set_early_stop(self, do=True):
-        self.early_stop = do
 
     def set_topview(self, current_pose, cam_id):
         cam_loc = current_pose[:3]
