@@ -5,6 +5,7 @@ from gym import wrappers
 import cv2
 import time
 import numpy as np
+from gym_unrealcv.envs.wrappers import time_dilation, early_done, auto_monitor
 
 class RandomAgent(object):
     """The world's simplest agent!"""
@@ -22,9 +23,17 @@ if __name__ == '__main__':
                         help='Select the environment to run')
     parser.add_argument("-r", '--render', dest='render', action='store_true', help='show env using cv2')
     parser.add_argument("-s", '--seed', dest='seed', default=0, help='random seed')
+    parser.add_argument("-t", '--time_dilation', dest='time_dilation', default=10, help='time_dilation to keep fps in simulator')
+    parser.add_argument("-d", '--early_done', dest='early_done', default=100, help='early_done when lost in n steps')
+    parser.add_argument("-m", '--auto_monitor', dest='auto_monitor', default=True, help='auto_monitor')
     args = parser.parse_args()
     env = gym.make(args.env_id)
-
+    if args.time_dilation > 0: # -1 means no time_dilation
+        env = time_dilation.TimeDilationWrapper(env, args.time_dilation)
+    if args.early_done > 0: # -1 means no early_done
+        env = early_done.EarlyDoneWrapper(env, args.early_done)
+    if args.auto_monitor:
+        env = auto_monitor.DisplayWrapper(env)
     episode_count = 100
     rewards = 0
     done = False
