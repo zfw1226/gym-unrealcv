@@ -152,6 +152,18 @@ class Tracking(Navigation):
         while res is None:
             res = self.client.request(cmd, -1)
 
+    def set_move_new(self, target, params):
+        '''
+        new move function, can adapt to different number of params
+        2 params: [v_angle, v_linear], used for agents moving in plane, e.g. human, car, animal
+        4 params: [v_ x, v_y, v_z, v_yaw], used for agents moving in 3D space, e.g. drone
+        '''
+        params_str = ' '.join([str(param) for param in params])
+        cmd = f'vbp {target} set_move {params_str}'
+        res = None
+        while res is None:
+            res = self.client.request(cmd, -1)
+
     def set_move_batch(self, objs_list, action_list):
         cmd = 'vbp {obj} set_move {angle} {velocity}'
         cmd_list = []
@@ -219,7 +231,7 @@ class Tracking(Navigation):
         return self.objects_dict
 
     def set_obj_scale(self, obj, scale):
-        cmd = 'vbp {obj} set_scale {x} {y} {z}'.format(obj=obj, x=scale[0], y=scale[1], z=scale[2])
+        cmd = 'vset /object/{obj}/scale {x} {y} {z}'.format(obj=obj, x=scale[0], y=scale[1], z=scale[2])
         res = None
         while res is None:
             res = self.client.request(cmd, -1)
@@ -287,3 +299,33 @@ class Tracking(Navigation):
 
     def adjust_fov(self, cam_id, delta_fov, min_max=[45, 135]):  # increase/decrease fov
         return self.set_fov(cam_id, np.clip(self.cam[cam_id]['fov']+delta_fov, min_max[0], min_max[1]))
+
+    def set_obj_rotation_bp(self, obj, rot):
+        [roll, yaw, pitch] = rot
+        cmd = f'vbp {obj} set_rotation {roll} {pitch} {yaw}'  # roll, pitch, yaw
+        res = self.client.request(cmd)
+        return res
+
+    def stop_car(self, obj):
+        cmd = f'vbp {obj} set_stop'
+        res = self.client.request(cmd, -1)
+        return res
+
+    def move_to(self, obj, loc): # navigate the car to a goal location
+        x, y, z = loc
+        cmd = f'vbp {obj} nav_to_goal {x} {y} {z}'
+        res = self.client.request(cmd, -1)
+        return res
+
+    def set_max_nav_speed(self, obj, max_vel): # set the maximum navigation speed of the car
+        cmd = f'vbp {obj} set_nav_speed {max_vel}'
+        res = self.client.request(cmd, -1)
+        return res
+
+    def enter_exit_car(self, obj, player_index):
+        # enter or exit the car for a player.
+        # If the player is already in the car, it will exit the car. Otherwise, it will enter the car.
+        cmd = f'vbp {obj} enter_exit_car {player_index}'
+        res = self.client.request(cmd, -1)
+        return res
+
