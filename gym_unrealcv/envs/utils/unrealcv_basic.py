@@ -172,6 +172,8 @@ class UnrealCv(object):
             cmd_list.extend([f'vget /object/{obj}/location', f'vget /object/{obj}/rotation'])
 
         for cam_id in cam_ids:
+            if cam_id < 0:
+                continue
             if use_cam_pose:
                 cmd_list.extend([f'vget /camera/{cam_id}/location', f'vget /camera/{cam_id}/rotation'])
             if use_color:
@@ -196,6 +198,10 @@ class UnrealCv(object):
             start_point += 1
             obj_pose_list.append(loc + rot)
         for i, cam_id in enumerate(cam_ids):
+            # print(cam_id)
+            if cam_id < 0:
+                img_list.append(np.zeros((self.resolution[1], self.resolution[0], 3), dtype=np.uint8))
+                continue
             if use_cam_pose:
                 loc = [float(j) for j in res_list[start_point].split()]
                 start_point += 1
@@ -488,6 +494,15 @@ class UnrealCv(object):
     def new_camera(self):
         res = self.client.request('vset /cameras/spawn')
         return res  #  return the object name of the new camera
+
+    def get_vertex_locations(self, obj):
+        res = None
+        while res is None:
+            res = self.client.request(f'vget /object/{obj}/vertices')
+        lines = res.split('\n')
+        lines = [line.strip() for line in lines]
+        vertex_locations = [list(map(float, line.split())) for line in lines]
+        return vertex_locations
 
     def set_map(self, map_name):  # change to a new level map
         self.client.request(f'vset /action/game/level {map_name}', -1)
