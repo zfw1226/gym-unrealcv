@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", '--seed', dest='seed', default=0, help='random seed')
     parser.add_argument("-t", '--time_dilation', dest='time_dilation', default=10, help='time_dilation to keep fps in simulator')
     parser.add_argument("-d", '--early_done', dest='early_done', default=100, help='early_done when lost in n steps')
-    parser.add_argument("-m", '--auto_monitor', dest='auto_monitor', default=False, help='auto_monitor')
+    parser.add_argument("-m", '--monitor', dest='monitor', action='store_true', help='auto_monitor')
 
     args = parser.parse_args()
     env = gym.make(args.env_id)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         env = time_dilation.TimeDilationWrapper(env, args.time_dilation)
     if args.early_done > 0:  # -1 means no early_done
         env = early_done.EarlyDoneWrapper(env, args.early_done)
-    if args.auto_monitor:
+    if args.monitor:
         env = auto_monitor.DisplayWrapper(env)
     episode_count = 100
     rewards = 0
