@@ -225,15 +225,15 @@ class UnrealCvMultiCam(gym.Env):
             self.unrealcv.adjust_fov(cam, actions2cam[i][-1])
 
         # use batch command to get data from unrealcv
-        self.states = self.unrealcv.get_img_batch(self.cam_id, 'lit', 'fast')
+        self.states = self.unrealcv.get_img_batch(self.cam_id, 'lit')
 
         # get object_masks will cost a lot of time in large scene
         # TODO use distance-based reward instead
-        object_masks = self.unrealcv.get_img_batch(self.cam_id, 'object_mask', 'fast')
+        object_masks = self.unrealcv.get_img_batch(self.cam_id, 'object_mask')
         for i, obj_mask in enumerate(object_masks):
             for bbox in self.unrealcv.get_bboxes(obj_mask, self.target_list):
                 self.gate_ids[i] += self.check_visibility(bbox, self.min_mask_area)
-        #
+
         # imgs = np.hstack([mask for mask in object_masks])
         # cv2.imshow('object_mask', imgs)
         # cv2.waitKey(1)
