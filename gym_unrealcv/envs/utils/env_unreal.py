@@ -20,7 +20,7 @@ class RunUnreal():
         assert os.path.exists(self.path2binary), \
             'Please load env binary in UnrealEnv and Check the env_bin in setting file!'
 
-    def start(self, docker, resolution=(160, 160)):
+    def start(self, docker, resolution=(160, 160), display=None, opengl=False, offscreen=False, nullrhi=False):
         port = self.read_port()
         self.write_resolution(resolution)
         self.use_docker = docker
@@ -37,17 +37,20 @@ class RunUnreal():
             #self.modify_permission(self.path2env)
             cmd_exe = [os.path.abspath(self.path2binary)]
             "some options for running UE env"
-            # cmd_exe.append('-opengl')
-            # cmd_exe.append('-RenderOffScreen')
-            # cmd_exe.append('-nullrhi') # the rendering process is not launched, so we can not get the image
+            if opengl:
+                cmd_exe.append('-opengl')  # use opengl rendering
+            if offscreen:
+                cmd_exe.append('-RenderOffScreen')
+            if nullrhi:
+                cmd_exe.append('-nullrhi')  # the rendering process is not launched, so we can not get the image
             # cmd_exe.append('-windowed')
             if self.env_map is not None:
                 cmd_exe.append(self.env_map)
 
-            if'linux' in sys.platform:
-                display = {"DISPLAY": ":0"}  # most devices use the 0
+            if display is not None:
+                display = {"DISPLAY": display}  # specify display "hostname:displaynumber.screennumber", E.G. "localhost:1.0"
             else:
-                display = None
+                display = None  # use default display
 
             self.env = subprocess.Popen(cmd_exe, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
                                         stderr=subprocess.DEVNULL, start_new_session=True, env=display)
