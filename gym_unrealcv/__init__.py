@@ -185,8 +185,7 @@ for env in ['City', 'FlexibleRoom', 'FlexibleRoom2']:
     for i in range(7):  # reset type
         for action in ['Discrete', 'Continuous']:  # action type
             for obs in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask', 'Pose']:  # observation type
-                for target in ['Ram', 'Nav', 'Adv']:
-                        name = 'UnrealTrackGeneral-{env}{target}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
+                        name = 'UnrealTrackGeneral-{env}-{action}{obs}-v{reset}'.format(env=env, action=action, obs=obs, target=target, reset=i)
                         setting_file = 'tracking/general/{env}.json'.format(env=env)
                         register(
                             id=name,
@@ -197,7 +196,6 @@ for env in ['City', 'FlexibleRoom', 'FlexibleRoom2']:
                                     'observation_type': obs,
                                     'reward_type': 'distance',
                                     'docker': use_docker,
-                                    'target': target
                                     },
                             max_episode_steps=500
                             )
