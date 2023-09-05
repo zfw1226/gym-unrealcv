@@ -29,13 +29,10 @@ class UnrealCvTracking_general(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(160, 120),
-                 target='Nav',  # Ram, Nav, Internal
+                 resolution=(160, 120)
                  ):
         self.docker = docker
         self.reset_type = reset_type
-        self.roll = 0
-        self.target = target
         setting = misc.load_env_setting(setting_file)
         self.env_name = setting['env_name']
         self.max_steps = setting['max_steps']
@@ -47,6 +44,7 @@ class UnrealCvTracking_general(gym.Env):
         self.target_id = 1
         # print(self.agents)
         self.player_list = []
+        self.freeze_list = []
         self.reward_config = setting['rewards']
         self.max_distance = self.reward_config['max_distance']
         self.max_distance = self.reward_config['max_distance']
@@ -68,14 +66,21 @@ class UnrealCvTracking_general(gym.Env):
         self.safe_start = setting['safe_start']
         self.interval = setting['interval']
         self.start_area = self.get_start_area(self.safe_start[0], 500) # the start area of the agent, where we don't put obstacles
-        self.top = False
-        self.person_id = 0
+
         self.count_eps = 0
         self.count_steps = 0
         self.count_close = 0
-        self.direction = None
-        self.freeze_list = []
+        self.tracker_id = 0
+
         self.resolution = resolution
+        self.display = None
+        self.use_opengl = False
+        self.offscreen_rendering = False
+        self.nullrhi = False
+        self.launched = False
+
+        # define reward type: distance
+        self.reward_type = reward_type
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -83,20 +88,7 @@ class UnrealCvTracking_general(gym.Env):
             else:
                 self.textures_list[i] = os.path.join(texture_dir, self.textures_list[i])
 
-        # start unreal env
-        if 'linux' in sys.platform:
-            env_bin = setting['env_bin']
-        elif 'win' in sys.platform:
-            env_bin = setting['env_bin_win']
-        self.unreal = env_unreal.RunUnreal(ENV_BIN=env_bin)
-        env_ip, env_port = self.unreal.start(docker, resolution)
-
-        # connect UnrealCV
-        self.unrealcv = Tracking(cam_id=self.cam_id[0], port=env_port, ip=env_ip,
-                                 env=self.unreal.path2env, resolution=resolution)
-
-        for obj in self.agents.keys():
-            self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
+        # init agents
         self.player_list = list(self.agents.keys())
         self.cam_list = [self.agents[player]['cam_id'] for player in self.player_list]
 
@@ -109,36 +101,19 @@ class UnrealCvTracking_general(gym.Env):
         # color, depth, rgbd,...
         self.observation_type = observation_type
         assert self.observation_type in ['Color', 'Depth', 'Rgbd', 'Gray', 'CG', 'Mask', 'Pose']
-        self.observation_space = [self.unrealcv.define_observation(self.cam_list[i], self.observation_type, 'fast')
+        self.observation_space = [self.define_observation_space(self.cam_list[i], self.observation_type, resolution)
                                   for i in range(len(self.player_list))]
 
-        for obj in self.player_list.copy(): # the agent will be fully removed in self.agents
-            if self.agents[obj]['agent_type'] == 'car':
-                # self.unrealcv.set_obj_scale(obj, [0.5, 0.5, 0.5])
-                self.remove_agent(obj)
-        #     # elif self.agents[obj]['agent_type'] == 'drone':
-        #     #     self.remove_agent(obj)
-
-        # define reward type: distance
-        self.reward_type = reward_type
-        self.rendering = False
-
-        if self.reset_type >= 4:
-            self.unrealcv.init_objects(self.objects_list)
-
-        self.count_steps = 0
-        self.count_close = 0
-        for p in self.agent_configs['player']["name"]:
-            self.unrealcv.set_random(p, 0)
-            self.unrealcv.set_random(p, 0)
-
-        for player in self.player_list:
-            self.unrealcv.set_interval(self.interval, player)
-        self.unrealcv.build_color_dic(self.player_list)
-        self.player_num = len(self.player_list)
-        self.controable_agent = len(self.player_list)
-        self.random_height = False
-        self.cam_flag = self.unrealcv.get_cam_flag(self.observation_type)
+        # config unreal env
+        if 'linux' in sys.platform:
+            env_bin = setting['env_bin']
+        elif 'win' in sys.platform:
+            env_bin = setting['env_bin_win']
+        if 'env_map' in setting.keys():
+            env_map = setting['env_map']
+        else:
+            env_map = None
+        self.unreal = env_unreal.RunUnreal(ENV_BIN=env_bin, ENV_MAP=env_map)
 
     def step(self, actions):
         info = dict(
@@ -169,26 +144,20 @@ class UnrealCvTracking_general(gym.Env):
         # self.unrealcv.set_move_batch(self.player_list, actions2player)
         self.count_steps += 1
 
-        # get relative distance
-        # cam_id_max = self.controable_agent+1
-        self.obj_pos, _, img_list, mask_list, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
-        states = self.get_states(self.observation_type, img_list, mask_list, depth_list, self.obj_pos)
-        # states = self.obj_pos
+        # get states
+        obj_poses, cam_poses, imgs, masks, depths = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
+        observations = self.prepare_observation(self.observation_type, imgs, masks, depths, obj_poses)
 
-        if self.observation_type == 'Rgbd':
-            self.img_show = states[self.tracker_id][:, :, :3]
-        elif self.observation_type in ['Color', 'Depth', 'Gray', 'CG', 'Mask']:
-             self.img_show = states[self.tracker_id]
-        # info['Color'] = self.img_show = self.unrealcv.read_image(self.cam_list[self.tracker_id], 'lit')
+        self.img_show = self.prepare_img2show(self.tracker_id, observations)
 
-        self.pose_obs, relative_pose = self.get_pose_states(self.obj_pos)
+        pose_obs, relative_pose = self.get_pose_states(obj_poses)
         metrics, score4tracker = self.relative_metrics(relative_pose, self.tracker_id, self.target_id)
 
         # prepare the info
-        info['Pose'] = self.obj_pos[self.tracker_id]
+        info['Pose'] = obj_poses[self.tracker_id]
         info['Distance'], info['Direction'] = relative_pose[self.tracker_id][self.target_id]
         info['Relative_Pose'] = relative_pose
-        info['Pose_Obs'] = self.pose_obs
+        info['Pose_Obs'] = pose_obs
         info['Reward'] = self.get_rewards(score4tracker, metrics, self.tracker_id, self.target_id)
         info['metrics'] = metrics
         info['d_in'] = metrics['d_in']  # the number of distractor in tracker's view
@@ -202,30 +171,17 @@ class UnrealCvTracking_general(gym.Env):
         if self.count_steps > self.max_steps:
             info['Done'] = True
 
-        return states, info['Reward'], info['Done'], info
+        return observations, info['Reward'], info['Done'], info
 
     def reset(self, ):
-        self.C_reward = 0
+        if not self.launched:  # first time to launch
+            self.launched = self.launch_ue_env()
+            self.init_agents()
+            self.init_objects()
+
         self.count_close = 0
         self.count_steps = 0
-        np.random.seed()
-        # reset tracker and target
-        self.tracker_id = 0
         self.count_eps += 1
-
-        # new obj
-        # TODO: config the number and type
-        self.player_num = num_agents = np.random.randint(5, 10)
-        while len(self.player_list) < num_agents:
-            refer_agent = self.agents[random.choice(list(self.agents.keys()))]
-            name = f'{refer_agent["agent_type"]}_EP{self.count_eps}_{len(self.player_list)}'
-            self.agents[name] = self.add_agent(name, random.sample(self.safe_start, 1)[0], refer_agent)
-        while len(self.player_list) > num_agents:
-            self.remove_agent(self.player_list[-1])
-
-        self.target_list = self.player_list.copy()
-        self.target_list.pop(self.tracker_id)
-        self.target_id = self.player_list.index(random.choice(self.target_list))
 
         # stop move and disable physics
         for i, obj in enumerate(self.player_list):
@@ -242,7 +198,6 @@ class UnrealCvTracking_general(gym.Env):
 
         self.environment_augmentation(self.reset_type)
 
-            
         # init target location and get expected tracker location
         target_pos, tracker_pos_exp = self.sample_target_init_pose(True)
 
@@ -268,26 +223,21 @@ class UnrealCvTracking_general(gym.Env):
                 self.set_yaw(tracker_name, yaw_exp)
                 # self.rotate2exp(yaw_exp, obj, 10)
 
-        # set controllable agent number
-        self.controable_agent = len(self.player_list)
-
         # set view point
         for obj in self.player_list:
             self.unrealcv.set_cam(obj, self.agents[obj]['relative_location'], self.agents[obj]['relative_rotation'])
             self.unrealcv.set_phy(obj, 1) # enable physics
 
         # get state
-        self.obj_pos, _, img_list, mask_list, depth_list = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
-        states = self.get_states(self.observation_type, img_list, mask_list, depth_list, self.obj_pos)
-        if self.observation_type == 'Rgbd':
-            self.img_show = states[self.tracker_id][:, :, :3]
-        else:
-            self.img_show = states[self.tracker_id]
+        obj_poses, cam_poses, imgs, masks, depths = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
+        observations = self.prepare_observation(self.observation_type, imgs, masks, depths, obj_poses)
+
+        self.img_show = self.prepare_img2show(self.tracker_id, observations)
 
         # get pose state
-        self.pose_obs, relative_pose = self.get_pose_states(self.obj_pos)
+        # pose_obs, relative_pose = self.get_pose_states(obj_pos)
 
-        return states
+        return observations
 
     def close(self):
         self.unrealcv.client.disconnect()
@@ -299,12 +249,9 @@ class UnrealCvTracking_general(gym.Env):
         return self.img_show
 
     def seed(self, seed=None):
-        pass
+        np.random.seed(seed)
         # if seed is not None:
         #     self.player_num = seed % (self.max_player_num-2) + 2
-
-    def set_random_height(self, random=True):
-        self.random_height = random
 
     def get_start_area(self, safe_start, safe_range):
         start_area = [safe_start[0]-safe_range, safe_start[0]+safe_range,
@@ -328,7 +275,7 @@ class UnrealCvTracking_general(gym.Env):
                       distance_norm]
         return obs_vector, distance, angle
 
-    def get_states(self, observation_type, img_list, mask_list, depth_list, pose_list):
+    def prepare_observation(self, observation_type, img_list, mask_list, depth_list, pose_list):
         if observation_type == 'Depth':
             return np.array(depth_list)
         elif observation_type == 'Mask':
@@ -401,11 +348,7 @@ class UnrealCvTracking_general(gym.Env):
             elif i == target_id:  # target, try to run away
                 rewards.append(r_target - tracker_collision[i])
             else:  # distractors, try to mislead tracker, and improve the target's reward.
-                if 'Share' in self.target:
-                    r_d = r_target  # share the reward with target
-                else:
-                    # print(score4tracker)
-                    r_d = r_target + score4tracker[i]  # try to appear in the tracker's view
+                r_d = r_target + score4tracker[i]  # try to appear in the tracker's view
                 r_d -= tracker_collision[i]
                 rewards.append(r_d)
         return np.array(rewards)
@@ -427,9 +370,8 @@ class UnrealCvTracking_general(gym.Env):
         self.unrealcv.set_interval(self.interval, name)
         self.unrealcv.set_obj_location(name, loc)
         self.action_space.append(self.define_action_space(self.action_type, agent_info=new_dict))
-        self.observation_space.append(self.unrealcv.define_observation(new_dict['cam_id'], self.observation_type, 'fast'))
+        self.observation_space.append(self.define_observation_space(new_dict['cam_id'], self.observation_type, self.resolution))
         return new_dict
-        # self.unrealcv.set_obj_rotation(name, pose[3:])
 
     def remove_agent(self, name, freeze=False):
         # print(f'remove {name}')
@@ -454,11 +396,31 @@ class UnrealCvTracking_general(gym.Env):
         return cam_list
 
     def define_action_space(self, action_type, agent_info):
-        if self.action_type == 'Discrete':
+        if action_type == 'Discrete':
             return spaces.Discrete(len(agent_info["discrete_action"]))
-        elif self.action_type == 'Continuous':
+        elif action_type == 'Continuous':
             return spaces.Box(low=np.array(agent_info["continuous_action"]['low']),
                               high=np.array(agent_info["continuous_action"]['high']))
+
+    def define_observation_space(self, cam_id, observation_type, resolution=(160, 120)):
+        if observation_type == 'Pose' or cam_id < 0:
+            observation_space = spaces.Box(low=-100, high=100, shape=(6,),
+                                               dtype=np.float16)  # TODO check the range and shape
+        else:
+            if observation_type == 'Color' or observation_type == 'CG' or observation_type == 'Mask':
+                img_shape = (resolution[1], resolution[0], 3)
+                observation_space = spaces.Box(low=0, high=255, shape=img_shape, dtype=np.uint8)
+            elif observation_type == 'Depth':
+                img_shape = (resolution[1], resolution[0], 1)
+                observation_space = spaces.Box(low=0, high=100, shape=img_shape, dtype=np.float16)
+            elif observation_type == 'Rgbd':
+                s_low = np.zeros((resolution[1], resolution[0], 4))
+                s_high = np.ones((resolution[1], resolution[0], 4))
+                s_high[:, :, -1] = 100.0  # max_depth
+                s_high[:, :, :-1] = 255  # max_rgb
+                observation_space = spaces.Box(low=s_low, high=s_high, dtype=np.float16)
+
+        return observation_space
 
     def sample_target_init_pose(self, use_reset_area=False):
         # sample a target pose
@@ -486,7 +448,7 @@ class UnrealCvTracking_general(gym.Env):
             self.unrealcv.set_obj_rotation(name, [0, yaw_exp, 0])
 
     def environment_augmentation(self, reset_type):
-        if reset_type >= 1:
+        if reset_type >= 1:  # random human mesh
             for obj in self.player_list:
                 if self.agents[obj]['agent_type'] == 'player':
                     if self.env_name == 'MPRoom':
@@ -499,7 +461,7 @@ class UnrealCvTracking_general(gym.Env):
                         app_id = np.random.choice(map_id)
                     self.unrealcv.set_appearance(obj, app_id, spline)
 
-        # target appearance
+        # random light and texture of the agents
         if reset_type >= 2:
             if self.env_name == 'MPRoom':  # random target texture
                 for obj in self.player_list:
@@ -507,11 +469,11 @@ class UnrealCvTracking_general(gym.Env):
                         self.unrealcv.random_player_texture(obj, self.textures_list, 3)
             self.unrealcv.random_lit(self.light_list)
 
-        # texture
+        # random the texture of the background
         if reset_type >= 3:
             self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
 
-        # obstacle
+        # random place the obstacle
         if reset_type >= 4:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_list, self.textures_list,
@@ -537,3 +499,60 @@ class UnrealCvTracking_general(gym.Env):
             pose_obs.append(vectors)
 
         return np.array(pose_obs), relative_pose
+
+    def launch_ue_env(self):
+        # launch the UE4 binary and connect to UnrealCV
+        env_ip, env_port = self.unreal.start(self.docker, self.resolution,
+                                             self.display, self.use_opengl,
+                                             self.offscreen_rendering, self.nullrhi)
+        # connect UnrealCV
+        self.unrealcv = Tracking(cam_id=self.cam_id[0], port=env_port, ip=env_ip,
+                                 env=self.unreal.path2env, resolution=self.resolution)
+
+        return True
+
+    def init_agents(self):
+        for obj in self.player_list.copy(): # the agent will be fully removed in self.agents
+            if self.agents[obj]['agent_type'] == 'car':
+                # self.unrealcv.set_obj_scale(obj, [0.5, 0.5, 0.5])
+                self.remove_agent(obj)
+        #     # elif self.agents[obj]['agent_type'] == 'drone':
+        #     #     self.remove_agent(obj)
+
+        for obj in self.player_list:
+            self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
+            self.unrealcv.set_random(obj, 0)
+            self.unrealcv.set_random(obj, 0)
+            self.unrealcv.set_interval(self.interval, obj)
+
+        self.unrealcv.build_color_dic(self.player_list)
+        self.cam_flag = self.unrealcv.get_cam_flag(self.observation_type)
+
+    def init_objects(self):
+        if self.reset_type >= 4:
+            self.unrealcv.init_objects(self.objects_list)
+
+    def prepare_img2show(self, index, states):
+        if self.observation_type == 'Rgbd':
+            return states[index][:, :, :3]
+        elif self.observation_type in ['Color', 'Depth', 'Gray', 'CG', 'Mask']:
+            return states[index]
+        else:
+            return None
+
+    def adjust_agents(self, num_agents):
+        while len(self.player_list) < num_agents:
+            refer_agent = self.agents[random.choice(list(self.agents.keys()))]
+            name = f'{refer_agent["agent_type"]}_EP{self.count_eps}_{len(self.player_list)}'
+            self.agents[name] = self.add_agent(name, random.choice(self.safe_start), refer_agent)
+        while len(self.player_list) > num_agents:
+            self.remove_agent(self.player_list[-1])  # remove the last one
+
+    def sample_target(self):
+        target_list = self.player_list.copy()
+        target_list.pop(self.tracker_id)
+        target_id = self.player_list.index(random.choice(target_list))
+        return target_id
+
+    def sample_tracker(self):
+        return self.cam_list.index(random.choice([x for x in self.cam_list if x > 0]))
