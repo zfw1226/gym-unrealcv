@@ -6,28 +6,38 @@ import numpy as np
 from gym_unrealcv.envs.tracking.baseline import RandomAgent, Nav2GoalAgent, InternalNavAgent
 
 class NavAgents(Wrapper):
-    def __init__(self, env,  num_min=2, num_max=10, random_target=False, random_tracker=False):
+    def __init__(self, env,  mask_agent = True):
         super().__init__(env)
         self.nav_list = []
         self.agents = []
+        self.mask_agent = mask_agent
 
     def step(self, action):
         # the action is a list of actions for each agent, the length of the action is the number of agents
         env = self.env.unwrapped
+
+        new_action = []
         for idx, mode in enumerate(self.nav_list):
             if mode == -1:
+                if self.mask_agent:
+                    new_action.append(action.pop(0))
+                else:
+                    new_action.append(action[idx])
                 continue
             elif mode == 0:
-                action[idx] = self.agents[idx].act(env.obj_poses[idx])
+                new_action.append(self.agents[idx].act(env.obj_poses[idx]))
             elif mode == 1:
                 goal = self.agents[idx].act(env.obj_poses[idx])
                 if goal is not None:
                     env.unwrapped.unrealcv.move_to(env.player_list[idx], goal)
                     # env.unwrapped.unrealcv.set_speed(env.player_list[idx], 200)
-                action[idx] = None
+                new_action.append(None)
             elif mode == 2:
-                action[idx] = self.agents[idx].act(env.obj_poses[idx])
-        obs, reward, done, info = self.env.step(action)
+                new_action.append(self.agents[idx].act(env.obj_poses[idx]))
+        obs, reward, done, info = self.env.step(new_action)
+        obs = np.array([obs[i] for i in self.nav_list if i < 0])
+        reward = np.array([reward[i] for i in self.nav_list if i < 0])
+
         return obs, reward, done, info
 
     def reset(self, **kwargs):
@@ -65,4 +75,9 @@ class NavAgents(Wrapper):
                 self.agents.append(InternalNavAgent(env.safe_start, env.reset_area))
             elif mode == 2:
                 self.agents.append(Nav2GoalAgent(env.action_space[i], env.reset_area, max_len=200))
+
+        if self.mask_agent:
+            states = np.array([states[i] for i in self.nav_list if i < 0])
+            self.action_space = [self.env.action_space[i] for i in self.nav_list if i < 0]
+            self.observation_space = [self.env.observation_space[i] for i in self.nav_list if i < 0]
         return states
