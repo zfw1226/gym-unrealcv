@@ -3,7 +3,6 @@ import time
 import gym
 import numpy as np
 from gym import spaces
-from gym_unrealcv.envs.tracking import reward, baseline
 from gym_unrealcv.envs.utils import env_unreal, misc
 from gym_unrealcv.envs.tracking.interaction import Tracking
 import gym_unrealcv
@@ -132,6 +131,9 @@ class UnrealCvTracking_general(gym.Env):
         )
         actions2player = []
         for i, obj in enumerate(self.player_list):
+            if actions[i] is None:  # if the action is None, then we don't control this agent
+                actions2player.append(None)  # place holder
+                continue
             if self.action_type == 'Discrete':
                 act_index = actions[i]
                 act_now = self.agents[obj]["discrete_action"][act_index]
@@ -140,12 +142,15 @@ class UnrealCvTracking_general(gym.Env):
                 actions2player.append(actions[i])
 
         for i, obj in enumerate(self.player_list):
+            if actions2player[i] is None:
+                continue
             self.unrealcv.set_move_new(obj, actions2player[i])
         # self.unrealcv.set_move_batch(self.player_list, actions2player)
         self.count_steps += 1
 
         # get states
         obj_poses, cam_poses, imgs, masks, depths = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
+        self.obj_poses = obj_poses
         observations = self.prepare_observation(self.observation_type, imgs, masks, depths, obj_poses)
 
         self.img_show = self.prepare_img2show(self.tracker_id, observations)
@@ -185,7 +190,7 @@ class UnrealCvTracking_general(gym.Env):
 
         # stop move and disable physics
         for i, obj in enumerate(self.player_list):
-            if self.agents[obj]['agent_type'] == 'player' or self.agents[obj]['agent_type'] == 'car':
+            if self.agents[obj]['agent_type'] in ['player', 'car', 'animal']:
                 self.unrealcv.set_move_new(obj, [0, 0])
                 self.unrealcv.set_phy(obj, 0)
                 # self.unrealcv.set_speed(obj, 0)
@@ -231,7 +236,7 @@ class UnrealCvTracking_general(gym.Env):
         # get state
         obj_poses, cam_poses, imgs, masks, depths = self.unrealcv.get_pose_img_batch(self.player_list, self.cam_list, self.cam_flag)
         observations = self.prepare_observation(self.observation_type, imgs, masks, depths, obj_poses)
-
+        self.obj_poses = obj_poses
         self.img_show = self.prepare_img2show(self.tracker_id, observations)
 
         # get pose state
@@ -400,7 +405,7 @@ class UnrealCvTracking_general(gym.Env):
             return spaces.Discrete(len(agent_info["discrete_action"]))
         elif action_type == 'Continuous':
             return spaces.Box(low=np.array(agent_info["continuous_action"]['low']),
-                              high=np.array(agent_info["continuous_action"]['high']))
+                              high=np.array(agent_info["continuous_action"]['high']), dtype=np.float32)
 
     def define_observation_space(self, cam_id, observation_type, resolution=(160, 120)):
         if observation_type == 'Pose' or cam_id < 0:
@@ -516,12 +521,13 @@ class UnrealCvTracking_general(gym.Env):
             if self.agents[obj]['agent_type'] == 'car':
                 # self.unrealcv.set_obj_scale(obj, [0.5, 0.5, 0.5])
                 self.remove_agent(obj)
-        #     # elif self.agents[obj]['agent_type'] == 'drone':
-        #     #     self.remove_agent(obj)
+            elif self.agents[obj]['agent_type'] == 'drone':
+                self.remove_agent(obj)
+            # elif self.agents[obj]['agent_type'] == 'animal':
+            #     self.remove_agent(obj)
 
         for obj in self.player_list:
             self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
-            self.unrealcv.set_random(obj, 0)
             self.unrealcv.set_random(obj, 0)
             self.unrealcv.set_interval(self.interval, obj)
 
