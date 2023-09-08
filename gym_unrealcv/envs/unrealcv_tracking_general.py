@@ -38,6 +38,7 @@ class UnrealCvTracking_general(gym.Env):
         self.height = setting['height']
         self.cam_id = [setting['third_cam']['cam_id']]
         self.agent_configs = setting['agents']
+        self.env_configs = setting["env"]
         self.agents = misc.convert_dict(self.agent_configs)
         self.tracker_id = 0
         self.target_id = 1
@@ -52,7 +53,7 @@ class UnrealCvTracking_general(gym.Env):
 
         self.height_top_view = setting['height_top_view']
         # self.pitch = setting['pitch']
-        # self.objects_list = setting['objects_list']
+        self.objects_list = self.env_configs["objects"]
         self.reset_area = setting['reset_area']
         # self.background_list = setting['backgrounds']
         # self.light_list = setting['lights']
@@ -210,8 +211,8 @@ class UnrealCvTracking_general(gym.Env):
         cam_pos_exp, yaw_exp = tracker_pos_exp
         tracker_name = self.player_list[self.tracker_id]
         self.unrealcv.set_obj_location(tracker_name, cam_pos_exp)
-        self.set_yaw(tracker_name, yaw_exp)
-        # self.rotate2exp(yaw_exp, self.player_list[self.tracker_id], 3)
+        # self.set_yaw(tracker_name, yaw_exp)
+        self.rotate2exp(yaw_exp, self.player_list[self.tracker_id], 3)
         
         # get tracker's camera pose
         tracker_pos = self.unrealcv.get_pose(self.cam_list[self.tracker_id])
@@ -225,7 +226,7 @@ class UnrealCvTracking_general(gym.Env):
                     res = self.unrealcv.get_startpoint(reset_area=self.reset_area, exp_height=self.height)
                 cam_pos_exp, yaw_exp = res
                 self.unrealcv.set_obj_location(obj, cam_pos_exp)
-                self.set_yaw(tracker_name, yaw_exp)
+                # self.set_yaw(obj, yaw_exp)
                 # self.rotate2exp(yaw_exp, obj, 10)
 
         # set view point
@@ -472,11 +473,11 @@ class UnrealCvTracking_general(gym.Env):
                 for obj in self.player_list:
                     if self.agents[obj]['agent_type'] == 'player':
                         self.unrealcv.random_player_texture(obj, self.textures_list, 3)
-            self.unrealcv.random_lit(self.light_list)
+            self.unrealcv.random_lit(self.env_configs["lights"])
 
         # random the texture of the background
         if reset_type >= 3:
-            self.unrealcv.random_texture(self.background_list, self.textures_list, 3)
+            self.unrealcv.random_texture(self.env_configs["backgrounds"], self.textures_list, 3)
 
         # random place the obstacle
         if reset_type >= 4:
@@ -521,8 +522,8 @@ class UnrealCvTracking_general(gym.Env):
             if self.agents[obj]['agent_type'] == 'car':
                 # self.unrealcv.set_obj_scale(obj, [0.5, 0.5, 0.5])
                 self.remove_agent(obj)
-            elif self.agents[obj]['agent_type'] == 'drone':
-                self.remove_agent(obj)
+            # elif self.agents[obj]['agent_type'] == 'drone':
+            #     self.remove_agent(obj)
             # elif self.agents[obj]['agent_type'] == 'animal':
             #     self.remove_agent(obj)
 

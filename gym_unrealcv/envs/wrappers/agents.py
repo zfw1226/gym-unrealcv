@@ -6,7 +6,7 @@ import numpy as np
 from gym_unrealcv.envs.tracking.baseline import RandomAgent, Nav2GoalAgent, InternalNavAgent
 
 class NavAgents(Wrapper):
-    def __init__(self, env,  mask_agent = True):
+    def __init__(self, env,  mask_agent=True):
         super().__init__(env)
         self.nav_list = []
         self.agents = []
@@ -15,7 +15,6 @@ class NavAgents(Wrapper):
     def step(self, action):
         # the action is a list of actions for each agent, the length of the action is the number of agents
         env = self.env.unwrapped
-
         new_action = []
         for idx, mode in enumerate(self.nav_list):
             if mode == -1:
@@ -35,8 +34,9 @@ class NavAgents(Wrapper):
             elif mode == 2:
                 new_action.append(self.agents[idx].act(env.obj_poses[idx]))
         obs, reward, done, info = self.env.step(new_action)
-        obs = np.array([obs[i] for i in self.nav_list if i < 0])
-        reward = np.array([reward[i] for i in self.nav_list if i < 0])
+        if self.mask_agent:
+            obs = np.array([obs[i] for i, nav in enumerate(self.nav_list) if nav < 0])
+            reward = np.array([reward[i] for i, nav in enumerate(self.nav_list) if nav < 0])
 
         return obs, reward, done, info
 
@@ -58,7 +58,7 @@ class NavAgents(Wrapper):
                 self.nav_list.append(-1)
             elif env.agents[obj_name]['agent_type'] in ['car', 'player']:
                 self.nav_list.append(1)
-            elif env.agents[obj_name]['agent_type'] in ['drone']:
+            elif env.agents[obj_name]['agent_type'] == 'drone':
                 self.nav_list.append(0)
             else:
                 self.nav_list.append(2)
@@ -74,10 +74,10 @@ class NavAgents(Wrapper):
             elif mode == 1:
                 self.agents.append(InternalNavAgent(env.safe_start, env.reset_area))
             elif mode == 2:
+                # print(env.action_space[i])
                 self.agents.append(Nav2GoalAgent(env.action_space[i], env.reset_area, max_len=200))
-
         if self.mask_agent:
             states = np.array([states[i] for i in self.nav_list if i < 0])
-            self.action_space = [self.env.action_space[i] for i in self.nav_list if i < 0]
-            self.observation_space = [self.env.observation_space[i] for i in self.nav_list if i < 0]
+            self.action_space = [self.env.action_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]
+            self.observation_space = [self.env.observation_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]
         return states

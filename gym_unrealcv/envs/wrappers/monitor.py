@@ -39,6 +39,8 @@ class DisplayWrapper(Wrapper):
             mask, bbox = env.unrealcv.get_bbox(mask, env.player_list[env.target_id], normalize=False)
             self.mask_percent = mask.sum()/(255 * env.resolution[0] * env.resolution[1])
             self.bbox_init.append(bbox)
+        cv2.imshow('init', env.img_show)
+        cv2.waitKey(1)
         return states # return the same results as the wrapped environment
 
     def show_bbox(self, img2disp, bbox):
