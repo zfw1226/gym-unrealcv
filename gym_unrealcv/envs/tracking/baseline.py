@@ -353,3 +353,27 @@ class Nav2GoalAgent(object):
         error = np.array(now[:2]) - np.array(goal[:2])
         distance = np.linalg.norm(error)
         return distance < 50
+
+class PoseTracker(object):
+    def __init__(self, action_space, expected_distance = 250, expected_angle = 0):
+        if type(action_space) == gym.spaces.Discrete:
+            self.discrete = True
+        else:
+            self.discrete = False
+            self.velocity_high = action_space.high[1]
+            self.velocity_low = action_space.low[1]
+            self.angle_high = action_space.high[0]
+            self.angle_low = action_space.low[0]
+            print(self.velocity_low, self.velocity_high, self.angle_low, self.angle_high)
+        self.expected_distance = expected_distance
+        self.expected_angle = expected_angle
+        from simple_pid import PID
+        self.angle_pid = PID(1, 0.01, 0, setpoint=1)
+        self.velocity_pid = PID(10, 0.1, 0.05, setpoint=1)
+
+    def act(self, pose, target_pose):
+        delt_yaw = misc.get_direction(pose, target_pose) # get the angle between current pose and goal in x-y plane
+        angle = np.clip(self.angle_pid(-delt_yaw), self.angle_low, self.angle_high)
+        delt_distance = (np.linalg.norm(np.array(pose[:2]) - np.array(target_pose[:2])) - self.expected_distance)
+        velocity = np.clip(self.velocity_pid(-delt_distance), self.velocity_low, self.velocity_high)
+        return [angle, velocity]
