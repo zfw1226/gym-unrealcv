@@ -364,12 +364,12 @@ class PoseTracker(object):
             self.velocity_low = action_space.low[1]
             self.angle_high = action_space.high[0]
             self.angle_low = action_space.low[0]
-            print(self.velocity_low, self.velocity_high, self.angle_low, self.angle_high)
+            # print(self.velocity_low, self.velocity_high, self.angle_low, self.angle_high)
         self.expected_distance = expected_distance
         self.expected_angle = expected_angle
         from simple_pid import PID
         self.angle_pid = PID(1, 0.01, 0, setpoint=1)
-        self.velocity_pid = PID(10, 0.1, 0.05, setpoint=1)
+        self.velocity_pid = PID(5, 0.1, 0.05, setpoint=1)
 
     def act(self, pose, target_pose):
         delt_yaw = misc.get_direction(pose, target_pose) # get the angle between current pose and goal in x-y plane
