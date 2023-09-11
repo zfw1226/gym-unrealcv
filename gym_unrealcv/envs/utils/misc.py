@@ -57,6 +57,7 @@ def convert_dict(old_dict):
         for i, name in enumerate(names):
             new_dict[name] = {
                 "cam_id": info["cam_id"][i],
+                "internal_nav": info["internal_nav"],
                 "agent_type": agent,
                 "discrete_action": info["discrete_action"],
                 "continuous_action": info["continuous_action"],

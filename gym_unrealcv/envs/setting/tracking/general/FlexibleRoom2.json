@@ -1,6 +1,6 @@
 {
 	"env_name": "MPRoom",
-	"env_bin": "FlexibleRoom_12/FlexibleRoom/Binaries/Linux/FlexibleRoom",
+	"env_bin": "FlexibleRoom_15/FlexibleRoom/Binaries/Linux/FlexibleRoom",
 	"env_bin_win": "FlexibleRoom_02_WindowsNoEditor\\FlexibleRoom\\Binaries\\Win64\\FlexibleRoom.exe",
     "imgs_dir": "textures",
 	"max_player_num": 10,
@@ -24,6 +24,7 @@
 	"interval": 1000,
 	"agents":{
 		"car": {
+			"internal_nav": true,
 			"cam_id": [3, 4, 5, 6],
 			"name": ["BP_BaseCar_2", "Hatchback_BP_Child_2",
 					 "Sedane_BP_child_2", "SUV_BP_child_2"],
@@ -44,6 +45,7 @@
 			}
 		},
 		"drone": {
+			"internal_nav": false,
 			"cam_id": [1],
 			"name": ["BP_Drone01_2"],
 			"class_name": ["BP_Drone01_C"],
@@ -66,6 +68,7 @@
 			}
 		},
 		"player": {
+			"internal_nav": true,
 			"cam_id": [2],
 			"name": ["target_3"],
 			"class_name": ["Target_C"],
@@ -81,11 +84,12 @@
 				[  0,   0]
 			],
 			"continuous_action": {
-			"high": [30,     100],
-			"low":  [-30,   -100]
+			"high": [30,     200],
+			"low":  [-30,   -200]
 			}
 		},
 		"animal": {
+			"internal_nav": false,
 			"cam_id": [-1, -1, -1, -1, -1, -1, -1],
 			"name": ["BP_horse_2", "BP_Domestic_sheep_2", "BP_Domestic_pig_2",
 				"BP_Cape_buffalo_2", "BP_Cane_corso_2", "BP_Beagle_2", "BP_AfricaElephant_2"],
@@ -103,8 +107,8 @@
 				[  0,   0]
 			],
 			"continuous_action": {
-			"high": [30,     100],
-			"low":  [-30,   -100]
+			"high": [30,     200],
+			"low":  [-30,   -200]
 			}
 		}
 	},
@@ -117,15 +121,17 @@
 		[     0,    0,  230]
     ],
 	"reset_area" : [-1800, 900, -1400, 1200, 130, 135],
-	"objects_list": [
-		"cube1", "cube2_7", "cube3", "cube4", "cube5",
-		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
-		"cone1", "cone2", "cone3", "cone4", "cone5"
-	],
-    "backgrounds": [
-      "FLOOR","wall1","wall2","wall3","wall4","Cube7_13","Cube8","Cube9","Cube10"
-    ],
-    "lights": [
-		"light1", "light2", "light3", "light4", "light5", "light6"
-    ]
+	"env": {
+		"objects": [
+			"cube1", "cube2_7", "cube3", "cube4", "cube5",
+			"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
+			"cone1", "cone2", "cone3", "cone4", "cone5"
+		],
+		"backgrounds": [
+		  "FLOOR","wall1","wall2","wall3","wall4","Cube7_13","Cube8","Cube9","Cube10"
+		],
+		"lights": [
+			"light1", "light2", "light3", "light4", "light5", "light6"
+		]
+		}
 }

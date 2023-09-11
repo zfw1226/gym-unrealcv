@@ -57,7 +57,10 @@ class NavAgents(Wrapper):
             if i == env.tracker_id:
                 self.nav_list.append(-1)
             elif env.agents[obj_name]['agent_type'] in ['car', 'player']:
-                self.nav_list.append(1)
+                if env.agents[obj_name]['internal_nav'] is True:
+                    self.nav_list.append(1)
+                else:
+                    self.nav_list.append(2)
             elif env.agents[obj_name]['agent_type'] == 'drone':
                 self.nav_list.append(0)
             else:
@@ -77,6 +80,7 @@ class NavAgents(Wrapper):
                 # print(env.action_space[i])
                 self.agents.append(Nav2GoalAgent(env.action_space[i], env.reset_area, max_len=200))
         if self.mask_agent:
+            # TODO: update the tracker_id and target_id
             states = np.array([states[i] for i in self.nav_list if i < 0])
             self.action_space = [self.env.action_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]
             self.observation_space = [self.env.observation_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]

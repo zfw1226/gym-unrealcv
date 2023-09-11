@@ -27,6 +27,7 @@
 	],
 	"agents":{
 		"player": {
+			"internal_nav": false,
 			"cam_id": [1, 2],
 			"name": ["targetbp", "targetbp2"],
 			"class_name": ["target_C", "target_C"],
@@ -56,7 +57,8 @@
 		[     0,    0,  230]
     ],
 	"reset_area" : [-1800, 900, -1400, 1200, 130, 135],
-	"objects_list": [
+	"env": {
+	"objects": [
 		"cube1", "cube2_7", "cube3", "cube4", "cube5",
 		"cylinder1", "cylinder2", "cylinder3", "cylinder4", "cylinder5",
 		"cone1", "cone2", "cone3", "cone4", "cone5"
@@ -66,5 +68,5 @@
     ],
     "lights": [
 		"light1", "light2", "light3", "light4", "light5", "light6"
-    ]
+    ]}
 }
