@@ -165,6 +165,7 @@ if __name__ == '__main__':
                         help='Select the environment to run')
     parser.add_argument("-r", '--render', dest='render', action='store_true', help='show env using cv2')
     parser.add_argument("-s", '--seed', dest='seed', default=0, help='random seed')
+    parser.add_argument("-p", '--path', default='./FlexibleRoom_Continuous/expert_480px_v4_Rgbd/', help='path to save the data')
     parser.add_argument("-t", '--time_dilation', dest='time_dilation', default=10, help='time_dilation to keep fps in simulator')
     parser.add_argument("-d", '--early_done', dest='early_done', default=-1, help='early_done when lost in n steps')
     parser.add_argument("-m", '--monitor', dest='monitor', action='store_true', help='auto_monitor')
@@ -224,7 +225,8 @@ if __name__ == '__main__':
                         flag = random.randint(1, 4)
 
 
-                actions=[[np.clip(actions[0][0]+angle_tmp,-30,30),np.clip(actions[0][1]+speed_tmp,-100,100)]]
+                actions=[[np.clip(actions[0][0]+angle_tmp, tracker.angle_low, tracker.angle_high),
+                          np.clip(actions[0][1]+speed_tmp, tracker.velocity_low, tracker.velocity_high)]]
                 action.append(np.array(actions))
                 obs, rewards, done, info = env.step(actions)
                 C_rewards += rewards
@@ -255,11 +257,12 @@ if __name__ == '__main__':
                         'is_last': is_last,
 
                     }
-                    save_dir = os.path.join(
-                        '/home/wuk/FlexibleRoom_Continuous/expert_480px_v4_Rgbd/',
-                        'expert_480px_v4_' + "%04d" % int(eps+25) + "-%03d" % count_step + '.pt')
-                    print('save data!')
-                    torch.save(dict, save_dir)
+                    if args.path is not None:
+                        if not os.path.exists(args.path):
+                            os.makedirs(args.path)
+                        save_dir = os.path.join(args.path, 'expert_480px_v4_' + "%04d" % int(eps+25) + "-%03d" % count_step + '.pt')
+                        print('save data!')
+                        torch.save(dict, save_dir)
                     break
 
         # Close the env and write monitor result info to disk
