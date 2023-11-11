@@ -312,10 +312,10 @@ class Nav2GoalAgent(object):
             d_moved = np.linalg.norm(np.array(self.pose_last) - np.array(pose)) # get the distance moved for checking if the agent is stuck
             self.pose_last = pose
 
-        if self.check_reach(self.goal, pose) or self.step_counter > self.max_len:
+        if self.check_reach(self.goal, pose) or d_moved < 3 or self.step_counter > self.max_len:
             if ref_goal is None or np.random.random() > self.random_th:
                 self.goal = self.generate_goal(self.goal_area, self.fix)
-                self.velocity = np.random.randint(0.3*self.velocity_high, self.velocity_high)
+                self.velocity = np.random.randint(0.5*self.velocity_high, self.velocity_high)
             else:
                 self.goal = ref_goal
             self.step_counter = 0
