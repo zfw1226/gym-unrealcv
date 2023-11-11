@@ -51,7 +51,7 @@ class UnrealCvTracking_general(gym.Env):
         self.min_distance = self.reward_config['min_distance']
         self.max_direction = self.reward_config['max_direction']
 
-        self.height_top_view = setting['height_top_view']
+        self.height_top_view = setting['third_cam']['height_top_view']
         # self.pitch = setting['pitch']
         self.objects_list = self.env_configs["objects"]
         self.reset_area = setting['reset_area']
@@ -202,9 +202,28 @@ class UnrealCvTracking_general(gym.Env):
         # reset target location
         self.unrealcv.set_obj_location(self.player_list[self.target_id], random.sample(self.safe_start, 1)[0])
 
+        if self.reset_type == 1:
+            self.environment_augmentation(player_mesh=True, player_texture=False, light=False, background_texture=False,
+                                          layout=False, layout_texture=False)
+        elif self.reset_type == 2:
+            self.environment_augmentation(player_mesh=True, player_texture=True, light=True, background_texture=False,
+                                          layout=False, layout_texture=False)
+        elif self.reset_type == 3:
+            self.environment_augmentation(player_mesh=True, player_texture=True, light=True, background_texture=True,
+                                          layout=False, layout_texture=False)
+        elif self.reset_type == 4:
+            self.environment_augmentation(player_mesh=True, player_texture=True, light=True, background_texture=False,
+                                          layout=True, layout_texture=True)
+        elif self.reset_type == 5:
+            self.environment_augmentation(player_mesh=True, player_texture=True, light=True, background_texture=True,
+                                          layout=True, layout_texture=True)
+        # self.num_targets = self.num_agenets/2
+        # self.target_list = random.sample(self.player_list, self.num_targets)
 
-        # init target location and get expected tracker location
-        target_pos, tracker_pos_exp = self.sample_target_init_pose(True)
+        # self.tracker_list = self.player_list.sample(self.num_tracker)
+        # for i, obj in enumerate(self.target_list):
+            # init target location and get expected tracker location
+        target_pos, tracker_pos_exp = self.sample_target_init_pose(False)
 
         # set tracker location
         cam_pos_exp, yaw_exp = tracker_pos_exp
@@ -212,7 +231,7 @@ class UnrealCvTracking_general(gym.Env):
         self.unrealcv.set_obj_location(tracker_name, cam_pos_exp)
         # self.set_yaw(tracker_name, yaw_exp)
         self.rotate2exp(yaw_exp, self.player_list[self.tracker_id], 3)
-        
+
         # get tracker's camera pose
         tracker_pos = self.unrealcv.get_pose(self.cam_list[self.tracker_id])
 
@@ -228,7 +247,6 @@ class UnrealCvTracking_general(gym.Env):
                 # self.set_yaw(obj, yaw_exp)
                 # self.rotate2exp(yaw_exp, obj, 10)
 
-        self.environment_augmentation(self.reset_type)
         #remove object between tracker and target
         for obj in self.objects_list:
             obj_loc = self.unrealcv.get_obj_location(obj)
@@ -459,11 +477,15 @@ class UnrealCvTracking_general(gym.Env):
     def set_yaw(self, name, yaw_exp):
         if self.agents[name]['agent_type'] == 'car' or self.agents[name]['agent_type'] == 'drone':
             self.unrealcv.set_obj_rotation_bp(name, [0, yaw_exp, 0])
+            time.sleep(0.3)
         else:
             self.unrealcv.set_obj_rotation(name, [0, yaw_exp, 0])
 
-    def environment_augmentation(self, reset_type):
-        if reset_type >= 1:  # random human mesh
+
+    def environment_augmentation(self, player_mesh=False, player_texture=False,
+                                 light=False, background_texture=False,
+                                 layout=False, layout_texture=False):
+        if player_mesh:  # random human mesh
             for obj in self.player_list:
                 if self.agents[obj]['agent_type'] == 'player':
                     if self.env_name == 'MPRoom':
@@ -477,23 +499,23 @@ class UnrealCvTracking_general(gym.Env):
                     self.unrealcv.set_appearance(obj, app_id, spline)
 
         # random light and texture of the agents
-        if reset_type >= 2:
-            # if self.env_name == 'MPRoom':  # random target texture
-            #     for obj in self.player_list:
-            #         if self.agents[obj]['agent_type'] == 'player':
-            #             self.unrealcv.random_player_texture(obj, self.textures_list, 3)
+        if player_texture:
+            if self.env_name == 'MPRoom':  # random target texture
+                for obj in self.player_list:
+                    if self.agents[obj]['agent_type'] == 'player':
+                        self.unrealcv.random_player_texture(obj, self.textures_list, 3)
+        if light:
             self.unrealcv.random_lit(self.env_configs["lights"])
 
         # random the texture of the background
-        # if reset_type >= 3:
-            # self.unrealcv.random_texture(self.env_configs["backgrounds"], self.textures_list, 3)
+        if background_texture:
+            self.unrealcv.random_texture(self.env_configs["backgrounds"], self.textures_list, 3)
 
         # random place the obstacle
-        if reset_type >= 4:
+        if layout:
             self.unrealcv.clean_obstacles()
             self.unrealcv.random_obstacles(self.objects_list, self.textures_list,
-                                           15, self.reset_area, self.start_area, True)
-
+                                           15, self.reset_area, self.start_area, layout_texture)
 
     def get_pose_states(self, obj_pos):
         # get the relative pose of each agent and the absolute location and orientation of the agent
@@ -538,8 +560,7 @@ class UnrealCvTracking_general(gym.Env):
                 self.remove_agent(obj)
 
         for obj in self.player_list:
-            # self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
-            self.agents[obj]['scale']=[1,1,1]
+            self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
             self.unrealcv.set_random(obj, 0)
             self.unrealcv.set_interval(self.interval, obj)
 
