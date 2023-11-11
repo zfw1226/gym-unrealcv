@@ -1,0 +1,63 @@
+{
+	"env_name": "UrbanRoad",
+	"env_bin": "UrbanCity_Multi/urbancity/Binaries/Linux/urbancity",
+	"env_bin_win": "urbancity_win_v1\\urbancity\\Binaries\\Win64\\urbancity.exe",
+    "imgs_dir": "textures",
+	"max_player_num": 10,
+	"third_cam": {
+		"cam_id": 0,
+		"pitch": -90,
+		"yaw": 0,
+		"roll": 0,
+		"height_top_view": 1500,
+		"fov": 90
+	},
+	"height": 130,
+	"max_steps": 500,
+	"rewards": {
+		"min_distance": 100,
+		"max_direction": 60,
+		"max_distance": 600,
+		"exp_distance": 300
+	},
+	"interval": 1000,
+	"agents":{
+		"player": {
+			"internal_nav": false,
+			"cam_id": [1, 2],
+			"name": ["targetbp", "targetbp2"],
+			"class_name": ["Target_C", "Target_C"],
+			"relative_location": [30, 0, 60],
+			"relative_rotation": [0, -15, 0],
+			"discrete_action": [
+				[ 0,  100],
+				[0,  -100],
+				[  15, 50],
+				[ -15, 50],
+				[  30,  0],
+				[  -30, 0],
+				[  0,   0]
+			],
+			"continuous_action": {
+			"high": [30,     100],
+			"low":  [-30,   -100]
+			}
+		}
+	},
+	"safe_start" :[
+		[ -1000,-1000,  100],
+		[ -1000, -250,  100],
+		[ -1000,  500,  100],
+		[  -250,-1000,  100],
+		[  -250, -250,  100],
+		[  -250,  500,  100],
+		[   500,-1000,  100],
+		[   500, -250,  100],
+		[   500,  500,  100]],
+	"reset_area" : [-1500, 1000, -1500, 1000, 135, 140],
+	"env": {
+		"objects": [],
+		"backgrounds": [],
+		"lights": []
+	}
+}
