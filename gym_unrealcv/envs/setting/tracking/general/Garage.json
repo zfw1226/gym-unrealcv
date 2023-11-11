@@ -1,0 +1,59 @@
+{
+	"env_name": "ParkingLot_Multi",
+	"env_bin": "ParkingLot_Multi/parkinglot/Binaries/Linux/parkinglot",
+	"env_bin_win": "parkinglot_win_v1\\parkinglot\\Binaries\\Win64\\parkinglot.exe",
+    "imgs_dir": "textures",
+	"max_player_num": 10,
+	"third_cam": {
+		"cam_id": 0,
+		"pitch": -90,
+		"yaw": 0,
+		"roll": 0,
+		"height_top_view": 1500,
+		"fov": 90
+	},
+	"height": 130,
+	"max_steps": 500,
+	"rewards": {
+		"min_distance": 100,
+		"max_direction": 60,
+		"max_distance": 600,
+		"exp_distance": 300
+	},
+	"interval": 1000,
+	"agents":{
+		"player": {
+			"internal_nav": false,
+			"cam_id": [1, 2],
+			"name": ["targetbp", "targetbp2"],
+			"class_name": ["Target_C", "Target_C"],
+			"relative_location": [30, 0, 60],
+			"relative_rotation": [0, -15, 0],
+			"discrete_action": [
+				[ 0,  100],
+				[0,  -100],
+				[  15, 50],
+				[ -15, 50],
+				[  30,  0],
+				[  -30, 0],
+				[  0,   0]
+			],
+			"continuous_action": {
+			"high": [30,     100],
+			"low":  [-30,   -100]
+			}
+		}
+	},
+	"safe_start" :[
+		[  -350,  1200,  110],
+		[  -350,  2200,  110],
+		[  -350,  3200,  110],
+		[  400,   2200,  110],
+		[ -1000,  2200,  110]],
+	"reset_area" : [-1200, 600, 800, 4000, 100, 110],
+	"env": {
+		"objects": [],
+		"backgrounds": [],
+		"lights": []
+	}
+}
