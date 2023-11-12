@@ -28,7 +28,7 @@ class UnrealCvTracking_general(gym.Env):
                  observation_type='Color',  # 'color', 'depth', 'rgbd', 'Gray'
                  reward_type='distance',  # distance
                  docker=False,
-                 resolution=(480, 480)
+                 resolution=(240, 240)
                  ):
         self.docker = docker
         self.reset_type = reset_type
@@ -271,8 +271,9 @@ class UnrealCvTracking_general(gym.Env):
         return observations
 
     def close(self):
-        self.unrealcv.client.disconnect()
-        self.unreal.close()
+        if self.launched:
+            self.unrealcv.client.disconnect()
+            self.unreal.close()
 
     def render(self, mode='rgb_array', close=False):
         if close==True:
