@@ -81,7 +81,7 @@ class NavAgents(Wrapper):
                 self.agents.append(Nav2GoalAgent(env.action_space[i], env.reset_area, max_len=200))
         if self.mask_agent:
             # TODO: update the tracker_id and target_id
-            states = np.array([states[i] for i in self.nav_list if i < 0])
+            states = np.array([states[id] for id,value in enumerate(self.nav_list) if value < 0])
             self.action_space = [self.env.action_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]
             self.observation_space = [self.env.observation_space[i] for i, nav in enumerate(self.nav_list) if nav < 0]
         return states
