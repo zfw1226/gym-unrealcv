@@ -223,8 +223,7 @@ class UnrealCvTracking_general(gym.Env):
         # self.tracker_list = self.player_list.sample(self.num_tracker)
         # for i, obj in enumerate(self.target_list):
             # init target location and get expected tracker location
-        target_pos, tracker_pos_exp = self.sample_target_init_pose(False)
-
+        target_pos, tracker_pos_exp = self.sample_target_init_pose(True)
         # set tracker location
         cam_pos_exp, yaw_exp = tracker_pos_exp
         tracker_name = self.player_list[self.tracker_id]
@@ -234,7 +233,6 @@ class UnrealCvTracking_general(gym.Env):
 
         # get tracker's camera pose
         tracker_pos = self.unrealcv.get_pose(self.cam_list[self.tracker_id])
-
         for i, obj in enumerate(self.player_list):
             # reset and get new pos
             if i != self.tracker_id and i != self.target_id: # distractor
