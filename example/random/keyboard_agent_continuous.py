@@ -178,7 +178,7 @@ if __name__ == '__main__':
     if args.monitor:
         env = monitor.DisplayWrapper(env)
 
-    env = augmentation.RandomPopulationWrapper(env, 8, 10, random_target=True)
+    env = augmentation.RandomPopulationWrapper(env, 4, 4, random_target=True)
     env = agents.NavAgents(env, mask_agent=True)
     episode_count =100
     rewards = 0
