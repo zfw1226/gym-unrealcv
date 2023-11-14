@@ -81,6 +81,7 @@ class UnrealCvTracking_general(gym.Env):
 
         # define reward type: distance
         self.reward_type = reward_type
+        self.agents_type = ['player']
 
         for i in range(len(self.textures_list)):
             if self.docker:
@@ -496,7 +497,11 @@ class UnrealCvTracking_general(gym.Env):
                         spline = True
                         app_id = np.random.choice(map_id)
                     self.unrealcv.set_appearance(obj, app_id, spline)
-
+                if self.agents[obj]['agent_type'] == 'animal':
+                    map_id = [2, 5, 6, 7, 11, 12, 16]
+                    spline = True
+                    app_id = np.random.choice(map_id)
+                    self.unrealcv.set_appearance(obj, app_id, spline)
         # random light and texture of the agents
         if player_texture:
             if self.env_name == 'MPRoom':  # random target texture
@@ -550,12 +555,7 @@ class UnrealCvTracking_general(gym.Env):
 
     def init_agents(self):
         for obj in self.player_list.copy(): # the agent will be fully removed in self.agents
-            if self.agents[obj]['agent_type'] == 'car':
-                # self.unrealcv.set_obj_scale(obj, [0.5, 0.5, 0.5])
-                self.remove_agent(obj)
-            elif self.agents[obj]['agent_type'] == 'drone':
-                self.remove_agent(obj)
-            elif self.agents[obj]['agent_type'] == 'animal':
+            if self.agents[obj]['agent_type'] not in self.agents_type:
                 self.remove_agent(obj)
 
         for obj in self.player_list:
