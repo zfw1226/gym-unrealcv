@@ -177,13 +177,12 @@ if __name__ == '__main__':
         env = early_done.EarlyDoneWrapper(env, args.early_done)
     if args.monitor:
         env = monitor.DisplayWrapper(env)
-
+    env.unwrapped.agents_type = ['player', 'animal']
     env = augmentation.RandomPopulationWrapper(env, 4, 4, random_target=True)
     env = agents.NavAgents(env, mask_agent=True)
     episode_count =100
     rewards = 0
     done = False
-
     Total_rewards = 0
     env.seed(int(args.seed))
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
@@ -198,7 +197,6 @@ if __name__ == '__main__':
             target_id = env.unwrapped.target_id
             tracker = PoseTracker(env.action_space[0], env.unwrapped.exp_distance)  # TODO support multi trackers
             tracker_random=RandomAgent(env.action_space[0])
-
             count_step = 0
             t0 = time.time()
             agents_num = len(obs)
