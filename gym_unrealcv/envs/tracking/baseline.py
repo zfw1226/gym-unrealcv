@@ -313,6 +313,7 @@ class Nav2GoalAgent(object):
             self.pose_last = pose
         self.d_move_ave = self.d_move_ave*0.7 + d_moved*0.3
         if self.check_reach(self.goal, pose) or self.d_move_ave < 3 or self.step_counter > self.max_len:
+            self.d_move_ave = 5
             if ref_goal is None or np.random.random() > self.random_th:
                 self.goal = self.generate_goal(self.goal_area, self.fix)
                 self.velocity = np.random.randint(0.5*self.velocity_high, self.velocity_high)
@@ -330,7 +331,7 @@ class Nav2GoalAgent(object):
         self.keep_steps = 0
         self.angle_noise_step = 0
         self.goal_id = 0
-        self.d_move_ave = 0
+        self.d_move_ave = 5
         self.goal = self.generate_goal(self.goal_area, self.fix)
         self.velocity = np.random.randint(self.velocity_low, self.velocity_high)
         self.pose_last = None
@@ -365,7 +366,6 @@ class PoseTracker(object):
             self.velocity_low = action_space.low[1]
             self.angle_high = action_space.high[0]
             self.angle_low = action_space.low[0]
-            # print(self.velocity_low, self.velocity_high, self.angle_low, self.angle_high)
         self.expected_distance = expected_distance
         self.expected_angle = expected_angle
         from simple_pid import PID
