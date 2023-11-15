@@ -30,7 +30,14 @@ class RandomPopulationWrapper(Wrapper):
         if self.random_tracker_id:
             env.tracker_id = env.sample_tracker()
         if self.random_target_id:
-            env.target_id = env.sample_target()
+            new_target = env.sample_target()
+            if new_target != env.tracker_id:  # set target object mask to white
+                env.unrealcv.build_color_dic(env.player_list)
+                env.unrealcv.set_obj_color(env.player_list[env.target_id], env.unrealcv.color_dict[env.player_list[new_target]])
+                env.unrealcv.set_obj_color(env.player_list[new_target], [255, 255, 255])
+                env.target_id = new_target
         states = self.env.reset(**kwargs)
+
+
 
         return states
