@@ -1,7 +1,7 @@
 {
-	"env_name": "Desert_ruins",
+	"env_name": "EF_Gus",
 	"env_bin": "Collection_linux_v0/Collection/Binaries/Linux/Collection",
-	"env_map": "desert_ruins",
+	"env_map": "EF_Gus",
 	"env_bin_win": "Collection_win_v0\\Collection\\Binaries\\Win\\Collection.exe",
     "imgs_dir": "textures",
 	"max_player_num": 10,
@@ -13,7 +13,7 @@
 		"height_top_view": 1500,
 		"fov": 90
 	},
-	"height": 150,
+	"height": -900,
 	"max_steps": 500,
 	"rewards": {
 		"min_distance": 100,
@@ -67,13 +67,11 @@
 		}
 	},
 	"random_init": false,
-	"safe_start" :[ [  -2900, -2100,  150],
-					[  -200, -2500, 150],
-					[	  0, -1600, 150],
-					[  -1100,  -400, 150],
-					[    200, -1600, 150]
+	"safe_start" :[ [ 1000,    -29500, -900],
+					[-1000, -30200, -900],
+					[100, -28000, -900]
 					],
-	"reset_area" : [-3200, -500,  -3000, 0, 140, 150],
+	"reset_area" : [-1500, 1500,  -30500, -27500, -910, -900],
 	"env": {
 		"objects": [],
 		"backgrounds": [],

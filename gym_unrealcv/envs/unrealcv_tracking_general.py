@@ -65,6 +65,7 @@ class UnrealCvTracking_general(gym.Env):
         self.textures_list = os.listdir(texture_dir)
         self.safe_start = setting['safe_start']
         self.interval = setting['interval']
+        self.random_init = setting['random_init']
         self.start_area = self.get_start_area(self.safe_start[0], 500) # the start area of the agent, where we don't put obstacles
 
         self.count_eps = 0
@@ -224,13 +225,15 @@ class UnrealCvTracking_general(gym.Env):
         # self.tracker_list = self.player_list.sample(self.num_tracker)
         # for i, obj in enumerate(self.target_list):
             # init target location and get expected tracker location
-        target_pos, tracker_pos_exp = self.sample_target_init_pose(True)
+        target_pos, tracker_pos_exp = self.sample_target_init_pose(self.random_init)
         # set tracker location
         cam_pos_exp, yaw_exp = tracker_pos_exp
         tracker_name = self.player_list[self.tracker_id]
         self.unrealcv.set_obj_location(tracker_name, cam_pos_exp)
         # self.set_yaw(tracker_name, yaw_exp)
         self.rotate2exp(yaw_exp, self.player_list[self.tracker_id], 3)
+
+
 
         # get tracker's camera pose
         tracker_pos = self.unrealcv.get_pose(self.cam_list[self.tracker_id])
@@ -559,6 +562,7 @@ class UnrealCvTracking_general(gym.Env):
                 self.remove_agent(obj)
 
         for obj in self.player_list:
+            print(obj)
             self.agents[obj]['scale'] = self.unrealcv.get_obj_scale(obj)
             self.unrealcv.set_random(obj, 0)
             self.unrealcv.set_interval(self.interval, obj)
@@ -594,3 +598,9 @@ class UnrealCvTracking_general(gym.Env):
 
     def sample_tracker(self):
         return self.cam_list.index(random.choice([x for x in self.cam_list if x > 0]))
+
+    def check_visibility(self):
+        mask = self.unrealcv.read_image(self.cam_id[self.tracker_id], 'object_mask', 'fast')
+        mask, bbox = self.unrealcv.get_bbox(mask, self.player_list[self.target_id], normalize=False)
+        mask_percent = mask.sum()/(self.resolution[0] * self.resolution[1])
+        return mask_percent
