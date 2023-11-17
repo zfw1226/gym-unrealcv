@@ -37,7 +37,8 @@ binary_win = dict(
     UrbanCity='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/urbancity_win_v1.zip',
     Garage='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/parkinglot_win_v1.zip',
     Garden='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/neighborhood_win_v1.zip',
-    test='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/testfolder.zip'
+    test='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/testfolder.zip',
+    Textures='https://gym-unrealcv.oss-cn-beijing.aliyuncs.com/Textures.zip'
 )
 
 if __name__ == '__main__':
