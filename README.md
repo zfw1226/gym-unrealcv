@@ -1,6 +1,8 @@
 Gym-UnrealCV: Realistic virtual worlds for visual reinforcement learning
 ===
 
+> 🚀 **Attention:** We highly recommend taking a look at *[UnrealZoo](https://github.com/UnrealZoo/unrealzoo-gym)*, which offers a comprehensive collection of environments and new features for Embodied AI research.
+
 # Introduction
 **This project integrates Unreal Engine with OpenAI Gym for visual reinforcement learning based on [UnrealCV](http://unrealcv.org/).**
 In this project, you can run (Multi-Agent) Reinforcement Learning algorithms in various realistic UE4 environments easily without any knowledge of Unreal Engine and UnrealCV.
